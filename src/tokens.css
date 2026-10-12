@@ -38,17 +38,21 @@
   --color-sx-error-dot: #d9342b;
   /* 見本のフォーカスリングの黄（DADS yellow-300）。Tailwind 既定の yellow-300 とは値が違う */
   --color-sx-focus: #ffd43d;
+  /* Text and icons on the solid accent and danger fills, and the black outline of the focus ring */
+  --color-sx-on-solid: #ffffff;
+  --color-sx-focus-outline: #000000;
   --radius-sx-control: 12px;
   --radius-sx-tile: 10px;
   --radius-sx-card: 20px;
   --radius-sx-frame: 24px;
+  --radius-sx-check: 5px;
   --shadow-sx-card: 0 1px 2px rgb(18 17 13 / 0.04);
   --shadow-sx-raised:
     0 1px 2px rgb(18 17 13 / 0.06), 0 0 0 1px rgb(18 17 13 / 0.02);
   --shadow-sx-overlay:
     0 12px 32px rgb(18 17 13 / 0.16), 0 0 0 1px rgb(18 17 13 / 0.04);
   --font-sx: "Inter Variable", "Noto Sans JP Variable", sans-serif;
-  /* 文字サイズは3つだけ。部品は text-[16px] ではなく text-sx-base などを使う */
+  /* 文字サイズは名前のあるものだけ。部品は text-[16px] ではなく text-sx-base などを使う */
   --text-sx-base: 16px;
   --text-sx-meta: 14px;
   --text-sx-title: 28px;

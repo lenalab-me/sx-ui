@@ -1,0 +1,73 @@
+/* A small reset, scoped to the Shell root (data-nd). Tailwind's preflight is not loaded (it would
+   restyle the DADS screens that are not migrated yet), so the components get here only what they
+   rely on from it: box-sizing, no default borders and margins, inherited form fonts, plain links
+   and lists. It sits in the base layer, so every utility overrides it. */
+[data-nd],
+[data-nd] :where(*, ::before, ::after) {
+  box-sizing: border-box;
+  border: 0 solid;
+}
+[data-nd]
+  :where(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    blockquote,
+    figure,
+    pre,
+    dl,
+    dd,
+    ul,
+    ol,
+    menu
+  ) {
+  margin: 0;
+}
+[data-nd] :where(h1, h2, h3, h4, h5, h6) {
+  font-size: inherit;
+  font-weight: inherit;
+}
+[data-nd] :where(ul, ol, menu) {
+  padding: 0;
+  list-style: none;
+}
+[data-nd] :where(a) {
+  color: inherit;
+  text-decoration: inherit;
+}
+[data-nd] :where(button, input, select, textarea) {
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  background-color: transparent;
+  border-radius: 0;
+  margin: 0;
+  padding: 0;
+}
+[data-nd] :where(button:not(:disabled), [role="button"]:not(:disabled)) {
+  cursor: pointer;
+}
+[data-nd] :where(textarea) {
+  resize: vertical;
+}
+[data-nd] :where(table) {
+  border-collapse: collapse;
+  text-indent: 0;
+}
+[data-nd] :where(img, svg, video, canvas) {
+  display: block;
+  vertical-align: middle;
+}
+[data-nd] :where(dialog) {
+  padding: 0;
+  color: inherit;
+  background-color: transparent;
+}
+/* A display utility (flex, grid) must not show an element that has the hidden attribute. */
+[data-nd] [hidden]:where(:not([hidden="until-found"])) {
+  display: none !important;
+}
