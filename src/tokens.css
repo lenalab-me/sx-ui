@@ -1,0 +1,55 @@
+/* 見本 network-designer-saas-mock/src/index.css のトークンの値をそのまま写し、エラー系と focus だけを足した。
+   Tailwind の既定のパレット・フォント・角丸・影・文字サイズは initial で消し、ここに書いたものだけを残す
+   （initial の行はトークンより前に書く）。 */
+@theme {
+  --color-*: initial;
+  --font-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --text-*: initial;
+
+  --color-sx-frame: #e7e6e1;
+  --color-sx-canvas: #f5f4f1;
+  --color-sx-surface: #ffffff;
+  --color-sx-subtle: #fafaf8;
+  --color-sx-fill: #efeee9;
+  --color-sx-strong: #12110d;
+  --color-sx-body: #52514e;
+  --color-sx-muted: #6d6c66;
+  --color-sx-line: #e7e6e1;
+  --color-sx-row: #eeede8;
+  --color-sx-control: #8a8985;
+  --color-sx-accent: #7655f7;
+  --color-sx-accent-hover: #6744ea;
+  --color-sx-accent-soft: #edebff;
+  --color-sx-accent-ink: #574b9e;
+  --color-sx-ok-bg: #e3f6ec;
+  --color-sx-ok-ink: #207543;
+  --color-sx-ok-dot: #3fb56a;
+  --color-sx-warn-bg: #fcf1de;
+  --color-sx-warn-ink: #a0571b;
+  --color-sx-warn-dot: #f59e0b;
+  --color-sx-neutral-bg: #efeee9;
+  --color-sx-neutral-ink: #51504b;
+  --color-sx-neutral-dot: #8a8984;
+  /* エラー系: ink/bg 6.11:1、ink/白 7.10:1、dot/白 4.69:1、dot/bg 4.03:1 */
+  --color-sx-error-bg: #fbeae9;
+  --color-sx-error-ink: #a32d22;
+  --color-sx-error-dot: #d9342b;
+  /* 見本のフォーカスリングの黄（DADS yellow-300）。Tailwind 既定の yellow-300 とは値が違う */
+  --color-sx-focus: #ffd43d;
+  --radius-sx-control: 12px;
+  --radius-sx-tile: 10px;
+  --radius-sx-card: 20px;
+  --radius-sx-frame: 24px;
+  --shadow-sx-card: 0 1px 2px rgb(18 17 13 / 0.04);
+  --shadow-sx-raised:
+    0 1px 2px rgb(18 17 13 / 0.06), 0 0 0 1px rgb(18 17 13 / 0.02);
+  --shadow-sx-overlay:
+    0 12px 32px rgb(18 17 13 / 0.16), 0 0 0 1px rgb(18 17 13 / 0.04);
+  --font-sx: "Inter Variable", "Noto Sans JP Variable", sans-serif;
+  /* 文字サイズは3つだけ。部品は text-[16px] ではなく text-sx-base などを使う */
+  --text-sx-base: 16px;
+  --text-sx-meta: 14px;
+  --text-sx-title: 28px;
+}

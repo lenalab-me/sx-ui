@@ -1,0 +1,12 @@
+/* 部品のCSSの入口（@nd/ui/styles.css）。Tailwind は theme と utilities だけを読み、preflight は読まない
+   （移行中の DADS 画面の見た目を変えないため）。html・body の既定も持ち込まない（Shell のルートが持つ）。 */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@import "./tokens.css";
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/noto-sans-jp";
+
+@source "../../../src";
+@source "./";
+@source "../gallery";
