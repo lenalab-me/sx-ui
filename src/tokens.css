@@ -41,6 +41,8 @@
   /* Text and icons on the solid accent and danger fills, and the black outline of the focus ring */
   --color-sx-on-solid: #ffffff;
   --color-sx-focus-outline: #000000;
+  /* The dim layer behind a modal */
+  --color-sx-scrim: rgb(18 17 13 / 0.32);
   --radius-sx-control: 12px;
   --radius-sx-tile: 10px;
   --radius-sx-card: 20px;
@@ -55,5 +57,8 @@
   /* 文字サイズは名前のあるものだけ。部品は text-[16px] ではなく text-sx-base などを使う */
   --text-sx-base: 16px;
   --text-sx-meta: 14px;
+  /* Section headings and the underline tabs (18px), modal titles (20px) */
+  --text-sx-lead: 18px;
+  --text-sx-heading: 20px;
   --text-sx-title: 28px;
 }
