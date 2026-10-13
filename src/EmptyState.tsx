@@ -4,10 +4,13 @@ import { Icon, type IconName } from "./icons";
 /** What to show in place of an empty list or table (for example "まだ拠点がありません。…"). */
 export function EmptyState({
   children,
+  support,
   action,
   icon,
 }: {
   children: ReactNode;
+  /** A second, smaller line under the message (the reason, or what to do). */
+  support?: ReactNode;
   action?: ReactNode;
   icon?: IconName;
 }) {
@@ -22,6 +25,7 @@ export function EmptyState({
         </span>
       )}
       <p>{children}</p>
+      {support && <p className="text-sx-meta">{support}</p>}
       {action}
     </div>
   );

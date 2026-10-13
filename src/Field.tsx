@@ -91,6 +91,7 @@ export function Field({
   support,
   error,
   required,
+  inline = false,
   children,
   className = "",
 }: {
@@ -98,6 +99,8 @@ export function Field({
   support?: ReactNode;
   error?: ReactNode;
   required?: boolean;
+  /** One row: the label at the left, the control (96px wide) at the right. For short values such as a count. */
+  inline?: boolean;
   children: (f: FieldIds) => ReactNode;
   className?: string;
 }) {
@@ -106,13 +109,26 @@ export function Field({
   const errorId = error ? `${id}-error` : undefined;
   const describedBy =
     [supportId, errorId].filter(Boolean).join(" ") || undefined;
+  const control = children({ id, describedBy, invalid: Boolean(error) });
   return (
     <div className={`flex flex-col gap-1.5 ${className}`}>
-      <Label htmlFor={id} required={required}>
-        {label}
-      </Label>
-      {support && <SupportText id={supportId}>{support}</SupportText>}
-      {children({ id, describedBy, invalid: Boolean(error) })}
+      {inline ? (
+        <div className="flex items-center justify-between gap-3">
+          <Label htmlFor={id} required={required}>
+            {label}
+          </Label>
+          <div className="w-24 shrink-0">{control}</div>
+        </div>
+      ) : (
+        <>
+          <Label htmlFor={id} required={required}>
+            {label}
+          </Label>
+          {support && <SupportText id={supportId}>{support}</SupportText>}
+          {control}
+        </>
+      )}
+      {inline && support && <SupportText id={supportId}>{support}</SupportText>}
       {error && <ErrorText id={errorId}>{error}</ErrorText>}
     </div>
   );

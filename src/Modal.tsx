@@ -1,6 +1,8 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { IconButton } from "./Button";
 
+const width = { sm: "w-130", md: "w-160", lg: "w-190" } as const;
+
 /**
  * A modal on a native <dialog> opened with showModal(), so the page behind it is inert and
  * Esc and the focus trap come from the browser. It follows the create-modal behavior in
@@ -24,8 +26,8 @@ export function Modal({
   /** Buttons along the bottom edge, right-aligned. */
   footer?: ReactNode;
   busy?: boolean;
-  /** md is 640px wide (forms), sm is 520px (confirmations). */
-  size?: "sm" | "md";
+  /** md is 640px wide (forms), sm is 520px (confirmations), lg is 760px (forms in two columns, or with tabs). */
+  size?: "sm" | "md" | "lg";
   description?: ReactNode;
 }) {
   const titleId = useId();
@@ -55,7 +57,7 @@ export function Modal({
         e.preventDefault();
         if (!busy) onClose();
       }}
-      className={`${size === "sm" ? "w-130" : "w-160"} flex-col overflow-hidden rounded-sx-card border border-sx-line bg-sx-surface text-sx-strong shadow-sx-overlay backdrop:bg-sx-scrim open:flex`}
+      className={`${width[size]} flex-col overflow-hidden rounded-sx-card border border-sx-line bg-sx-surface text-sx-strong shadow-sx-overlay backdrop:bg-sx-scrim open:flex`}
     >
       <div className="flex items-start gap-4 px-7 pt-6 pb-3">
         <h2

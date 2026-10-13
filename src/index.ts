@@ -6,6 +6,7 @@ export {
   type ConfirmResult,
 } from "./ConfirmDialog";
 export { Crumbs, type Crumb } from "./Crumbs";
+export { DescriptionList } from "./DescriptionList";
 export { Disclosure } from "./Disclosure";
 export { EmptyState } from "./EmptyState";
 export {
@@ -37,7 +38,7 @@ export { Icon, type IconName } from "./icons";
 export { Menu, type MenuItem } from "./Menu";
 export { Modal } from "./Modal";
 export { Notice, type NoticeTone } from "./Notice";
-export { Card, Page, PageTitle } from "./Page";
+export { Card, CardHead, Page, PageTitle } from "./Page";
 export { Pill, type PillTone } from "./Pill";
 export { Popover } from "./Popover";
 export { SaveStatus, type SaveState } from "./SaveStatus";
