@@ -245,7 +245,7 @@ function Gallery() {
         <Section
           title="お知らせ"
           parts={["Notice", "StatusLine"]}
-          use="Notice は、画面の中に残す注意・結果・エラーの帯です。操作の結果を一行だけ伝えるときは StatusLine（Page に文を渡すと上端に描かれる）を使い、残しておく説明には使いません。StatusLine の「neutral」は、結果ではない「読み込み中…」のような一言用で、アイコンも色も付けません。"
+          use="Notice は、画面の中に残す注意・結果・エラーの帯です。操作や読み込みの失敗のように出た瞬間に読み上げるものは「live」を付けます（「error」「warn」は割り込んで、「info」「ok」は控えめに読み上げる）。操作の結果を一行だけ伝えるときは StatusLine（Page に文を渡すと上端に描かれる）を使い、残しておく説明には使いません。StatusLine の「neutral」は、結果ではない「読み込み中…」のような一言用で、アイコンも色も付けません。"
         >
           <StatusLine text="見本拠点 2 の機器設定を保存しました。" />
           <StatusLine text="読み込み中…" tone="neutral" />
@@ -260,6 +260,11 @@ function Gallery() {
             </Notice>
           ))}
           <Notice tone="info" title="本文も操作もないお知らせ" />
+          <Notice
+            tone="error"
+            title="出た瞬間に読み上げるお知らせ（live）"
+            live
+          />
           <Button
             size="sm"
             className="self-start"

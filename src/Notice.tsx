@@ -24,22 +24,29 @@ const tones: Record<NoticeTone, { box: string; icon: ReactNode }> = {
 
 /**
  * A banner: a 4px left band, an icon, the text and the actions.
- * No role by default; pass role="alert" or "status" only when it must be announced the moment it appears.
+ * Not announced by default. Pass `live` when it must be announced the moment it appears (a failure
+ * after an operation or while loading): error and warn are announced as alert, info and ok as status.
+ * Screens never write the role themselves.
  */
 export function Notice({
   tone,
   title,
   children,
   actions,
-  role,
+  live = false,
 }: {
   tone: NoticeTone;
   title: ReactNode;
   children?: ReactNode;
   actions?: ReactNode;
-  role?: "alert" | "status";
+  live?: boolean;
 }) {
   const t = tones[tone];
+  const role = !live
+    ? undefined
+    : tone === "error" || tone === "warn"
+      ? "alert"
+      : "status";
   return (
     <div
       role={role}
