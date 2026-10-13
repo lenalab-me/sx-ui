@@ -1,6 +1,14 @@
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent,
+} from "react";
 import { IconButton } from "./Button";
 import { focusRing } from "./focus";
+import { anchoredStyle, anchorNameOf, useTopLayer } from "./topLayer";
 
 export interface MenuItem {
   label: string;
@@ -13,7 +21,8 @@ export interface MenuItem {
 /**
  * The "…" menu at the end of a row (role=menu). Up/down arrows, Home and End move; Esc closes and
  * returns to the button. Selecting an item also returns focus to the button (a modal opened from
- * an item returns here when it closes). defaultOpen is for opening it from a URL.
+ * an item returns here when it closes). defaultOpen is for opening it from a URL. The list is
+ * shown in the top layer (popover), so a table frame or a modal does not clip it.
  */
 export function Menu({
   label,
@@ -28,6 +37,8 @@ export function Menu({
   const button = useRef<HTMLButtonElement>(null);
   const list = useRef<HTMLUListElement>(null);
   const id = useId();
+  const anchor = anchorNameOf(id);
+  useTopLayer(list, open);
   const focusAt = (i: number) => {
     const els = [
       ...(list.current?.querySelectorAll<HTMLElement>(
@@ -70,7 +81,10 @@ export function Menu({
     e.preventDefault();
   };
   return (
-    <div className="relative inline-flex">
+    <div
+      className="inline-flex"
+      style={{ anchorName: anchor } as CSSProperties}
+    >
       <IconButton
         ref={button}
         label={label}
@@ -86,9 +100,11 @@ export function Menu({
           id={id}
           role="menu"
           aria-label={label}
+          popover="manual"
           data-boundary
           onKeyDown={onKey}
-          className="absolute top-full right-0 z-30 mt-1 flex min-w-55 flex-col rounded-sx-control border border-sx-control bg-sx-surface p-1 text-left shadow-sx-overlay"
+          style={anchoredStyle(anchor, "end")}
+          className="inset-auto m-0 mt-1 flex min-w-55 overflow-visible text-inherit flex-col rounded-sx-control border border-sx-control bg-sx-surface p-1 text-left shadow-sx-overlay"
         >
           {items.map((it) => {
             const cls = `flex h-10 w-full items-center rounded-sx-tile px-3 text-sx-base whitespace-nowrap ${it.disabled ? "cursor-not-allowed text-sx-muted" : it.danger ? "text-sx-error-ink hover:bg-sx-error-bg" : "text-sx-strong hover:bg-sx-fill"} ${focusRing}`;

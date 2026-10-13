@@ -61,7 +61,7 @@ import {
 } from "@nd/ui";
 
 // A page that shows every component in every state. It is not part of the app build: open it
-// with the dev server at /packages/ui/gallery/. ?open=modal|modal-lg|confirm|menu|popover opens that
+// with the dev server at /packages/ui/gallery/. ?open=modal|modal-lg|confirm|menu|popover|table-menu opens that
 // overlay on load. Only layout classes are used here; the look comes from the components.
 // It is also the catalog of the components: every Section lists the parts it shows (`parts`) and
 // says when to use them and when not to (`use`). src/ui-catalog.test.ts checks that every component
@@ -683,7 +683,7 @@ function Gallery() {
         <Section
           title="メニューと浮き枠"
           parts={["Menu", "Popover"]}
-          use="Menu は行の末尾の「…」から出す操作の一覧、Popover はボタンの近くに出す小さな枠です。画面を止めて答えを求めるときは、ダイアログを使います。"
+          use="Menu は行の末尾の「…」から出す操作の一覧、Popover はボタンの近くに出す小さな枠です。画面を止めて答えを求めるときは、ダイアログを使います。どちらも最前面に出るので、表やモーダルの枠で切れません。"
         >
           <div className="flex flex-wrap items-start gap-6">
             <div className="relative">
@@ -717,6 +717,41 @@ function Gallery() {
               />
             </div>
           </div>
+          {/* Two rows only: the menu below is taller than the table, and is still not cut off */}
+          <Table caption="行が2件だけの表の例" minWidth={480}>
+            <colgroup>
+              <col className="w-32" />
+              <col />
+              <col className="w-20" />
+            </colgroup>
+            <THead>
+              <Th>拠点番号</Th>
+              <Th>拠点名</Th>
+              <Th>
+                <span className="sr-only">その他の操作</span>
+              </Th>
+            </THead>
+            <tbody>
+              {rows.slice(0, 2).map((r, i) => (
+                <Tr key={r.number}>
+                  <RowHead nowrap>{r.number}</RowHead>
+                  <Td truncate>{r.name}</Td>
+                  <Td align="right">
+                    <Menu
+                      label={`${r.name}のその他の操作`}
+                      defaultOpen={opened === "table-menu" && i === 1}
+                      items={[
+                        { label: "申込" },
+                        { label: "補足" },
+                        { label: "テンプレートにする" },
+                        { label: "削除", danger: true },
+                      ]}
+                    />
+                  </Td>
+                </Tr>
+              ))}
+            </tbody>
+          </Table>
         </Section>
 
         <Section

@@ -1,14 +1,18 @@
 import {
   useEffect,
+  useId,
   useLayoutEffect,
   useRef,
   type ReactNode,
   type RefObject,
 } from "react";
 import { IconButton } from "./Button";
+import { anchoredStyle, anchorNameOf, useTopLayer } from "./topLayer";
 
 /**
- * A floating box inside the caller's relative frame. A click outside, Esc or "閉じる" closes it.
+ * A floating box. With `anchor` it is shown in the top layer (popover) below that element, so no
+ * scroll frame or modal clips it, and above it when there is no room below; without `anchor` it is
+ * placed inside the caller's relative frame. A click outside, Esc or "閉じる" closes it.
  * On close, focus returns to `anchor` (the button that opened it); on open, the first control inside takes focus.
  * data-boundary makes the contrast audit check its border.
  */
@@ -29,6 +33,18 @@ export function Popover({
   size?: "sm" | "md";
 }) {
   const box = useRef<HTMLDivElement>(null);
+  const name = anchorNameOf(useId());
+  const topLayer = anchor !== undefined;
+  useTopLayer(box, topLayer);
+  // The anchor element gets the anchor name for as long as the box is open.
+  useLayoutEffect(() => {
+    const el = anchor?.current;
+    if (!el) return;
+    el.style.setProperty("anchor-name", name);
+    return () => {
+      el.style.removeProperty("anchor-name");
+    };
+  }, [anchor, name]);
   const closeRef = useRef(onClose);
   useLayoutEffect(() => {
     closeRef.current = onClose;
@@ -70,7 +86,9 @@ export function Popover({
       role="dialog"
       aria-label={label}
       data-boundary
-      className={`absolute top-full z-30 mt-1 flex ${size === "md" ? "w-96" : "w-70"} flex-col gap-2 rounded-sx-control border border-sx-control bg-sx-surface p-3 text-left shadow-sx-overlay ${align === "end" ? "right-0" : "left-0"}`}
+      popover={topLayer ? "manual" : undefined}
+      style={topLayer ? anchoredStyle(name, align) : undefined}
+      className={`${topLayer ? "inset-auto m-0 overflow-visible text-inherit" : `absolute top-full z-30 ${align === "end" ? "right-0" : "left-0"}`} mt-1 flex ${size === "md" ? "w-96" : "w-70"} flex-col gap-2 rounded-sx-control border border-sx-control bg-sx-surface p-3 text-left shadow-sx-overlay`}
     >
       <div className="flex items-center justify-between gap-2">
         <p className="text-sx-meta font-medium text-sx-body">{label}</p>
