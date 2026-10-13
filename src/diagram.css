@@ -33,6 +33,14 @@
   --xy-controls-button-color-hover: var(--color-sx-strong);
   --xy-controls-button-border-color: var(--color-sx-line);
   --xy-controls-box-shadow: var(--shadow-sx-raised);
+  /* The "React Flow" credit in the corner */
+  --xy-attribution-background-color: var(--color-sx-surface);
+}
+
+/* React Flow colors the credit's link with a fixed #999 (2.8:1 on white). The muted ink keeps it
+   readable at the contrast the rest of the app meets. */
+[data-diagram] .react-flow__attribution a {
+  color: var(--color-sx-muted);
 }
 
 [data-diagram] .react-flow__handle {
