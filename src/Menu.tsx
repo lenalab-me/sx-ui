@@ -20,7 +20,7 @@ export interface MenuItem {
 
 /**
  * The "…" menu at the end of a row (role=menu). Up/down arrows, Home and End move; Esc closes and
- * returns to the button. Selecting an item also returns focus to the button (a modal opened from
+ * returns to the button (inside a modal, only the menu closes; the next Esc closes the modal). Selecting an item also returns focus to the button (a modal opened from
  * an item returns here when it closes). defaultOpen is for opening it from a URL. The list is
  * shown in the top layer (popover), so a table frame or a modal does not clip it.
  */
@@ -74,7 +74,11 @@ export function Menu({
     else if (e.key === "Home") focusAt(0);
     else if (e.key === "End") focusAt(els.length - 1);
     else if (e.key === "Escape" || e.key === "Tab") {
-      if (e.key === "Escape") e.stopPropagation();
+      // preventDefault keeps a <dialog> around the menu from taking this Esc as its close request.
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        e.preventDefault();
+      }
       close();
       return;
     } else return;

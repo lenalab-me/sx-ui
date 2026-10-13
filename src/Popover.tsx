@@ -63,7 +63,9 @@ export function Popover({
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
+      // preventDefault keeps a <dialog> around the box from taking this Esc as its close request.
       e.stopPropagation();
+      e.preventDefault();
       closeRef.current();
     };
     document.addEventListener("pointerdown", onDown);

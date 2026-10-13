@@ -851,8 +851,20 @@ function Gallery() {
                   </Select>
                 )}
               </Field>
+              {/* A menu opened inside a modal: Esc closes only the menu, the next Esc closes the modal */}
               <Field label="エリア">
-                {(f) => <Input id={f.id} defaultValue="" />}
+                {(f) => (
+                  <div className="flex items-center gap-2">
+                    <Input id={f.id} defaultValue="" />
+                    <Menu
+                      label="エリアの操作"
+                      items={[
+                        { label: "前の拠点からコピー" },
+                        { label: "入力を消す" },
+                      ]}
+                    />
+                  </div>
+                )}
               </Field>
               <Field label="ルーターの台数" inline>
                 {(f) => <NumberInput id={f.id} size="md" defaultValue="1" />}
