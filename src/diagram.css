@@ -1,0 +1,58 @@
+/* The physical diagram's React Flow parts, colored with the tokens. Everything here is scoped to
+   the frame (DiagramFrame carries data-diagram), so nothing else on a page changes.
+
+   React Flow reads its colors from custom properties (--xy-*, see node_modules/@xyflow/react/dist/
+   style.css), each as var(--xy-name, var(--xy-name-default)), so setting --xy-name on the frame
+   is enough for the wires, the grid, the connection line and the controls. The handle is the one
+   part with fixed sizes and positions in React Flow's own rules (.react-flow__handle*), so those
+   are overridden below; the numbers come from diagramGeometry through the --diagram-handle-*
+   custom properties that DiagramFrame sets.
+
+   This file is imported without a layer: React Flow's CSS is not in a layer either, and a rule
+   in a layer would lose to it. The selectors are one class longer than React Flow's, so they win
+   whatever the order of the two files. */
+[data-diagram] {
+  /* A wire, a selected wire, and the line drawn while connecting */
+  --xy-edge-stroke: var(--color-sx-muted);
+  --xy-edge-stroke-width: 2;
+  --xy-edge-stroke-selected: var(--color-sx-accent);
+  --xy-connectionline-stroke: var(--color-sx-accent);
+  --xy-connectionline-stroke-width: 2;
+  /* The label that follows a selected wire */
+  --xy-edge-label-background-color: var(--color-sx-surface);
+  --xy-edge-label-color: var(--color-sx-strong);
+  /* The dots of the grid */
+  --xy-background-pattern-color: var(--color-sx-control);
+  /* A handle on a port that is not used yet */
+  --xy-handle-background-color: var(--color-sx-surface);
+  --xy-handle-border-color: var(--color-sx-muted);
+  /* The zoom buttons */
+  --xy-controls-button-background-color: var(--color-sx-surface);
+  --xy-controls-button-background-color-hover: var(--color-sx-fill);
+  --xy-controls-button-color: var(--color-sx-strong);
+  --xy-controls-button-color-hover: var(--color-sx-strong);
+  --xy-controls-button-border-color: var(--color-sx-line);
+  --xy-controls-box-shadow: var(--shadow-sx-raised);
+}
+
+[data-diagram] .react-flow__handle {
+  width: var(--diagram-handle-size);
+  height: var(--diagram-handle-size);
+  min-width: var(--diagram-handle-size);
+  min-height: var(--diagram-handle-size);
+  border-width: var(--diagram-handle-border);
+}
+[data-diagram] .react-flow__handle-top {
+  top: var(--diagram-handle-offset);
+}
+[data-diagram] .react-flow__handle-bottom {
+  bottom: var(--diagram-handle-offset);
+}
+[data-diagram] .react-flow__handle-right {
+  right: var(--diagram-handle-offset);
+}
+/* A handle on a used port takes the accent (DiagramPort sets data-used) */
+[data-diagram] [data-used] .react-flow__handle {
+  --xy-handle-background-color: var(--color-sx-accent);
+  --xy-handle-border-color: var(--color-sx-accent);
+}

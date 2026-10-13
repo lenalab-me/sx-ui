@@ -1,5 +1,3 @@
-import type { ReactNode } from "react";
-
 export type PillTone = "ok" | "warn" | "neutral" | "error" | "accent";
 
 const tones: Record<PillTone, { box: string; dot: string }> = {
@@ -13,19 +11,23 @@ const tones: Record<PillTone, { box: string; dot: string }> = {
   accent: { box: "bg-sx-accent-soft text-sx-accent-ink", dot: "bg-sx-accent" },
 };
 
-/** A status pill (dot + text). The state is readable from the text, so color is never the only signal. */
+/**
+ * A status pill (dot + text). The text is required and is what states the state, so color is never
+ * the only signal; the root carries `data-state` (the tone) for the check that every state has text.
+ */
 export function Pill({
   tone,
   children,
   size = "md",
 }: {
   tone: PillTone;
-  children: ReactNode;
+  children: string;
   size?: "sm" | "md";
 }) {
   const t = tones[tone];
   return (
     <span
+      data-state={tone}
       className={`inline-flex items-center gap-2 rounded-full px-3 py-0.5 font-medium whitespace-nowrap ${size === "sm" ? "text-sx-meta" : "text-sx-base"} ${t.box}`}
     >
       <span

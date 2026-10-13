@@ -5,8 +5,16 @@ export {
   type ConfirmQuestion,
   type ConfirmResult,
 } from "./ConfirmDialog";
+export { CodeBlock } from "./CodeBlock";
 export { Crumbs, type Crumb } from "./Crumbs";
 export { DescriptionList } from "./DescriptionList";
+export {
+  DiagramDevice,
+  DiagramFrame,
+  DiagramPort,
+  DiagramRouteError,
+  diagramGeometry,
+} from "./Diagram";
 export { Disclosure } from "./Disclosure";
 export { EmptyState } from "./EmptyState";
 export {

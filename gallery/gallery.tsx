@@ -10,6 +10,7 @@ import {
   Check,
   Checkbox,
   CheckboxInput,
+  CodeBlock,
   ConfirmDialog,
   Crumbs,
   DenseCell,
@@ -17,6 +18,10 @@ import {
   DenseRowHead,
   DenseTable,
   DescriptionList,
+  DiagramDevice,
+  DiagramFrame,
+  DiagramPort,
+  DiagramRouteError,
   Disclosure,
   EmptyState,
   ErrorText,
@@ -180,6 +185,21 @@ function Gallery() {
         crumbs={[{ label: "Project", href: "/" }, { label: "部品の見本" }]}
         meta={<SaveStatus state="saved" live />}
         status={status}
+        footer={
+          <>
+            <ButtonLink href="#previous" size="md" icon="arrow-left">
+              拠点一覧へ戻る
+            </ButtonLink>
+            <ButtonLink
+              href="#next"
+              size="md"
+              variant="primary"
+              icon="arrow-right"
+            >
+              次へ：機器設定
+            </ButtonLink>
+          </>
+        }
       >
         <PageTitle title="部品の見本" subtitle="全部品を全状態で並べたページ">
           <Button
@@ -195,7 +215,7 @@ function Gallery() {
         <Section
           title="画面の枠組み"
           parts={["Shell", "Page", "PageTitle", "Card", "CardHead", "Crumbs"]}
-          use="Shell は左ペインとページの枠で、画面は Page を1つ入れます。見出しの行は PageTitle（何の画面かを添えるときは「subtitle」。この見本の見出しの右）、白い面は Card、現在位置は Crumbs（Page に渡した経路から描かれる）です。Card の上端にタブを置くときは CardHead に下線のタブ（Tabs の「underline」）を入れ、その面が何を並べるかの案内は「note」で右に添えます。タブのない Card には使いません。"
+          use="Shell は左ペインとページの枠で、画面は Page を1つ入れます。見出しの行は PageTitle（何の画面かを添えるときは「subtitle」。この見本の見出しの右）、白い面は Card、現在位置は Crumbs（Page に渡した経路から描かれる）です。Card の上端にタブを置くときは CardHead に下線のタブ（Tabs の「underline」）を入れ、その面が何を並べるかの案内は「note」で右に添えます。タブのない Card には使いません。Page の「footer」は、本文の下端に固定される帯（本文がスクロールしても動かない。この見本の画面の下端）で、工程や画面を前後に移るボタンを置きます（前へ・戻るは左端、次へは右端）。保存や削除のような操作は置かず、本文の中か Modal の下端の帯に置きます。"
         >
           <Crumbs
             items={[
@@ -483,13 +503,13 @@ function Gallery() {
         <Section
           title="状態"
           parts={["Pill", "Tag", "SaveStatus", "EmptyState"]}
-          use="Pill は状態、Tag は拠点番号・種別などの付属情報、SaveStatus は保存の状態を示します。EmptyState は一覧や表が空のときに置く部品で、理由や次の手順は「support」（小さい2行目）に書きます。Notice の代わりにはしません。"
+          use="Pill は状態、Tag は拠点番号・種別などの付属情報、SaveStatus は保存の状態を示します。Pill の文字は必須（文字列）で、状態は色だけでなく文字でも読めるようにします（アイコンや数だけの Pill は作らない）。Pill と SaveStatus の根には状態を表す「data-state」が付きます（どの状態にも文字があることを、検査が属性で探せるようにするため）。EmptyState は一覧や表が空のときに置く部品で、理由や次の手順は「support」（小さい2行目）に書きます。Notice の代わりにはしません。"
         >
           {(["md", "sm"] as const).map((size) => (
             <div key={size} className="flex flex-wrap items-center gap-3">
               {pillTones.map((tone) => (
                 <Pill key={tone} tone={tone} size={size}>
-                  {tone} {size}
+                  {`${tone} ${size}`}
                 </Pill>
               ))}
             </div>
@@ -612,7 +632,7 @@ function Gallery() {
             "Check",
             "SectionHeader",
           ]}
-          use="機器設定の入力用の表で、行は40px、横にスクロールします。読むだけの一覧には使わず、一覧の表（Table）を使います。SectionHeader は表の節の見出しと「追加」ボタンです。"
+          use="機器設定の入力用の表で、行は40px、横にスクロールします。列が多く横にあふれる表で、1列目が行の名前（ポート名など）のときは「stickyFirstColumn」で1列目を左端に固定します（列が少ない表や、1列目が名前でない表には付けません）。読むだけの一覧には使わず、一覧の表（Table）を使います。SectionHeader は表の節の見出しと「追加」ボタンです。"
         >
           <SectionHeader
             title="VLAN"
@@ -678,6 +698,152 @@ function Gallery() {
               </DenseCell>
             </DenseRow>
           </DenseTable>
+          <SectionHeader title="LAN（1列目を固定）" level={3} />
+          <DenseTable
+            label="1列目を固定した表の例"
+            minWidth={1200}
+            stickyFirstColumn
+            columns={[
+              { id: "port", header: "ポート" },
+              { id: "ip", header: "IPアドレス" },
+              { id: "mask", header: "ネットワーク" },
+              { id: "vlan", header: "VLAN ID" },
+              { id: "kind", header: "種別" },
+              { id: "dhcp", header: "DHCP" },
+              { id: "note", header: "備考" },
+            ]}
+          >
+            {["LAN1", "LAN2", "LAN3"].map((port, i) => (
+              <DenseRow key={port} subtle={i === 1}>
+                <DenseRowHead>{port}</DenseRowHead>
+                <DenseCell>
+                  <CellInput
+                    label={`${port} のIPアドレス`}
+                    kind="ip"
+                    value={`192.0.2.${i + 1}`}
+                    onChange={() => {}}
+                  />
+                </DenseCell>
+                <DenseCell>
+                  <CellInput
+                    label={`${port} のネットワーク`}
+                    kind="network"
+                    value="192.0.2.0/24"
+                    onChange={() => {}}
+                  />
+                </DenseCell>
+                <DenseCell>
+                  <CellInput
+                    label={`${port} のVLAN ID`}
+                    kind="vlan"
+                    value={String(100 + i)}
+                    onChange={() => {}}
+                  />
+                </DenseCell>
+                <DenseCell tone="body" nowrap>
+                  通常
+                </DenseCell>
+                <DenseCell>
+                  <Check
+                    label={`${port} のDHCP`}
+                    value={i === 0}
+                    onChange={() => {}}
+                  />
+                </DenseCell>
+                <DenseCell />
+              </DenseRow>
+            ))}
+          </DenseTable>
+        </Section>
+
+        <Section
+          title="設定の本文"
+          parts={["CodeBlock"]}
+          use="生成した Config や設計データの JSON のような、整形済みの長い文字列をそのまま見せます。等幅・折り返しなしで、横にあふれるときは枠の中をスクロールします（キーボードでも枠にフォーカスして動かせる）。「label」は枠の名前（読み上げ）で必須です。短い値や、読むだけの項目の組には DescriptionList を使い、編集する値には使いません。"
+        >
+          <CodeBlock label="設計データの例">
+            {`{
+  "site": "001",
+  "model": "RT-A100",
+  "deviceCount": 1,
+  "note": "一行が長いときは折り返さず、枠の中を横にスクロールします。見本拠点 1 の補足を、ここでは長く書いておきます。"
+}`}
+          </CodeBlock>
+        </Section>
+
+        <Section
+          title="物理構成の作図"
+          parts={[
+            "DiagramFrame",
+            "DiagramDevice",
+            "DiagramPort",
+            "DiagramRouteError",
+          ]}
+          use="物理構成の作図の見た目です。DiagramFrame が作図の枠（React Flow はこの中に置く）、DiagramDevice が機器の箱、DiagramPort が箱の中のポート（使用中は塗り、光は破線。React Flow の Handle は DiagramPort の中身として渡す）、DiagramRouteError は配線できないときの印と理由（svg の中に描く）です。ポートを上段・下段・右端の列のどれに置くかは配線の向きで決まるので、呼び出し側が並べて渡します。この部品は @xyflow/react を読み込まず、箱の寸法は「diagramGeometry」（整列の見積もりも同じ値を読む）にあります。作図以外の画面には使いません（機器の一覧や接続の表は Table を使う）。この見本は React Flow を使わず、箱を並べただけです。"
+        >
+          <DiagramFrame describedBy="diagram-help">
+            <div className="flex items-start gap-16 p-10">
+              <DiagramDevice
+                name="見本ルーター 1"
+                model="RT-A100"
+                selected
+                columns={6}
+                upper={[
+                  <DiagramPort
+                    key="1"
+                    label="1"
+                    used
+                    title="ポート 1 · 銅線"
+                  />,
+                  <DiagramPort key="2" label="2" title="ポート 2 · 銅線" />,
+                  <DiagramPort key="3" label="3" title="ポート 3 · 銅線" />,
+                ]}
+                lower={[
+                  <DiagramPort key="4" label="4" title="ポート 4 · 銅線" />,
+                  <DiagramPort key="5" label="5" title="ポート 5 · 銅線" />,
+                  <DiagramPort key="6" label="6" fiber title="ポート 6 · 光" />,
+                ]}
+              />
+              <DiagramDevice
+                name="見本スイッチ 1"
+                model="SW-B24"
+                columns={4}
+                upper={[
+                  <DiagramPort
+                    key="1"
+                    label="1"
+                    used
+                    fiber
+                    title="ポート 1 · 光"
+                  />,
+                  <DiagramPort key="2" label="2" title="ポート 2 · 銅線" />,
+                  <DiagramPort key="3" label="3" title="ポート 3 · 銅線" />,
+                  <DiagramPort key="4" label="4" title="ポート 4 · 銅線" />,
+                ]}
+                column={[
+                  <DiagramPort key="s1" label="S1" title="スロット 1" />,
+                  <DiagramPort key="s2" label="S2" title="スロット 2" />,
+                ]}
+              />
+            </div>
+            <svg
+              aria-hidden="true"
+              width="320"
+              height="64"
+              className="absolute top-40 left-10"
+            >
+              <DiagramRouteError
+                x={16}
+                y={40}
+                message="配線の経路が見つかりません"
+              />
+            </svg>
+          </DiagramFrame>
+          <SupportText>
+            <span id="diagram-help">
+              機器の箱を並べた見本です（左は選択中、下の印は配線できないとき）。
+            </span>
+          </SupportText>
         </Section>
 
         <Section

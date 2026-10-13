@@ -54,6 +54,10 @@
   --shadow-sx-overlay:
     0 12px 32px rgb(18 17 13 / 0.16), 0 0 0 1px rgb(18 17 13 / 0.04);
   --font-sx: "Inter Variable", "Noto Sans JP Variable", sans-serif;
+  /* Monospace for Config text and JSON: the OS's own fonts only (no web font is added) */
+  --font-sx-mono:
+    ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
   /* 文字サイズは名前のあるものだけ。部品は text-[16px] ではなく text-sx-base などを使う */
   --text-sx-base: 16px;
   --text-sx-meta: 14px;
@@ -61,4 +65,10 @@
   --text-sx-lead: 18px;
   --text-sx-heading: 20px;
   --text-sx-title: 28px;
+  /* Inside the physical diagram only (the boxes are drawn small on purpose, and the routing
+     depends on their size): device name, model, port number, note beside a wire that cannot be routed */
+  --text-sx-diagram-name: 12px;
+  --text-sx-diagram-model: 9px;
+  --text-sx-diagram-port: 8px;
+  --text-sx-diagram-note: 11px;
 }

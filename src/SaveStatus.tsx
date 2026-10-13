@@ -41,6 +41,7 @@ export function SaveStatus({
   const l = look[state];
   return (
     <span
+      data-state={state}
       role={live ? "status" : undefined}
       className={`inline-flex items-center gap-1.5 rounded-full px-3 py-0.5 text-sx-meta font-medium whitespace-nowrap ${l.cls}`}
     >

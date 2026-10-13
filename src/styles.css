@@ -5,6 +5,7 @@
 @import "tailwindcss/utilities.css" layer(utilities);
 @import "./tokens.css";
 @import "./reset.css" layer(base);
+@import "./diagram.css";
 @import "@fontsource-variable/inter";
 @import "@fontsource-variable/noto-sans-jp";
 

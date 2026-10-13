@@ -17,9 +17,17 @@ export interface DenseColumn {
   srOnly?: boolean;
 }
 
+// The first column (the header cell and each row's first cell) stays at the left edge while the
+// table scrolls sideways. A fixed cell needs a background of its own: the header is subtle, a
+// row is surface, and a `subtle` DenseRow keeps its tint.
+const stickyFirst =
+  "[&_tr>:first-child]:sticky [&_tr>:first-child]:left-0 [&_tr>:first-child]:z-1 [&_thead_tr>:first-child]:bg-sx-subtle [&_tbody_tr>:first-child]:bg-sx-surface [&_tbody_tr[data-subtle]>:first-child]:bg-sx-subtle";
+
 /**
  * A dense table (rows 40px high, centered, scrolls sideways). Write the rows as <tr>s in the
  * children. The scroll frame is a region with tabIndex=0 so the keyboard can scroll it.
+ * `stickyFirstColumn` fixes the first column at the left edge while scrolling (for a wide table
+ * whose first column names the row).
  */
 export function DenseTable({
   label,
@@ -27,19 +35,21 @@ export function DenseTable({
   children,
   minWidth,
   empty,
+  stickyFirstColumn = false,
 }: {
   label: string;
   columns: DenseColumn[];
   children: ReactNode;
   minWidth?: number;
   empty?: ReactNode;
+  stickyFirstColumn?: boolean;
 }) {
   return (
     <div
       role="region"
       aria-label={label}
       tabIndex={0}
-      className={`relative overflow-x-auto rounded-sx-control border border-sx-line ${focusRing}`}
+      className={`relative overflow-x-auto rounded-sx-control border border-sx-line ${stickyFirstColumn ? stickyFirst : ""} ${focusRing}`}
     >
       <table
         style={{ minWidth }}
@@ -97,6 +107,7 @@ export function DenseRow({
 }) {
   return (
     <tr
+      data-subtle={subtle || undefined}
       className={`h-10 border-b border-sx-row last:border-b-0 ${subtle ? "bg-sx-subtle" : ""}`}
     >
       {children}

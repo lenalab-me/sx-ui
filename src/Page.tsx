@@ -6,6 +6,8 @@ import { StatusLine } from "./StatusLine";
  * One screen on the right of the Shell: a fixed header (breadcrumbs, meta on the right) and a scrolling main.
  * main is id="main" (the skip link's target) with tabIndex=-1. `status` is the text of the
  * role=status line at the top of main (for example "…を保存しました。"); the caller decides when to clear it.
+ * `footer` is a band under main (outside it, so it does not scroll): put the buttons that move
+ * between steps in it, the first at the left end and the last at the right end.
  */
 export function Page({
   crumbs,
@@ -38,7 +40,11 @@ export function Page({
         <StatusLine text={status} />
         {children}
       </main>
-      {footer}
+      {footer && (
+        <footer className="flex shrink-0 items-center justify-between gap-3 border-t border-sx-line bg-sx-surface px-10 py-3">
+          {footer}
+        </footer>
+      )}
     </>
   );
 }
