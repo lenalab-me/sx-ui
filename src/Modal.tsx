@@ -6,8 +6,8 @@ const width = { sm: "w-130", md: "w-160", lg: "w-190" } as const;
 /**
  * A modal on a native <dialog> opened with showModal(), so the page behind it is inert and
  * Esc and the focus trap come from the browser. It follows the create-modal behavior in
- * docs/dads-implementation.md: on open the heading takes focus, on close the element that opened
- * it does. Esc and "閉じる" only call onClose, which closes the window; they never send anything,
+ * docs/screens.md: on open the heading takes focus, on close the element that opened it does.
+ * Esc and "閉じる" only call onClose, which closes the window; they never send anything,
  * and while `busy` they do nothing. Render it where it is used (inside the Shell), not in a portal:
  * the Shell root carries the font and the scoped reset.
  */

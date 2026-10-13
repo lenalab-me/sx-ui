@@ -36,7 +36,7 @@
   --color-sx-error-bg: #fbeae9;
   --color-sx-error-ink: #a32d22;
   --color-sx-error-dot: #d9342b;
-  /* 見本のフォーカスリングの黄（DADS yellow-300）。Tailwind 既定の yellow-300 とは値が違う */
+  /* 見本のフォーカスリングの黄。Tailwind 既定の yellow-300 とは値が違う */
   --color-sx-focus: #ffd43d;
   /* Text and icons on the solid accent and danger fills, and the black outline of the focus ring */
   --color-sx-on-solid: #ffffff;
