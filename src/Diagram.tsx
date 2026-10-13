@@ -52,13 +52,16 @@ const g = diagramGeometry;
 export function DiagramFrame({
   children,
   describedBy,
+  fit = false,
 }: {
   children: ReactNode;
   /** The id of the help text for the diagram (how to connect and select). */
   describedBy?: string;
+  /** The frame is as tall as its content, not the fixed height React Flow needs (LadderDiagram). */
+  fit?: boolean;
 }) {
   const vars = {
-    height: g.frameHeight,
+    height: fit ? undefined : g.frameHeight,
     "--diagram-handle-size": `${g.handleSize}px`,
     "--diagram-handle-border": `${g.handleBorder}px`,
     "--diagram-handle-offset": `${g.handleOffset}px`,

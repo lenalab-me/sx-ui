@@ -71,4 +71,8 @@
   --text-sx-diagram-model: 9px;
   --text-sx-diagram-port: 8px;
   --text-sx-diagram-note: 11px;
+  /* Inside the ladder diagram of the logical view (also a [data-diagram] frame): the name of a
+     device or a segment, and the text of an address, a sublabel or a note */
+  --text-sx-ladder-label: 13px;
+  --text-sx-ladder-text: 12px;
 }

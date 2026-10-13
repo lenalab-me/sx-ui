@@ -31,6 +31,7 @@ import {
   IconButton,
   Input,
   Label,
+  LadderDiagram,
   Menu,
   Modal,
   Notice,
@@ -59,6 +60,8 @@ import {
   Tr,
   type ControlSize,
   type IconName,
+  type LadderBand,
+  type LadderRail,
   type NoticeTone,
   type PillTone,
   type SaveState,
@@ -101,6 +104,98 @@ const steps = [
   },
   { id: "review", label: "Review", hint: "生成前の確認", href: "#review" },
 ];
+// A site with a CPE and an L3 switch, as the logical view would pass it (documentation addresses only).
+const ladderRails: LadderRail[] = [
+  { id: "cpe-01", label: "CPE-01", sublabel: "CPE" },
+  { id: "l3-01", label: "L3-01", sublabel: "L3 スイッチ" },
+];
+const ladderBands: LadderBand[] = [
+  { id: "v1", label: "VLAN 1 既定", tone: "l2only", taps: [] },
+  {
+    id: "v10",
+    label: "VLAN 10 事務",
+    sublabel: "192.0.2.0/26 · SSID 事務用",
+    tone: "normal",
+    taps: [{ railId: "cpe-01", text: ".1 VIP .2 · DHCP" }],
+  },
+  {
+    id: "v20",
+    label: "VLAN 20 来客",
+    sublabel: "192.0.2.64/26 · SSID 来客用",
+    tone: "normal",
+    taps: [{ railId: "cpe-01", text: ".1 · DHCP" }],
+  },
+  {
+    id: "v30",
+    label: "VLAN 30 サーバ",
+    sublabel: "198.51.100.0/27",
+    tone: "normal",
+    taps: [{ railId: "l3-01", text: ".1 VIP .2" }],
+  },
+  {
+    id: "v40",
+    label: "VLAN 40 プリンタ",
+    sublabel: "198.51.100.32/27",
+    tone: "normal",
+    taps: [{ railId: "l3-01", text: ".1 · DHCP リレー" }],
+  },
+  {
+    id: "v100",
+    label: "VLAN 100 無線",
+    sublabel: "198.51.100.64/26 · SSID 職員用",
+    tone: "warn",
+    note: "ゲートウェイの IP を持つ機器がない",
+    taps: [],
+  },
+  {
+    id: "v200",
+    label: "VLAN 200 防犯カメラ",
+    sublabel: "198.51.100.128/26",
+    tone: "normal",
+    taps: [{ railId: "l3-01", text: ".1" }],
+  },
+  {
+    id: "v300",
+    label: "VLAN 300 CPE-L3 間",
+    sublabel: "203.0.113.0/30",
+    tone: "normal",
+    taps: [
+      { railId: "cpe-01", text: ".1" },
+      { railId: "l3-01", text: ".2" },
+    ],
+  },
+  { id: "v900", label: "VLAN 900 管理", tone: "l2only", taps: [] },
+];
+const ladderFooter = [
+  "CPE-01  198.51.100.0/24 → 203.0.113.2（L3-01）",
+  "L3-01  0.0.0.0/0 → 203.0.113.1（CPE-01）",
+];
+// Many segments and three rails: the picture grows taller and wider, and the frame scrolls sideways.
+const ladderManyRails: LadderRail[] = [
+  ...ladderRails,
+  { id: "l3-02", label: "L3-02", sublabel: "L3 スイッチ" },
+];
+const ladderManyBands: LadderBand[] = Array.from({ length: 20 }, (_, i) => {
+  const vlan = (i + 1) * 10;
+  const railId = ladderManyRails[i % 3]!.id;
+  return {
+    id: `m${vlan}`,
+    label: `VLAN ${vlan} 見本セグメント ${i + 1}`,
+    sublabel: `198.51.100.${(i % 8) * 32}/27 · SSID 見本-${i + 1}`,
+    tone: i % 7 === 6 ? "warn" : i % 5 === 4 ? "l2only" : "normal",
+    note: i % 7 === 6 ? "ゲートウェイの IP を持つ機器がない" : undefined,
+    taps:
+      i % 7 === 6 || i % 5 === 4
+        ? []
+        : [
+            { railId, text: ".1 VIP .2 · DHCP" },
+            ...(i % 4 === 0
+              ? [{ railId: ladderManyRails[(i + 1) % 3]!.id, text: ".3" }]
+              : []),
+          ],
+  };
+});
+
 const rows = Array.from({ length: 40 }, (_, i) => ({
   number: String(i + 1).padStart(3, "0"),
   name: `見本拠点 ${i + 1}`,
@@ -1103,6 +1198,30 @@ function Gallery() {
               機器の箱を並べた見本です（左は選択中、下の印は配線できないとき）。
             </span>
           </SupportText>
+        </Section>
+
+        <Section
+          title="論理接続図"
+          parts={["LadderDiagram"]}
+          use="拠点のルーティングする機器（縦の線）と、台帳の VLAN（横の帯）の交点に、その機器が持つ IP を点と文字で描くはしご図です。どの機器がどのセグメントに IP を持つかを一目で見るときに使います。受け取るのは導いた結果（「rails」「bands」「taps」）だけで、IP の求め方や食い違いの判定は呼び出し側（サーバー）が行い、この部品は検証しません。帯の「tone」は、「normal」が通常、「warn」が注意させたい帯（琥珀色。理由を「note」に書く）、「l2only」がサブネットのない L2 だけの帯（破線）です。「top」は上の破線の楕円（WAN など対象外のもの。最初の縦の線につなぐ）、「footer」は下の一覧（静的経路など。見出しは「footerLabel」）です。行の高さと縦の線の間隔は一定で、帯が増えれば縦に、機器が増えれば横に伸び、横は枠の中でスクロールします。絵は読み上げに出さず、同じ内容の表（読み上げ専用）を部品が併せて持ちます。React Flow は使いません。物理構成の配線の作図には Diagram の部品を、機器や接続の一覧には Table を使います。"
+        >
+          <LadderDiagram
+            label="論理接続図の例"
+            rails={ladderRails}
+            bands={ladderBands}
+            top={{ label: "WAN（対象外）" }}
+            footer={ladderFooter}
+            footerLabel="静的経路"
+          />
+          <SupportText>
+            帯が多く縦の線が3本の例です（20本の帯。枠の中を横にスクロールできます）。
+          </SupportText>
+          <LadderDiagram
+            label="帯の多い論理接続図の例"
+            rails={ladderManyRails}
+            bands={ladderManyBands}
+            top={{ label: "WAN（対象外）" }}
+          />
         </Section>
 
         <Section

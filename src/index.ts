@@ -45,6 +45,13 @@ export {
   type RowMessage,
 } from "./form-cells";
 export { Icon, type IconName } from "./icons";
+export {
+  LadderDiagram,
+  type LadderBand,
+  type LadderRail,
+  type LadderTap,
+  type LadderTone,
+} from "./Ladder";
 export { Menu, type MenuItem } from "./Menu";
 export { Modal } from "./Modal";
 export { Notice, type NoticeTone } from "./Notice";
