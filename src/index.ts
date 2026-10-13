@@ -36,11 +36,13 @@ export {
   DenseCell,
   DenseRow,
   DenseRowHead,
+  DenseRowMessages,
   DenseTable,
   Pick,
   SectionHeader,
   type CellKind,
   type DenseColumn,
+  type RowMessage,
 } from "./form-cells";
 export { Icon, type IconName } from "./icons";
 export { Menu, type MenuItem } from "./Menu";

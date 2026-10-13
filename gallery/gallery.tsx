@@ -16,6 +16,7 @@ import {
   DenseCell,
   DenseRow,
   DenseRowHead,
+  DenseRowMessages,
   DenseTable,
   DescriptionList,
   DiagramDevice,
@@ -632,7 +633,7 @@ function Gallery() {
             "Check",
             "SectionHeader",
           ]}
-          use="機器設定の入力用の表で、行は40px、横にスクロールします。列が多く横にあふれる表で、1列目が行の名前（ポート名など）のときは「stickyFirstColumn」で1列目を左端に固定します（列が少ない表や、1列目が名前でない表には付けません）。読むだけの一覧には使わず、一覧の表（Table）を使います。SectionHeader は表の節の見出しと「追加」ボタンです。"
+          use="機器設定の入力用の表で、行は40px、横にスクロールします。列が多く横にあふれる表で、1列目が行の名前（ポート名など）のときは「stickyFirstColumn」で1列目を左端に固定します（列が少ない表や、1列目が名前でない表には付けません）。読むだけの一覧には使わず、一覧の表（Table）を使います。SectionHeader は表の節の見出しと「追加」ボタンです。指摘の出し方（invalid と DenseRowMessages）と、中身の幅で左寄せにする「fit」は次の節にあります。"
         >
           <SectionHeader
             title="VLAN"
@@ -681,7 +682,8 @@ function Gallery() {
                   label="VLAN ID（エラー）"
                   kind="vlan"
                   value="5000"
-                  error="指定可能：1-4094"
+                  invalid
+                  describedBy="gallery-vlan-messages"
                   onChange={() => {}}
                 />
               </DenseCell>
@@ -697,6 +699,11 @@ function Gallery() {
                 />
               </DenseCell>
             </DenseRow>
+            <DenseRowMessages
+              subtle
+              id="gallery-vlan-messages"
+              messages={[{ field: "VLAN ID", message: "指定可能：1-4094" }]}
+            />
           </DenseTable>
           <SectionHeader title="LAN（1列目を固定）" level={3} />
           <DenseTable
@@ -753,6 +760,258 @@ function Gallery() {
                 <DenseCell />
               </DenseRow>
             ))}
+          </DenseTable>
+        </Section>
+
+        <Section
+          title="表の指摘と幅"
+          parts={["DenseRowMessages"]}
+          use="機器設定の表で、入力欄に対するサーバーの指摘を出します。欄には CellInput・Pick の「invalid」で赤枠だけを付け、文は行の直下の DenseRowMessages に、表の幅いっぱいで折り返して出します（欄の下に文を出す CellInput の「error」だと、列が文の長さまで広がるので使いません）。文の頭には欄の名前を「名前：文」の形で付けるので、messages には「field」（欄の名前）と「message」（文）の組を渡します（欄に結び付かない行の指摘は文字列のまま渡します）。同じ文は1回だけ出し、指摘が無ければ何も描きません。直前の行の下罫線は消えて、2行がひとつに見えます。表の「fit」は、表を中身の幅で止めて左に寄せ、見出しとセルを左寄せにします（既定は画面の幅いっぱいで中央寄せ）。入力欄の幅は「kind」で決まり、入る文字数（text は名前の半角20文字、ip は15文字、interface・network は18文字、vlan は4桁、vrid は3桁）を1か所の表で持つので、画面は幅を指定しません。"
+        >
+          <SectionHeader
+            title="指摘のある表（fit・赤枠だけ＋行の下の文）"
+            level={3}
+          />
+          <DenseTable
+            fit
+            label="指摘のある表の例"
+            columns={[
+              { id: "name", header: "名前" },
+              { id: "ip", header: "IPアドレス" },
+              { id: "network", header: "ネットワーク" },
+              { id: "vlan", header: "VLAN ID" },
+              { id: "type", header: "種別" },
+              { id: "note", header: "備考" },
+            ]}
+          >
+            <DenseRow>
+              <DenseRowHead>LAN1</DenseRowHead>
+              <DenseCell>
+                <CellInput
+                  label="LAN1 のIPアドレス"
+                  kind="ip"
+                  value="192.0.2.1"
+                  onChange={() => {}}
+                />
+              </DenseCell>
+              <DenseCell>
+                <CellInput
+                  label="LAN1 のネットワーク"
+                  kind="network"
+                  value="192.0.2.0/24"
+                  onChange={() => {}}
+                />
+              </DenseCell>
+              <DenseCell>
+                <CellInput
+                  label="LAN1 のVLAN ID"
+                  kind="vlan"
+                  value="100"
+                  onChange={() => {}}
+                />
+              </DenseCell>
+              <DenseCell>
+                <Pick
+                  label="LAN1 の種別"
+                  value="a"
+                  onChange={() => {}}
+                  options={[
+                    ["a", "通常"],
+                    ["b", "管理"],
+                  ]}
+                />
+              </DenseCell>
+              <DenseCell>
+                <CellInput
+                  label="LAN1 の備考"
+                  value="本社側"
+                  onChange={() => {}}
+                />
+              </DenseCell>
+            </DenseRow>
+            <DenseRow>
+              <DenseRowHead>LAN2</DenseRowHead>
+              <DenseCell>
+                <CellInput
+                  label="LAN2 のIPアドレス"
+                  kind="ip"
+                  value="192.0.2.300"
+                  invalid
+                  describedBy="gallery-lan2-messages"
+                  onChange={() => {}}
+                />
+              </DenseCell>
+              <DenseCell>
+                <CellInput
+                  label="LAN2 のネットワーク"
+                  kind="network"
+                  value="192.0.2.5/24"
+                  invalid
+                  describedBy="gallery-lan2-messages"
+                  onChange={() => {}}
+                />
+              </DenseCell>
+              <DenseCell>
+                <CellInput
+                  label="LAN2 のVLAN ID"
+                  kind="vlan"
+                  value="100"
+                  invalid
+                  describedBy="gallery-lan2-messages"
+                  onChange={() => {}}
+                />
+              </DenseCell>
+              <DenseCell>
+                <Pick
+                  label="LAN2 の種別"
+                  value=""
+                  invalid
+                  describedBy="gallery-lan2-messages"
+                  onChange={() => {}}
+                  options={[
+                    ["a", "通常"],
+                    ["b", "管理"],
+                  ]}
+                />
+              </DenseCell>
+              <DenseCell>
+                <CellInput label="LAN2 の備考" value="" onChange={() => {}} />
+              </DenseCell>
+            </DenseRow>
+            <DenseRowMessages
+              id="gallery-lan2-messages"
+              messages={[
+                { field: "IPアドレス", message: "形式を確認" },
+                {
+                  field: "ネットワーク",
+                  message:
+                    "ホストビットが立っています。ネットワークアドレス（192.0.2.0/24）で入力してください。",
+                },
+                { field: "IPアドレス", message: "形式を確認" },
+                {
+                  field: "VLAN ID",
+                  message: "同じ拠点の LAN1 と重複しています",
+                },
+                { field: "種別", message: "選んでください" },
+                "この行は LAN1 と同じネットワークを使っているため、どちらかを変更してください。同じ拠点の2つの LAN に同じネットワークは置けません。",
+              ]}
+            />
+            <DenseRow subtle>
+              <DenseRowHead>LAN3</DenseRowHead>
+              <DenseCell>
+                <CellInput
+                  label="LAN3 のIPアドレス"
+                  kind="ip"
+                  value="198.51.100.1"
+                  onChange={() => {}}
+                />
+              </DenseCell>
+              <DenseCell>
+                <CellInput
+                  label="LAN3 のネットワーク"
+                  kind="network"
+                  value="198.51.100.0/24"
+                  onChange={() => {}}
+                />
+              </DenseCell>
+              <DenseCell>
+                <CellInput
+                  label="LAN3 のVLAN ID"
+                  kind="vlan"
+                  value="4095"
+                  invalid
+                  describedBy="gallery-lan3-messages"
+                  onChange={() => {}}
+                />
+              </DenseCell>
+              <DenseCell tone="body" nowrap>
+                通常
+              </DenseCell>
+              <DenseCell />
+            </DenseRow>
+            <DenseRowMessages
+              subtle
+              id="gallery-lan3-messages"
+              messages={[{ field: "VLAN ID", message: "指定可能：1-4094" }]}
+            />
+          </DenseTable>
+
+          <SectionHeader title="入力の種類と幅（fit）" level={3} />
+          <DenseTable
+            fit
+            label="入力の種類と幅の例"
+            columns={[
+              { id: "kind", header: "種類（kind）" },
+              { id: "input", header: "入る最大の値" },
+            ]}
+          >
+            <DenseRow>
+              <DenseRowHead>名前（text・20文字）</DenseRowHead>
+              <DenseCell>
+                <CellInput
+                  label="名前の例"
+                  value="見本拠点（東京）第二ビル"
+                  onChange={() => {}}
+                />
+              </DenseCell>
+            </DenseRow>
+            <DenseRow>
+              <DenseRowHead>IPアドレス（ip・15文字）</DenseRowHead>
+              <DenseCell>
+                <CellInput
+                  label="IPアドレスの例"
+                  kind="ip"
+                  value="255.255.255.255"
+                  onChange={() => {}}
+                />
+              </DenseCell>
+            </DenseRow>
+            <DenseRow>
+              <DenseRowHead>
+                IP／プレフィックス長（interface・18文字）
+              </DenseRowHead>
+              <DenseCell>
+                <CellInput
+                  label="IP／プレフィックス長の例"
+                  kind="interface"
+                  value="255.255.255.255/32"
+                  onChange={() => {}}
+                />
+              </DenseCell>
+            </DenseRow>
+            <DenseRow>
+              <DenseRowHead>ネットワーク（network・18文字）</DenseRowHead>
+              <DenseCell>
+                <CellInput
+                  label="ネットワークの例"
+                  kind="network"
+                  value="255.255.255.255/32"
+                  onChange={() => {}}
+                />
+              </DenseCell>
+            </DenseRow>
+            <DenseRow>
+              <DenseRowHead>VLAN ID（vlan・4桁）</DenseRowHead>
+              <DenseCell>
+                <CellInput
+                  label="VLAN ID の例"
+                  kind="vlan"
+                  value="4094"
+                  onChange={() => {}}
+                />
+              </DenseCell>
+            </DenseRow>
+            <DenseRow>
+              <DenseRowHead>VRID（vrid・3桁）</DenseRowHead>
+              <DenseCell>
+                <CellInput
+                  label="VRID の例"
+                  kind="vrid"
+                  value="255"
+                  onChange={() => {}}
+                />
+              </DenseCell>
+            </DenseRow>
           </DenseTable>
         </Section>
 

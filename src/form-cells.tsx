@@ -3,7 +3,7 @@
 // judge a value. The error text comes from the caller (the server's validation), so the rule
 // lives in one place.
 
-import { useId, type ReactNode } from "react";
+import { createContext, useContext, useId, type ReactNode } from "react";
 import { Button } from "./Button";
 import { CheckboxInput } from "./Field";
 import { focusRing, focusRingInput } from "./focus";
@@ -23,11 +23,18 @@ export interface DenseColumn {
 const stickyFirst =
   "[&_tr>:first-child]:sticky [&_tr>:first-child]:left-0 [&_tr>:first-child]:z-1 [&_thead_tr>:first-child]:bg-sx-subtle [&_tbody_tr>:first-child]:bg-sx-surface [&_tbody_tr[data-subtle]>:first-child]:bg-sx-subtle";
 
+// What a row needs to know about its table: how many columns a full-width row spans, and whether
+// the table is `fit` (content-width, left-aligned).
+const DenseTableContext = createContext({ columnCount: 1, fit: false });
+
 /**
- * A dense table (rows 40px high, centered, scrolls sideways). Write the rows as <tr>s in the
- * children. The scroll frame is a region with tabIndex=0 so the keyboard can scroll it.
- * `stickyFirstColumn` fixes the first column at the left edge while scrolling (for a wide table
- * whose first column names the row).
+ * A dense table (rows 40px high, scrolls sideways). Write the rows as <tr>s in the children. The
+ * scroll frame is a region with tabIndex=0 so the keyboard can scroll it.
+ * By default the table fills the width and the cells are centered. With `fit` the table stops at
+ * the width of its content, sits at the left, and the headers and cells are left-aligned (the
+ * columns follow the inputs, whose width comes from their `kind`). `stickyFirstColumn` fixes the
+ * first column at the left edge while scrolling (for a wide table whose first column names the
+ * row).
  */
 export function DenseTable({
   label,
@@ -36,6 +43,7 @@ export function DenseTable({
   minWidth,
   empty,
   stickyFirstColumn = false,
+  fit = false,
 }: {
   label: string;
   columns: DenseColumn[];
@@ -43,56 +51,62 @@ export function DenseTable({
   minWidth?: number;
   empty?: ReactNode;
   stickyFirstColumn?: boolean;
+  fit?: boolean;
 }) {
   return (
-    <div
-      role="region"
-      aria-label={label}
-      tabIndex={0}
-      className={`relative overflow-x-auto rounded-sx-control border border-sx-line ${stickyFirstColumn ? stickyFirst : ""} ${focusRing}`}
-    >
-      <table
-        style={{ minWidth }}
-        className="w-full border-collapse text-center text-sx-meta"
+    <DenseTableContext.Provider value={{ columnCount: columns.length, fit }}>
+      <div
+        role="region"
+        aria-label={label}
+        tabIndex={0}
+        className={`relative overflow-x-auto rounded-sx-control border border-sx-line ${fit ? "w-fit max-w-full" : ""} ${stickyFirstColumn ? stickyFirst : ""} ${focusRing}`}
       >
-        <caption className="sr-only">{label}</caption>
-        <colgroup>
-          {columns.map((c) => (
-            <col key={c.id} style={c.width ? { width: c.width } : undefined} />
-          ))}
-        </colgroup>
-        <thead className="bg-sx-subtle text-sx-muted">
-          <tr className="h-10 border-b border-sx-row">
+        <table
+          style={{ minWidth }}
+          className={`border-collapse text-sx-meta ${fit ? "w-auto text-left" : "w-full text-center"}`}
+        >
+          <caption className="sr-only">{label}</caption>
+          <colgroup>
             {columns.map((c) => (
-              <th
+              <col
                 key={c.id}
-                scope="col"
-                className={`px-2 font-normal whitespace-nowrap ${c.align === "left" ? "text-left" : ""}`}
-              >
-                {c.srOnly ? (
-                  <span className="sr-only">{c.header}</span>
-                ) : (
-                  c.header
-                )}
-              </th>
+                style={c.width ? { width: c.width } : undefined}
+              />
             ))}
-          </tr>
-        </thead>
-        <tbody>
-          {children}
-          {empty && (
-            <tr>
-              <td
-                colSpan={columns.length}
-                className="px-4 py-6 text-sx-base text-sx-muted"
-              >
-                {empty}
-              </td>
+          </colgroup>
+          <thead className="bg-sx-subtle text-sx-muted">
+            <tr className="h-10 border-b border-sx-row">
+              {columns.map((c) => (
+                <th
+                  key={c.id}
+                  scope="col"
+                  className={`px-2 font-normal whitespace-nowrap ${fit || c.align === "left" ? "text-left" : ""}`}
+                >
+                  {c.srOnly ? (
+                    <span className="sr-only">{c.header}</span>
+                  ) : (
+                    c.header
+                  )}
+                </th>
+              ))}
             </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody className="[&_tr:has(+[data-row-messages])]:border-b-0">
+            {children}
+            {empty && (
+              <tr>
+                <td
+                  colSpan={columns.length}
+                  className="px-4 py-6 text-sx-base text-sx-muted"
+                >
+                  {empty}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </DenseTableContext.Provider>
   );
 }
 
@@ -114,6 +128,62 @@ export function DenseRow({
     </tr>
   );
 }
+
+/** One finding on a row: the name of the field it is about, and the message (the server's). */
+export type RowMessage = string | { field: string; message: string };
+
+/**
+ * The findings of the row above, in a row of their own under it: one line each, across the whole
+ * table width, wrapping there (a long message never widens a column). A message with a `field` is
+ * written "name：message" so the reader can tell which input it is about; the same text is shown
+ * once. Pair it with `invalid` on the inputs (red frame only). Put it right after the DenseRow it
+ * belongs to; that row's bottom rule is dropped so the two read as one. Nothing is drawn for an
+ * empty list. `subtle` must match the DenseRow above. `id` is for the inputs' `describedBy`.
+ */
+export function DenseRowMessages({
+  messages,
+  subtle = false,
+  id,
+}: {
+  messages: RowMessage[];
+  subtle?: boolean;
+  id?: string;
+}) {
+  const { columnCount } = useContext(DenseTableContext);
+  const lines = [
+    ...new Set(
+      messages.map((m) =>
+        typeof m === "string" ? m : `${m.field}：${m.message}`,
+      ),
+    ),
+  ];
+  if (lines.length === 0) return null;
+  return (
+    <tr
+      data-row-messages
+      data-subtle={subtle || undefined}
+      className={`border-b border-sx-row last:border-b-0 ${subtle ? "bg-sx-subtle" : ""}`}
+    >
+      <td colSpan={columnCount} className="px-2 pt-0 pb-2 text-left">
+        {/* w-0 + min-w-full: the cell takes the width of the table, and does not widen it. */}
+        <ul id={id} className="m-0 flex w-0 min-w-full flex-col gap-0.5">
+          {lines.map((line) => (
+            <li
+              key={line}
+              className="flex items-start gap-1 text-sx-meta font-medium text-sx-error-ink"
+            >
+              <span className="flex h-5 shrink-0 items-center">
+                <Icon name="circle-alert" size={14} />
+              </span>
+              {line}
+            </li>
+          ))}
+        </ul>
+      </td>
+    </tr>
+  );
+}
+
 export function DenseRowHead({
   children,
   rowSpan,
@@ -121,11 +191,12 @@ export function DenseRowHead({
   children: ReactNode;
   rowSpan?: number;
 }) {
+  const { fit } = useContext(DenseTableContext);
   return (
     <th
       scope="row"
       rowSpan={rowSpan}
-      className="px-2 text-sx-meta font-medium whitespace-nowrap text-sx-strong"
+      className={`px-2 text-sx-meta font-medium whitespace-nowrap text-sx-strong ${fit ? "text-left" : ""}`}
     >
       {children}
     </th>
@@ -170,21 +241,30 @@ export function DenseCell({
 export type CellKind =
   "text" | "ip" | "interface" | "network" | "vlan" | "vrid";
 
-const cellWidth: Record<CellKind, string> = {
-  text: "w-50",
-  ip: "w-34",
-  interface: "w-41",
-  network: "w-41",
-  vlan: "w-18",
-  vrid: "w-16",
+// The one table of how much each kind of value holds: `chars` is how many characters the input is
+// wide enough to show (the width is that many characters plus the padding, the thick border of
+// an invalid input and a little room), `max` is the most it accepts (maxLength). Every form takes both from here.
+// `text` shows 20 characters (a name) and accepts up to 500.
+const cellKinds: Record<CellKind, { chars: number; max: number }> = {
+  text: { chars: 20, max: 500 },
+  ip: { chars: 15, max: 15 },
+  interface: { chars: 18, max: 18 },
+  network: { chars: 18, max: 18 },
+  vlan: { chars: 4, max: 4 },
+  vrid: { chars: 3, max: 3 },
 };
 
 const cellControl =
   "h-9 rounded-sx-tile border border-sx-control bg-sx-surface px-2 text-sx-meta text-sx-strong tabular-nums disabled:cursor-not-allowed disabled:bg-sx-fill disabled:text-sx-muted aria-invalid:border-2 aria-invalid:border-sx-error-dot";
 
 /**
- * An input in a table cell. With `error` it is aria-invalid and shows the message under the input.
- * The message is the server's; the cell does not check the value itself.
+ * An input in a table cell. Its width is set by `kind` (see the table above); maxLength defaults
+ * to what the kind accepts (`null` means no limit, for a password). `invalid` draws the red frame
+ * only (aria-invalid): write the message with DenseRowMessages under the row, and pass that
+ * list's `id` as `describedBy`. `error` (deprecated: it will go once every form has moved to
+ * `invalid` and DenseRowMessages) also shows the message under the input, which widens the
+ * column to the length of the message. Either way the message is the server's; the cell does
+ * not check the value itself.
  */
 export function CellInput({
   label,
@@ -192,6 +272,8 @@ export function CellInput({
   onChange,
   kind = "text",
   disabled = false,
+  invalid = false,
+  describedBy,
   error = null,
   maxLength,
   type = "text",
@@ -202,13 +284,17 @@ export function CellInput({
   onChange: (v: string) => void;
   kind?: CellKind;
   disabled?: boolean;
+  invalid?: boolean;
+  describedBy?: string;
+  /** @deprecated Use `invalid` and DenseRowMessages. */
   error?: string | null;
-  maxLength?: number;
+  maxLength?: number | null;
   type?: "text" | "password";
   autoComplete?: string;
 }) {
   const id = useId();
   const numeric = kind === "vlan" || kind === "vrid";
+  const { chars, max } = cellKinds[kind];
   return (
     <span className="inline-flex flex-col items-start gap-0.5">
       <input
@@ -218,12 +304,13 @@ export function CellInput({
         type={type}
         autoComplete={autoComplete}
         disabled={disabled}
-        maxLength={maxLength}
+        maxLength={maxLength === null ? undefined : (maxLength ?? max)}
         inputMode={numeric ? "numeric" : undefined}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={error ? id : undefined}
+        aria-invalid={invalid || error ? true : undefined}
+        aria-describedby={error ? id : describedBy}
         onChange={(e) => onChange(e.target.value)}
-        className={`${cellControl} ${cellWidth[kind]} ${focusRingInput}`}
+        style={{ width: `calc(${chars}ch + 1.5rem)` }}
+        className={`${cellControl} ${focusRingInput}`}
       />
       {error && (
         <span
@@ -238,13 +325,18 @@ export function CellInput({
   );
 }
 
-/** A select in a table cell. With allowEmpty the first option is "未指定". */
+/**
+ * A select in a table cell. With allowEmpty the first option is "未指定". Its width follows the
+ * longest option. `invalid` draws the red frame only (aria-invalid), as on CellInput.
+ */
 export function Pick<T extends string>({
   label,
   value,
   onChange,
   options,
   disabled = false,
+  invalid = false,
+  describedBy,
   allowEmpty = true,
   emptyValue = "" as T,
 }: {
@@ -253,6 +345,8 @@ export function Pick<T extends string>({
   onChange: (v: T) => void;
   options: [T, string][];
   disabled?: boolean;
+  invalid?: boolean;
+  describedBy?: string;
   allowEmpty?: boolean;
   emptyValue?: T;
 }) {
@@ -262,6 +356,8 @@ export function Pick<T extends string>({
       aria-label={label}
       value={value}
       disabled={disabled}
+      aria-invalid={invalid || undefined}
+      aria-describedby={describedBy}
       onChange={(e) => onChange(e.target.value as T)}
       className={`${cellControl} pr-6 ${focusRingInput}`}
     >
