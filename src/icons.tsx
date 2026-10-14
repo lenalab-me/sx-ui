@@ -14,6 +14,7 @@ import {
   LayoutGrid,
   Maximize,
   Plus,
+  TriangleAlert,
   Undo2,
   X,
   type LucideIcon,
@@ -36,6 +37,7 @@ const icons = {
   "layout-grid": LayoutGrid,
   maximize: Maximize,
   plus: Plus,
+  "triangle-alert": TriangleAlert,
   undo: Undo2,
   x: X,
 } satisfies Record<string, LucideIcon>;

@@ -220,6 +220,7 @@ const iconNames = Object.keys({
   "layout-grid": true,
   maximize: true,
   plus: true,
+  "triangle-alert": true,
   undo: true,
   x: true,
 } satisfies Record<IconName, true>) as IconName[];
@@ -861,7 +862,7 @@ function Gallery() {
         <Section
           title="表の指摘と幅"
           parts={["DenseRowMessages"]}
-          use="機器設定の表で、入力欄に対するサーバーの指摘を出します。欄には CellInput・Pick の「invalid」で赤枠だけを付け、文は行の直下の DenseRowMessages に、表の幅いっぱいで折り返して出します（欄の下に文を出す CellInput の「error」だと、列が文の長さまで広がるので使いません）。文の頭には欄の名前を「名前：文」の形で付けるので、messages には「field」（欄の名前）と「message」（文）の組を渡します（欄に結び付かない行の指摘は文字列のまま渡します）。同じ文は1回だけ出し、指摘が無ければ何も描きません。直前の行の下罫線は消えて、2行がひとつに見えます。表の「fit」は、表を中身の幅で止めて左に寄せ、見出しとセルを左寄せにします（既定は画面の幅いっぱいで中央寄せ）。入力欄の幅は「kind」で決まり、入る文字数（text は名前の半角20文字、ip は15文字、interface・network は18文字、vlan は4桁、vrid は3桁）を1か所の表で持つので、画面は幅を指定しません。"
+          use="機器設定の表で、入力欄に対するサーバーの指摘を出します。欄には CellInput・Pick の「invalid」で赤枠だけを付け、文は行の直下の DenseRowMessages に、表の幅いっぱいで折り返して出します（欄の下に文を出す CellInput の「error」だと、列が文の長さまで広がるので使いません）。文の頭には欄の名前を「名前：文」の形で付けるので、messages には「field」（欄の名前）と「message」（文）の組を渡します（欄に結び付かない行の指摘は文字列のまま渡します）。同じ文は1回だけ出し、指摘が無ければ何も描きません。指摘ではなく注意（直さなくても保存・確認は進められるもの）は、messages の組に「tone」の「warn」を付けます。琥珀色の三角のアイコンで出し（読み上げには「注意：」が付く）、赤い丸の指摘と形でも見分けられます。注意には欄の赤枠（invalid）を付けず、文だけを出します。直前の行の下罫線は消えて、2行がひとつに見えます。表の「fit」は、表を中身の幅で止めて左に寄せ、見出しとセルを左寄せにします（既定は画面の幅いっぱいで中央寄せ）。入力欄の幅は「kind」で決まり、入る文字数（text は名前の半角20文字、ip は15文字、interface・network は18文字、vlan は4桁、vrid は3桁）を1か所の表で持つので、画面は幅を指定しません。"
         >
           <SectionHeader
             title="指摘のある表（fit・赤枠だけ＋行の下の文）"
@@ -989,6 +990,11 @@ function Gallery() {
                 },
                 { field: "種別", message: "選んでください" },
                 "この行は LAN1 と同じネットワークを使っているため、どちらかを変更してください。同じ拠点の2つの LAN に同じネットワークは置けません。",
+                {
+                  field: "備考",
+                  message: "前の行と同じ内容です。消してかまいません",
+                  tone: "warn",
+                },
               ]}
             />
             <DenseRow subtle>

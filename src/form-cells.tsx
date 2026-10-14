@@ -129,14 +129,20 @@ export function DenseRow({
   );
 }
 
-/** One finding on a row: the name of the field it is about, and the message (the server's). */
-export type RowMessage = string | { field: string; message: string };
+/**
+ * One message on a row: the name of the field it is about, and the message (the server's). `tone`
+ * is "error" (a finding, the default) or "warn" (a caution: shown in the warning color with a
+ * triangle, so it reads differently from a finding by shape and by a hidden "注意：" for readers).
+ * A bare string is an error message about the row itself; without a `field` the message stands alone.
+ */
+export type RowMessage =
+  string | { field?: string; message: string; tone?: "error" | "warn" };
 
 /**
  * The findings of the row above, in a row of their own under it: one line each, across the whole
  * table width, wrapping there (a long message never widens a column). A message with a `field` is
  * written "name：message" so the reader can tell which input it is about; the same text is shown
- * once. Pair it with `invalid` on the inputs (red frame only). Put it right after the DenseRow it
+ * once. A message with `tone: "warn"` is a caution, not a finding: it has no red frame on an input. Pair it with `invalid` on the inputs (red frame only). Put it right after the DenseRow it
  * belongs to; that row's bottom rule is dropped so the two read as one. Nothing is drawn for an
  * empty list. `subtle` must match the DenseRow above. `id` is for the inputs' `describedBy`.
  */
@@ -151,11 +157,17 @@ export function DenseRowMessages({
 }) {
   const { columnCount } = useContext(DenseTableContext);
   const lines = [
-    ...new Set(
-      messages.map((m) =>
-        typeof m === "string" ? m : `${m.field}：${m.message}`,
-      ),
-    ),
+    ...new Map(
+      messages.map((m) => {
+        const {
+          field,
+          message,
+          tone = "error",
+        } = typeof m === "string" ? { message: m } : m;
+        const text = field ? `${field}：${message}` : message;
+        return [`${tone}|${text}`, { tone, text }] as const;
+      }),
+    ).values(),
   ];
   if (lines.length === 0) return null;
   return (
@@ -167,15 +179,19 @@ export function DenseRowMessages({
       <td colSpan={columnCount} className="px-2 pt-0 pb-2 text-left">
         {/* w-0 + min-w-full: the cell takes the width of the table, and does not widen it. */}
         <ul id={id} className="m-0 flex w-0 min-w-full flex-col gap-0.5">
-          {lines.map((line) => (
+          {lines.map(({ tone, text }) => (
             <li
-              key={line}
-              className="flex items-start gap-1 text-sx-meta font-medium text-sx-error-ink"
+              key={`${tone}|${text}`}
+              className={`flex items-start gap-1 text-sx-meta font-medium ${tone === "warn" ? "text-sx-warn-ink" : "text-sx-error-ink"}`}
             >
               <span className="flex h-5 shrink-0 items-center">
-                <Icon name="circle-alert" size={14} />
+                <Icon
+                  name={tone === "warn" ? "triangle-alert" : "circle-alert"}
+                  size={14}
+                />
               </span>
-              {line}
+              {tone === "warn" && <span className="sr-only">注意：</span>}
+              {text}
             </li>
           ))}
         </ul>
