@@ -210,6 +210,8 @@ const iconNames = Object.keys({
   "arrow-left": true,
   "arrow-right": true,
   "arrow-up": true,
+  ban: true,
+  check: true,
   "chevron-down": true,
   "circle-alert": true,
   "circle-check": true,
@@ -604,7 +606,7 @@ function Gallery() {
         <Section
           title="状態"
           parts={["Pill", "Tag", "SaveStatus", "EmptyState"]}
-          use="Pill は状態、Tag は拠点番号・種別などの付属情報、SaveStatus は保存の状態を示します。Pill の文字は必須（文字列）で、状態は色だけでなく文字でも読めるようにします（アイコンや数だけの Pill は作らない）。Pill と SaveStatus の根には状態を表す「data-state」が付きます（どの状態にも文字があることを、検査が属性で探せるようにするため）。EmptyState は一覧や表が空のときに置く部品で、理由や次の手順は「support」（小さい2行目）に書きます。Notice の代わりにはしません。"
+          use="Pill は状態、Tag は拠点番号・種別などの付属情報（アクセスリストの動作の許可・拒否は、この節の「許可と拒否」の例のとおり「permit」「deny」「implicit-deny」の Tag）、SaveStatus は保存の状態を示します。Pill の文字は必須（文字列）で、状態は色だけでなく文字でも読めるようにします（アイコンや数だけの Pill は作らない）。Pill と SaveStatus の根には状態を表す「data-state」が付きます（どの状態にも文字があることを、検査が属性で探せるようにするため）。EmptyState は一覧や表が空のときに置く部品で、理由や次の手順は「support」（小さい2行目）に書きます。Notice の代わりにはしません。"
         >
           {(["md", "sm"] as const).map((size) => (
             <div key={size} className="flex flex-wrap items-center gap-3">
@@ -626,6 +628,18 @@ function Gallery() {
             {saveStates.map((state) => (
               <SaveStatus key={state} state={state} />
             ))}
+          </div>
+          <SectionHeader title="許可と拒否（Tag の「tone」）" level={3} />
+          <SupportText>
+            アクセスリストの動作（許可・拒否）のように、緑と赤が意味を持つ区分は、色だけで伝えず、文字とアイコンを必ず添えます。読むだけの表では
+            Tag
+            の「tone」を使います。「permit」は濃い緑の塗り・白文字・チェック、「deny」は濃い赤の塗り・白文字・禁止の印で、書いたルールの動作に使います。「implicit-deny」は赤の枠線だけ（塗らない）・赤の文字・禁止の印で、書いていない暗黙の拒否を、書いたルールの拒否と見分けます。文字（許可・拒否）は必ず残します。色はテーマの
+            ok・error のトークンから取り、画面に色を書きません。
+          </SupportText>
+          <div className="flex flex-wrap items-center gap-3">
+            <Tag tone="permit">許可</Tag>
+            <Tag tone="deny">拒否</Tag>
+            <Tag tone="implicit-deny">上記以外：拒否（暗黙）</Tag>
           </div>
           <EmptyState
             icon="file-text"
@@ -867,7 +881,7 @@ function Gallery() {
         <Section
           title="表の指摘と幅"
           parts={["DenseRowMessages"]}
-          use="機器設定の表で、入力欄に対するサーバーの指摘を出します。欄には CellInput・Pick の「invalid」で赤枠だけを付け、文は行の直下の DenseRowMessages に、表の幅いっぱいで折り返して出します（欄の下に文を出す CellInput の「error」だと、列が文の長さまで広がるので使いません）。文の頭には欄の名前を「名前：文」の形で付けるので、messages には「field」（欄の名前）と「message」（文）の組を渡します（欄に結び付かない行の指摘は文字列のまま渡します）。同じ文は1回だけ出し、指摘が無ければ何も描きません。指摘ではなく注意（直さなくても保存・確認は進められるもの）は、messages の組に「tone」の「warn」を付けます。琥珀色の三角のアイコンで出し（読み上げには「注意：」が付く）、赤い丸の指摘と形でも見分けられます。注意には欄の赤枠（invalid）を付けず、文だけを出します。指摘でも注意でもない補足（読んでおくと分かりやすいが、直す必要のないこと。例：直接書いた範囲がどこに当たるか）は、「tone」の「note」を付けます。アイコンはなく、本文の淡い色と本文の太さで出るので、指摘と注意より目立ちません。補足は欄の赤枠を付けず、読み上げにも「注意：」を付けません。文が一覧を途中で切っているとき（「ほか2件を含む」）は、messages の組の「title」に全件の文を渡すと、その行のツールチップに出ます。指摘・注意・補足が並ぶときは、この順に並べます。直前の行の下罫線は消えて、2行がひとつに見えます。表の「fit」は、表を中身の幅で止めて左に寄せ、見出しとセルを左寄せにします（既定は画面の幅いっぱいで中央寄せ）。選択（Pick）の幅は、既定では一番長い選択肢に合います。1つの列の選択を、右に別の欄を並べて「選択＋右の欄」の組にするとき（アクセスリストの送信元・宛先。右は直接入力のアドレスの入力欄、台帳の VLAN を選んだときはそのサブネット）は、Pick ではなく PickWithField を使い、右の欄を子として渡します。選択の幅は最小 11rem（選択と右の欄（18文字ぶん）の組を2つ並べても、1440px の画面で表が横にあふれない幅。短い文言（「20 来客無線」など）が収まる）で、セルに空きがあれば 20rem（「100 L3-CPE間の接続用」が読める幅）まで広がり、どの行も同じ幅・右の欄の左端も同じになります（右の欄が空の行（すべて・未指定）も、その場所を空けておきます）。長い名前は後ろが切れ、開いた一覧と、選んだ名前のツールチップには選択肢の文言がそのまま出ます。表に空きがあるときだけ広げたいので、組を入れた列の定義に「grow」を付けます。「grow」のある列を持つ表は枠の幅いっぱいになり、余った幅はその列だけが受け取ります（ほかの列は中身の幅のまま）。「grow」のない表は今までどおりです。サーバーが導いた値を入力欄と同じ形で見せるだけで直せないものは、CellInput の「readOnly」（淡い塗り・Tab の順に入らない）にします。並べ替え・削除のような文字のない操作は IconButton（arrow-up・arrow-down・trash）です。入力欄の幅は「kind」で決まり、入る文字数（text は名前の半角20文字、ip は15文字、interface・network は18文字、vlan は4桁、vrid は3桁）を1か所の表で持つので、画面は幅を指定しません。"
+          use="機器設定の表で、入力欄に対するサーバーの指摘を出します。欄には CellInput・Pick の「invalid」で赤枠だけを付け、文は行の直下の DenseRowMessages に、表の幅いっぱいで折り返して出します（欄の下に文を出す CellInput の「error」だと、列が文の長さまで広がるので使いません）。文の頭には欄の名前を「名前：文」の形で付けるので、messages には「field」（欄の名前）と「message」（文）の組を渡します（欄に結び付かない行の指摘は文字列のまま渡します）。同じ文は1回だけ出し、指摘が無ければ何も描きません。指摘ではなく注意（直さなくても保存・確認は進められるもの）は、messages の組に「tone」の「warn」を付けます。琥珀色の三角のアイコンで出し（読み上げには「注意：」が付く）、赤い丸の指摘と形でも見分けられます。注意には欄の赤枠（invalid）を付けず、文だけを出します。指摘でも注意でもない補足（読んでおくと分かりやすいが、直す必要のないこと。例：直接書いた範囲がどこに当たるか）は、「tone」の「note」を付けます。アイコンはなく、本文の淡い色と本文の太さで出るので、指摘と注意より目立ちません。補足は欄の赤枠を付けず、読み上げにも「注意：」を付けません。文が一覧を途中で切っているとき（「ほか2件を含む」）は、messages の組の「title」に全件の文を渡すと、その行のツールチップに出ます。指摘・注意・補足が並ぶときは、この順に並べます。直前の行の下罫線は消えて、2行がひとつに見えます。表の「fit」は、表を中身の幅で止めて左に寄せ、見出しとセルを左寄せにします（既定は画面の幅いっぱいで中央寄せ）。動作（許可・拒否）を選ぶ Pick には、地の色を付ける「tone」があります（この節の最後の例）。選択（Pick）の幅は、既定では一番長い選択肢に合います。1つの列の選択を、右に別の欄を並べて「選択＋右の欄」の組にするとき（アクセスリストの送信元・宛先。右は直接入力のアドレスの入力欄、台帳の VLAN を選んだときはそのサブネット）は、Pick ではなく PickWithField を使い、右の欄を子として渡します。選択の幅は最小 11rem（選択と右の欄（18文字ぶん）の組を2つ並べても、1440px の画面で表が横にあふれない幅。短い文言（「20 来客無線」など）が収まる）で、セルに空きがあれば 20rem（「100 L3-CPE間の接続用」が読める幅）まで広がり、どの行も同じ幅・右の欄の左端も同じになります（右の欄が空の行（すべて・未指定）も、その場所を空けておきます）。長い名前は後ろが切れ、開いた一覧と、選んだ名前のツールチップには選択肢の文言がそのまま出ます。表に空きがあるときだけ広げたいので、組を入れた列の定義に「grow」を付けます。「grow」のある列を持つ表は枠の幅いっぱいになり、余った幅はその列だけが受け取ります（ほかの列は中身の幅のまま）。「grow」のない表は今までどおりです。サーバーが導いた値を入力欄と同じ形で見せるだけで直せないものは、CellInput の「readOnly」（淡い塗り・Tab の順に入らない）にします。並べ替え・削除のような文字のない操作は IconButton（arrow-up・arrow-down・trash）です。入力欄の幅は「kind」で決まり、入る文字数（text は名前の半角20文字、ip は15文字、interface・network は18文字、vlan は4桁、vrid は3桁）を1か所の表で持つので、画面は幅を指定しません。"
         >
           <SectionHeader
             title="指摘のある表（fit・赤枠だけ＋行の下の文）"
@@ -1205,6 +1219,54 @@ function Gallery() {
                     />
                     <IconButton label={`例${i + 1} を削除`} icon="trash" />
                   </div>
+                </DenseCell>
+              </DenseRow>
+            ))}
+          </DenseTable>
+
+          <SectionHeader
+            title="動作の選択に地の色を付ける（Pick の「tone」）"
+            level={3}
+          />
+          <SupportText>
+            動作（許可・拒否）を選ぶ Pick
+            には「tone」を付けます。「positive」は薄い緑の地・濃い緑の文字、「negative」は薄い赤の地・濃い赤の文字で、選んだ文字（許可・拒否）はそのままです。指摘の「invalid」は白い地に太い赤の枠で、地の色が付く
+            tone
+            とは別の見た目です（同時に付けると、地の色の上に太い赤の枠が出ます）。
+          </SupportText>
+          <DenseTable
+            fit
+            label="動作の選択の例"
+            columns={[
+              { id: "no", header: "No." },
+              { id: "tone", header: "tone" },
+              { id: "action", header: "動作" },
+            ]}
+          >
+            {(
+              [
+                ["1", "positive", "permit", "positive", false],
+                ["2", "negative", "deny", "negative", false],
+                ["3", "なし（「tone」を付けない）", "permit", undefined, false],
+                ["4", "「negative」と「invalid」", "deny", "negative", true],
+              ] as const
+            ).map(([no, label, value, tone, invalid]) => (
+              <DenseRow key={no}>
+                <DenseRowHead>{no}</DenseRowHead>
+                <DenseCell align="left">{label}</DenseCell>
+                <DenseCell>
+                  <Pick
+                    label={`動作の例${no}`}
+                    value={value}
+                    allowEmpty={false}
+                    tone={tone}
+                    invalid={invalid}
+                    onChange={() => {}}
+                    options={[
+                      ["permit", "許可"],
+                      ["deny", "拒否"],
+                    ]}
+                  />
                 </DenseCell>
               </DenseRow>
             ))}

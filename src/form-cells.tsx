@@ -309,8 +309,9 @@ const cellKinds: Record<CellKind, { chars: number; max: number }> = {
 const cellWidth = (kind: CellKind) =>
   `calc(${cellKinds[kind].chars}ch + 1.5rem)`;
 
-const cellControl =
-  "h-9 rounded-sx-tile border border-sx-control px-2 text-sx-meta text-sx-strong tabular-nums disabled:cursor-not-allowed disabled:bg-sx-fill disabled:text-sx-muted aria-invalid:border-2 aria-invalid:border-sx-error-dot";
+const cellControlShape =
+  "h-9 rounded-sx-tile border border-sx-control px-2 text-sx-meta tabular-nums disabled:cursor-not-allowed disabled:bg-sx-fill disabled:text-sx-muted aria-invalid:border-2 aria-invalid:border-sx-error-dot";
+const cellControl = `${cellControlShape} text-sx-strong`;
 
 /**
  * An input in a table cell. Its width is set by `kind` (see the table above); maxLength defaults
@@ -403,7 +404,21 @@ interface PickProps<T extends string> {
   describedBy?: string;
   allowEmpty?: boolean;
   emptyValue?: T;
+  /**
+   * Tints the select by what the chosen option means: `positive` is a light green fill with dark green
+   * text, `negative` a light red fill with dark red text (the options still say it in words). The tint is
+   * a fill, and the border stays the plain one, so it is not mistaken for the thick red frame of `invalid`
+   * (a white select with a 2px red border). Without `tone` the select is white.
+   */
+  tone?: PickTone;
 }
+
+export type PickTone = "positive" | "negative";
+
+const pickTones: Record<PickTone, string> = {
+  positive: "bg-sx-ok-bg text-sx-ok-ink font-medium",
+  negative: "bg-sx-error-bg text-sx-error-ink font-medium",
+};
 
 function PickSelect<T extends string>({
   label,
@@ -415,6 +430,7 @@ function PickSelect<T extends string>({
   describedBy,
   allowEmpty = true,
   emptyValue = "" as T,
+  tone,
   fill = false,
 }: PickProps<T> & { fill?: boolean }) {
   return (
@@ -427,7 +443,7 @@ function PickSelect<T extends string>({
       aria-describedby={describedBy}
       title={fill ? options.find(([v]) => v === value)?.[1] : undefined}
       onChange={(e) => onChange(e.target.value as T)}
-      className={`${cellControl} bg-sx-surface pr-6 ${fill ? "w-full min-w-0" : ""} ${focusRingInput}`}
+      className={`${cellControlShape} ${tone ? `${pickTones[tone]} [&>option]:bg-sx-surface [&>option]:font-normal [&>option]:text-sx-strong` : "bg-sx-surface text-sx-strong"} pr-6 ${fill ? "w-full min-w-0" : ""} ${focusRingInput}`}
     >
       {allowEmpty && <option value={emptyValue}>未指定</option>}
       {options.map(([v, t]) => (

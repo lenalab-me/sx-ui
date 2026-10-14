@@ -43,6 +43,7 @@ export {
   SectionHeader,
   type CellKind,
   type DenseColumn,
+  type PickTone,
   type RowMessage,
 } from "./form-cells";
 export { Icon, type IconName } from "./icons";
