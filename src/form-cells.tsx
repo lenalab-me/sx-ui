@@ -131,12 +131,21 @@ export function DenseRow({
 
 /**
  * One message on a row: the name of the field it is about, and the message (the server's). `tone`
- * is "error" (a finding, the default) or "warn" (a caution: shown in the warning color with a
- * triangle, so it reads differently from a finding by shape and by a hidden "注意：" for readers).
+ * is "error" (a finding, the default), "warn" (a caution: shown in the warning color with a
+ * triangle, so it reads differently from a finding by shape and by a hidden "注意：" for readers)
+ * or "note" (a plain remark that is neither: the body color, no icon, the weight of body text, for
+ * what the reader may want to know about the row but need not act on).
  * A bare string is an error message about the row itself; without a `field` the message stands alone.
  */
 export type RowMessage =
-  string | { field?: string; message: string; tone?: "error" | "warn" };
+  | string
+  | { field?: string; message: string; tone?: "error" | "warn" | "note" };
+
+const lineLook = {
+  error: "font-medium text-sx-error-ink",
+  warn: "font-medium text-sx-warn-ink",
+  note: "text-sx-body",
+};
 
 /**
  * The findings of the row above, in a row of their own under it: one line each, across the whole
@@ -182,14 +191,16 @@ export function DenseRowMessages({
           {lines.map(({ tone, text }) => (
             <li
               key={`${tone}|${text}`}
-              className={`flex items-start gap-1 text-sx-meta font-medium ${tone === "warn" ? "text-sx-warn-ink" : "text-sx-error-ink"}`}
+              className={`flex items-start gap-1 text-sx-meta ${lineLook[tone]}`}
             >
-              <span className="flex h-5 shrink-0 items-center">
-                <Icon
-                  name={tone === "warn" ? "triangle-alert" : "circle-alert"}
-                  size={14}
-                />
-              </span>
+              {tone !== "note" && (
+                <span className="flex h-5 shrink-0 items-center">
+                  <Icon
+                    name={tone === "warn" ? "triangle-alert" : "circle-alert"}
+                    size={14}
+                  />
+                </span>
+              )}
               {tone === "warn" && <span className="sr-only">注意：</span>}
               {text}
             </li>
