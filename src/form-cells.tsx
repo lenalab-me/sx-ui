@@ -354,7 +354,10 @@ export function CellInput({
 
 /**
  * A select in a table cell. With allowEmpty the first option is "未指定". Its width follows the
- * longest option. `invalid` draws the red frame only (aria-invalid), as on CellInput.
+ * longest option. `invalid` draws the red frame only (aria-invalid), as on CellInput. `compact` fixes
+ * the width at about four full-width characters and the arrow instead (7rem): for a select whose chosen option is
+ * short and that sits beside an input it explains (「直接入力」 beside its value), so the long options
+ * do not widen the pair. The open list still shows every option in full.
  */
 export function Pick<T extends string>({
   label,
@@ -366,6 +369,7 @@ export function Pick<T extends string>({
   describedBy,
   allowEmpty = true,
   emptyValue = "" as T,
+  compact = false,
 }: {
   label: string;
   value: T;
@@ -376,6 +380,7 @@ export function Pick<T extends string>({
   describedBy?: string;
   allowEmpty?: boolean;
   emptyValue?: T;
+  compact?: boolean;
 }) {
   return (
     <select
@@ -385,6 +390,7 @@ export function Pick<T extends string>({
       disabled={disabled}
       aria-invalid={invalid || undefined}
       aria-describedby={describedBy}
+      style={compact ? { width: "7rem" } : undefined}
       onChange={(e) => onChange(e.target.value as T)}
       className={`${cellControl} pr-6 ${focusRingInput}`}
     >
