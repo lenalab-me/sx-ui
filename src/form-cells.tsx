@@ -15,6 +15,13 @@ export interface DenseColumn {
   width?: number;
   align?: "center" | "left";
   srOnly?: boolean;
+  /**
+   * The column that takes the width the frame has to spare. If any column has `grow`, the table fills
+   * its frame and every other column shrinks to its content, so the spare width goes to the `grow`
+   * columns only (a table without `grow` keeps its own width: content-wide with `fit`, the frame's with
+   * the default).
+   */
+  grow?: boolean;
 }
 
 // The first column (the header cell and each row's first cell) stays at the left edge while the
@@ -34,7 +41,7 @@ const DenseTableContext = createContext({ columnCount: 1, fit: false });
  * the width of its content, sits at the left, and the headers and cells are left-aligned (the
  * columns follow the inputs, whose width comes from their `kind`). `stickyFirstColumn` fixes the
  * first column at the left edge while scrolling (for a wide table whose first column names the
- * row).
+ * row). A column with `grow` makes the table fill its frame and hands the spare width to that column.
  */
 export function DenseTable({
   label,
@@ -53,24 +60,33 @@ export function DenseTable({
   stickyFirstColumn?: boolean;
   fit?: boolean;
 }) {
+  // With a `grow` column the table fills its frame; a width of 1px makes each other column exactly as
+  // wide as its content (a column is never narrower than that), so the spare width goes to the growing ones.
+  const fill = columns.some((c) => c.grow);
   return (
     <DenseTableContext.Provider value={{ columnCount: columns.length, fit }}>
       <div
         role="region"
         aria-label={label}
         tabIndex={0}
-        className={`relative overflow-x-auto rounded-sx-control border border-sx-line ${fit ? "w-fit max-w-full" : ""} ${stickyFirstColumn ? stickyFirst : ""} ${focusRing}`}
+        className={`relative overflow-x-auto rounded-sx-control border border-sx-line ${fit && !fill ? "w-fit max-w-full" : ""} ${stickyFirstColumn ? stickyFirst : ""} ${focusRing}`}
       >
         <table
           style={{ minWidth }}
-          className={`border-collapse text-sx-meta ${fit ? "w-auto text-left" : "w-full text-center"}`}
+          className={`border-collapse text-sx-meta ${fit ? (fill ? "w-full text-left" : "w-auto text-left") : "w-full text-center"}`}
         >
           <caption className="sr-only">{label}</caption>
           <colgroup>
             {columns.map((c) => (
               <col
                 key={c.id}
-                style={c.width ? { width: c.width } : undefined}
+                style={
+                  fill && !c.grow
+                    ? { width: 1 }
+                    : c.width
+                      ? { width: c.width }
+                      : undefined
+                }
               />
             ))}
           </colgroup>
@@ -289,6 +305,10 @@ const cellKinds: Record<CellKind, { chars: number; max: number }> = {
   vrid: { chars: 3, max: 3 },
 };
 
+// The width of an input of this kind: its characters plus the padding, the thick border of an invalid input and a little room.
+const cellWidth = (kind: CellKind) =>
+  `calc(${cellKinds[kind].chars}ch + 1.5rem)`;
+
 const cellControl =
   "h-9 rounded-sx-tile border border-sx-control px-2 text-sx-meta text-sx-strong tabular-nums disabled:cursor-not-allowed disabled:bg-sx-fill disabled:text-sx-muted aria-invalid:border-2 aria-invalid:border-sx-error-dot";
 
@@ -332,7 +352,7 @@ export function CellInput({
 }) {
   const id = useId();
   const numeric = kind === "vlan" || kind === "vrid";
-  const { chars, max } = cellKinds[kind];
+  const { max } = cellKinds[kind];
   return (
     <span className="inline-flex flex-col items-start gap-0.5">
       <input
@@ -349,7 +369,7 @@ export function CellInput({
         aria-invalid={invalid || error ? true : undefined}
         aria-describedby={error ? id : describedBy}
         onChange={(e) => onChange(e.target.value)}
-        style={{ width: `calc(${chars}ch + 1.5rem)` }}
+        style={{ width: cellWidth(kind) }}
         className={`${cellControl} ${readOnly ? "bg-sx-fill" : "bg-sx-surface"} ${focusRingInput}`}
       />
       {error && (
@@ -365,30 +385,15 @@ export function CellInput({
   );
 }
 
-// The width of a `fixed` Pick. It is what the access list's table can give each select at a 1440px screen
-// without scrolling sideways (two selects, each with an 18-character field, and five other columns): the
-// short label of a VLAN ("20 来客無線") fits, a longer name is cut at the end (the chosen option text is also the tooltip).
-const FIXED_PICK_WIDTH = "11rem";
+// The width of the select of a PickWithField: never narrower than the min, which is what the access list's
+// table can give each select at a 1440px screen without scrolling sideways (two selects, each with an
+// 18-character field, and four other columns): the short label of a VLAN ("20 来客無線") fits. With room to spare
+// it grows up to the max, where the longest option ("100 L3-CPE間の接続用" and the like) reads whole. A name longer than
+// the width is cut at the end (the chosen option text is also the tooltip).
+const PICK_BESIDE_MIN = "11rem";
+const PICK_BESIDE_MAX = "20rem";
 
-/**
- * A select in a table cell. With allowEmpty the first option is "未指定". Its width follows the
- * longest option. `invalid` draws the red frame only (aria-invalid), as on CellInput. `fixed` sets the
- * width to FIXED_PICK_WIDTH whatever the options are: for the selects of one column that sit beside
- * another field (the endpoint of an access rule, with its address or subnet), so every row has the same
- * shape. A name longer than that is cut (the open list and the tooltip still show the option text as it is).
- */
-export function Pick<T extends string>({
-  label,
-  value,
-  onChange,
-  options,
-  disabled = false,
-  invalid = false,
-  describedBy,
-  allowEmpty = true,
-  emptyValue = "" as T,
-  fixed = false,
-}: {
+interface PickProps<T extends string> {
   label: string;
   value: T;
   onChange: (v: T) => void;
@@ -398,8 +403,20 @@ export function Pick<T extends string>({
   describedBy?: string;
   allowEmpty?: boolean;
   emptyValue?: T;
-  fixed?: boolean;
-}) {
+}
+
+function PickSelect<T extends string>({
+  label,
+  value,
+  onChange,
+  options,
+  disabled = false,
+  invalid = false,
+  describedBy,
+  allowEmpty = true,
+  emptyValue = "" as T,
+  fill = false,
+}: PickProps<T> & { fill?: boolean }) {
   return (
     <select
       data-boundary
@@ -408,10 +425,9 @@ export function Pick<T extends string>({
       disabled={disabled}
       aria-invalid={invalid || undefined}
       aria-describedby={describedBy}
-      style={fixed ? { width: FIXED_PICK_WIDTH } : undefined}
-      title={fixed ? options.find(([v]) => v === value)?.[1] : undefined}
+      title={fill ? options.find(([v]) => v === value)?.[1] : undefined}
       onChange={(e) => onChange(e.target.value as T)}
-      className={`${cellControl} bg-sx-surface pr-6 ${focusRingInput}`}
+      className={`${cellControl} bg-sx-surface pr-6 ${fill ? "w-full min-w-0" : ""} ${focusRingInput}`}
     >
       {allowEmpty && <option value={emptyValue}>未指定</option>}
       {options.map(([v, t]) => (
@@ -420,6 +436,41 @@ export function Pick<T extends string>({
         </option>
       ))}
     </select>
+  );
+}
+
+/**
+ * A select in a table cell. With allowEmpty the first option is "未指定". Its width follows the
+ * longest option. `invalid` draws the red frame only (aria-invalid), as on CellInput.
+ */
+export function Pick<T extends string>(props: PickProps<T>) {
+  return <PickSelect {...props} />;
+}
+
+/**
+ * A select with a field beside it, in one cell: the endpoint of an access rule (the select, and on its right
+ * the address input or the read-only subnet; `children` is that field, and nothing when there is none). The
+ * select is at least PICK_BESIDE_MIN wide, grows with the room the cell has and stops at PICK_BESIDE_MAX, and
+ * the field's place is kept whether or not there is a field (`kind` is its kind, which decides its width), so
+ * the select has the same width, and the field the same left edge, in every row of the column. A name longer
+ * than the select is cut (the open list and the tooltip still show the option text as it is). In a DenseTable,
+ * give the column `grow` so that the spare width of the table goes to the selects.
+ */
+export function PickWithField<T extends string>({
+  kind = "network",
+  children,
+  ...pick
+}: PickProps<T> & { kind?: CellKind; children?: ReactNode }) {
+  return (
+    <div
+      className="grid items-center gap-1"
+      style={{
+        gridTemplateColumns: `minmax(${PICK_BESIDE_MIN}, ${PICK_BESIDE_MAX}) ${cellWidth(kind)}`,
+      }}
+    >
+      <PickSelect {...pick} fill />
+      {children}
+    </div>
   );
 }
 

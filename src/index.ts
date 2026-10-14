@@ -39,6 +39,7 @@ export {
   DenseRowMessages,
   DenseTable,
   Pick,
+  PickWithField,
   SectionHeader,
   type CellKind,
   type DenseColumn,
