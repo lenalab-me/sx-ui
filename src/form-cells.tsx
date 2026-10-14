@@ -3,7 +3,14 @@
 // judge a value. The error text comes from the caller (the server's validation), so the rule
 // lives in one place.
 
-import { createContext, useContext, useId, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { Button } from "./Button";
 import { CheckboxInput } from "./Field";
 import { focusRing, focusRingInput } from "./focus";
@@ -30,9 +37,21 @@ export interface DenseColumn {
 const stickyFirst =
   "[&_tr>:first-child]:sticky [&_tr>:first-child]:left-0 [&_tr>:first-child]:z-1 [&_thead_tr>:first-child]:bg-sx-subtle [&_tbody_tr>:first-child]:bg-sx-surface [&_tbody_tr[data-subtle]>:first-child]:bg-sx-subtle";
 
-// What a row needs to know about its table: how many columns a full-width row spans, and whether
-// the table is `fit` (content-width, left-aligned).
-const DenseTableContext = createContext({ columnCount: 1, fit: false });
+// What a row needs to know about its table: how many columns a full-width row spans, whether the
+// table is `fit` (content-width, left-aligned), and which row group has the focus (see `group` on
+// DenseRow), if any.
+const DenseTableContext = createContext<{
+  columnCount: number;
+  fit: boolean;
+  focusedGroup: string | null;
+}>({ columnCount: 1, fit: false, focusedGroup: null });
+
+// True inside a DenseRow whose group has the focus: the inputs and selects of the row draw no `invalid`
+// frame while the reader is typing in it.
+const RowQuietContext = createContext(false);
+
+// The attribute a DenseRow with a `group` carries, which the table reads to tell where the focus moved.
+const groupAttribute = "data-group";
 
 /**
  * A dense table (rows 40px high, scrolls sideways). Write the rows as <tr>s in the children. The
@@ -42,6 +61,8 @@ const DenseTableContext = createContext({ columnCount: 1, fit: false });
  * columns follow the inputs, whose width comes from their `kind`). `stickyFirstColumn` fixes the
  * first column at the left edge while scrolling (for a wide table whose first column names the
  * row). A column with `grow` makes the table fill its frame and hands the spare width to that column.
+ * The table remembers which row group has the focus (the `group` of a DenseRow and of its DenseRowMessages):
+ * while the focus is inside a group, that group shows no findings and no cautions (see DenseRow).
  */
 export function DenseTable({
   label,
@@ -63,9 +84,31 @@ export function DenseTable({
   // With a `grow` column the table fills its frame; a width of 1px makes each other column exactly as
   // wide as its content (a column is never narrower than that), so the spare width goes to the growing ones.
   const fill = columns.some((c) => c.grow);
+  const frame = useRef<HTMLDivElement>(null);
+  const [focusedGroup, setFocusedGroup] = useState<string | null>(null);
+  const columnCount = columns.length;
+  const context = useMemo(
+    () => ({ columnCount, fit, focusedGroup }),
+    [columnCount, fit, focusedGroup],
+  );
+  // The group of the row an element is in, if that row is in this table and has one.
+  const groupOf = (el: EventTarget | null) => {
+    if (!(el instanceof Element)) return null;
+    const row = el.closest(`tr[${groupAttribute}]`);
+    return row && frame.current?.contains(row)
+      ? row.getAttribute(groupAttribute)
+      : null;
+  };
   return (
-    <DenseTableContext.Provider value={{ columnCount: columns.length, fit }}>
+    <DenseTableContext.Provider value={context}>
       <div
+        ref={frame}
+        // React's onFocus and onBlur bubble, like focusin and focusout.
+        onFocus={(e) => setFocusedGroup(groupOf(e.target))}
+        onBlur={(e) => {
+          // Moving between the cells of one group keeps it; leaving it (or the page) ends it.
+          setFocusedGroup(groupOf(e.relatedTarget));
+        }}
         role="region"
         aria-label={label}
         tabIndex={0}
@@ -126,21 +169,39 @@ export function DenseTable({
   );
 }
 
-/** One row of a DenseTable. The cells are <DenseCell>; the row header is <DenseRowHead>. */
+/**
+ * One row of a DenseTable. The cells are <DenseCell>; the row header is <DenseRowHead>.
+ * `group` is the key of the input this row belongs to (the row's inputId, a port's ID). Give the same
+ * `group` to the DenseRow and to the DenseRowMessages under it, and to every row of an input that takes
+ * more than one (a LAG pair): while the focus is inside any of those rows, the CellInput, Pick and
+ * PickWithField in them draw no `invalid` frame and the DenseRowMessages shows no "error" or "warn"
+ * lines, so a row is not marked while it is being typed into; they come back when the focus leaves the
+ * group (a move between the rows of one group does not end it). "note" lines stay. A row without a
+ * `group` is as before: it shows its findings at once. The components still only draw: the findings
+ * are the caller's (the server's), this only chooses when they are shown.
+ */
 export function DenseRow({
   children,
   subtle = false,
+  group,
 }: {
   children: ReactNode;
   /** A tinted row, to mark rows that belong together. */
   subtle?: boolean;
+  group?: string;
 }) {
+  const { focusedGroup } = useContext(DenseTableContext);
   return (
     <tr
       data-subtle={subtle || undefined}
+      {...{ [groupAttribute]: group }}
       className={`h-10 border-b border-sx-row last:border-b-0 ${subtle ? "bg-sx-subtle" : ""}`}
     >
-      {children}
+      <RowQuietContext.Provider
+        value={group !== undefined && group === focusedGroup}
+      >
+        {children}
+      </RowQuietContext.Provider>
     </tr>
   );
 }
@@ -176,29 +237,36 @@ const lineLook = {
  * once. A message with `tone: "warn"` is a caution, not a finding: it has no red frame on an input. Pair it with `invalid` on the inputs (red frame only). Put it right after the DenseRow it
  * belongs to; that row's bottom rule is dropped so the two read as one. Nothing is drawn for an
  * empty list. `subtle` must match the DenseRow above. `id` is for the inputs' `describedBy`.
+ * `group` is the `group` of the DenseRow above: while the focus is inside that group, the "error" and "warn"
+ * lines are not drawn ("note" lines are).
  */
 export function DenseRowMessages({
   messages,
   subtle = false,
   id,
+  group,
 }: {
   messages: RowMessage[];
   subtle?: boolean;
   id?: string;
+  group?: string;
 }) {
-  const { columnCount } = useContext(DenseTableContext);
+  const { columnCount, focusedGroup } = useContext(DenseTableContext);
+  const quiet = group !== undefined && group === focusedGroup;
   const lines = [
     ...new Map(
-      messages.map((m) => {
-        const {
-          field,
-          message,
-          tone = "error",
-          title,
-        } = typeof m === "string" ? { message: m } : m;
-        const text = field ? `${field}：${message}` : message;
-        return [`${tone}|${text}`, { tone, text, title }] as const;
-      }),
+      messages
+        .filter((m) => !quiet || (typeof m !== "string" && m.tone === "note"))
+        .map((m) => {
+          const {
+            field,
+            message,
+            tone = "error",
+            title,
+          } = typeof m === "string" ? { message: m } : m;
+          const text = field ? `${field}：${message}` : message;
+          return [`${tone}|${text}`, { tone, text, title }] as const;
+        }),
     ).values(),
   ];
   if (lines.length === 0) return null;
@@ -317,10 +385,8 @@ const cellControl = `${cellControlShape} text-sx-strong`;
  * An input in a table cell. Its width is set by `kind` (see the table above); maxLength defaults
  * to what the kind accepts (`null` means no limit, for a password). `invalid` draws the red frame
  * only (aria-invalid): write the message with DenseRowMessages under the row, and pass that
- * list's `id` as `describedBy`. `error` (deprecated: it will go once every form has moved to
- * `invalid` and DenseRowMessages) also shows the message under the input, which widens the
- * column to the length of the message. Either way the message is the server's; the cell does
- * not check the value itself.
+ * list's `id` as `describedBy`. The message is the server's; the cell does not check the value
+ * itself. In a DenseRow with a `group` the frame is left off while the focus is inside that group.
  */
 export function CellInput({
   label,
@@ -331,7 +397,6 @@ export function CellInput({
   readOnly = false,
   invalid = false,
   describedBy,
-  error = null,
   maxLength,
   type = "text",
   autoComplete,
@@ -345,44 +410,31 @@ export function CellInput({
   readOnly?: boolean;
   invalid?: boolean;
   describedBy?: string;
-  /** @deprecated Use `invalid` and DenseRowMessages. */
-  error?: string | null;
   maxLength?: number | null;
   type?: "text" | "password";
   autoComplete?: string;
 }) {
-  const id = useId();
+  const quiet = useContext(RowQuietContext);
   const numeric = kind === "vlan" || kind === "vrid";
   const { max } = cellKinds[kind];
   return (
-    <span className="inline-flex flex-col items-start gap-0.5">
-      <input
-        data-boundary
-        aria-label={label}
-        value={value}
-        type={type}
-        autoComplete={autoComplete}
-        disabled={disabled}
-        readOnly={readOnly}
-        tabIndex={readOnly ? -1 : undefined}
-        maxLength={maxLength === null ? undefined : (maxLength ?? max)}
-        inputMode={numeric ? "numeric" : undefined}
-        aria-invalid={invalid || error ? true : undefined}
-        aria-describedby={error ? id : describedBy}
-        onChange={(e) => onChange(e.target.value)}
-        style={{ width: cellWidth(kind) }}
-        className={`${cellControl} ${readOnly ? "bg-sx-fill" : "bg-sx-surface"} ${focusRingInput}`}
-      />
-      {error && (
-        <span
-          id={id}
-          className="flex items-center gap-1 text-sx-meta font-medium whitespace-nowrap text-sx-error-ink"
-        >
-          <Icon name="circle-alert" size={14} />
-          {error}
-        </span>
-      )}
-    </span>
+    <input
+      data-boundary
+      aria-label={label}
+      value={value}
+      type={type}
+      autoComplete={autoComplete}
+      disabled={disabled}
+      readOnly={readOnly}
+      tabIndex={readOnly ? -1 : undefined}
+      maxLength={maxLength === null ? undefined : (maxLength ?? max)}
+      inputMode={numeric ? "numeric" : undefined}
+      aria-invalid={invalid && !quiet ? true : undefined}
+      aria-describedby={describedBy}
+      onChange={(e) => onChange(e.target.value)}
+      style={{ width: cellWidth(kind) }}
+      className={`${cellControl} ${readOnly ? "bg-sx-fill" : "bg-sx-surface"} ${focusRingInput}`}
+    />
   );
 }
 
@@ -433,13 +485,14 @@ function PickSelect<T extends string>({
   tone,
   fill = false,
 }: PickProps<T> & { fill?: boolean }) {
+  const quiet = useContext(RowQuietContext);
   return (
     <select
       data-boundary
       aria-label={label}
       value={value}
       disabled={disabled}
-      aria-invalid={invalid || undefined}
+      aria-invalid={invalid && !quiet ? true : undefined}
       aria-describedby={describedBy}
       title={fill ? options.find(([v]) => v === value)?.[1] : undefined}
       onChange={(e) => onChange(e.target.value as T)}
@@ -457,7 +510,8 @@ function PickSelect<T extends string>({
 
 /**
  * A select in a table cell. With allowEmpty the first option is "未指定". Its width follows the
- * longest option. `invalid` draws the red frame only (aria-invalid), as on CellInput.
+ * longest option. `invalid` draws the red frame only (aria-invalid), as on CellInput (and is left off
+ * while the focus is inside the row's `group`, as there).
  */
 export function Pick<T extends string>(props: PickProps<T>) {
   return <PickSelect {...props} />;

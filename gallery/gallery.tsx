@@ -881,7 +881,7 @@ function Gallery() {
         <Section
           title="表の指摘と幅"
           parts={["DenseRowMessages"]}
-          use="機器設定の表で、入力欄に対するサーバーの指摘を出します。欄には CellInput・Pick の「invalid」で赤枠だけを付け、文は行の直下の DenseRowMessages に、表の幅いっぱいで折り返して出します（欄の下に文を出す CellInput の「error」だと、列が文の長さまで広がるので使いません）。文の頭には欄の名前を「名前：文」の形で付けるので、messages には「field」（欄の名前）と「message」（文）の組を渡します（欄に結び付かない行の指摘は文字列のまま渡します）。同じ文は1回だけ出し、指摘が無ければ何も描きません。指摘ではなく注意（直さなくても保存・確認は進められるもの）は、messages の組に「tone」の「warn」を付けます。琥珀色の三角のアイコンで出し（読み上げには「注意：」が付く）、赤い丸の指摘と形でも見分けられます。注意には欄の赤枠（invalid）を付けず、文だけを出します。指摘でも注意でもない補足（読んでおくと分かりやすいが、直す必要のないこと。例：直接書いた範囲がどこに当たるか）は、「tone」の「note」を付けます。アイコンはなく、本文の淡い色と本文の太さで出るので、指摘と注意より目立ちません。補足は欄の赤枠を付けず、読み上げにも「注意：」を付けません。文が一覧を途中で切っているとき（「ほか2件を含む」）は、messages の組の「title」に全件の文を渡すと、その行のツールチップに出ます。指摘・注意・補足が並ぶときは、この順に並べます。直前の行の下罫線は消えて、2行がひとつに見えます。表の「fit」は、表を中身の幅で止めて左に寄せ、見出しとセルを左寄せにします（既定は画面の幅いっぱいで中央寄せ）。動作（許可・拒否）を選ぶ Pick には、地の色を付ける「tone」があります（この節の最後の例）。選択（Pick）の幅は、既定では一番長い選択肢に合います。1つの列の選択を、右に別の欄を並べて「選択＋右の欄」の組にするとき（アクセスリストの送信元・宛先。右は直接入力のアドレスの入力欄、台帳の VLAN を選んだときはそのサブネット）は、Pick ではなく PickWithField を使い、右の欄を子として渡します。選択の幅は最小 11rem（選択と右の欄（18文字ぶん）の組を2つ並べても、1440px の画面で表が横にあふれない幅。短い文言（「20 来客無線」など）が収まる）で、セルに空きがあれば 20rem（「100 L3-CPE間の接続用」が読める幅）まで広がり、どの行も同じ幅・右の欄の左端も同じになります（右の欄が空の行（すべて・未指定）も、その場所を空けておきます）。長い名前は後ろが切れ、開いた一覧と、選んだ名前のツールチップには選択肢の文言がそのまま出ます。表に空きがあるときだけ広げたいので、組を入れた列の定義に「grow」を付けます。「grow」のある列を持つ表は枠の幅いっぱいになり、余った幅はその列だけが受け取ります（ほかの列は中身の幅のまま）。「grow」のない表は今までどおりです。サーバーが導いた値を入力欄と同じ形で見せるだけで直せないものは、CellInput の「readOnly」（淡い塗り・Tab の順に入らない）にします。並べ替え・削除のような文字のない操作は IconButton（arrow-up・arrow-down・trash）です。入力欄の幅は「kind」で決まり、入る文字数（text は名前の半角20文字、ip は15文字、interface・network は18文字、vlan は4桁、vrid は3桁）を1か所の表で持つので、画面は幅を指定しません。"
+          use="機器設定の表で、入力欄に対するサーバーの指摘を出します。欄には CellInput・Pick の「invalid」で赤枠だけを付け、文は行の直下の DenseRowMessages に、表の幅いっぱいで折り返して出します。文の頭には欄の名前を「名前：文」の形で付けるので、messages には「field」（欄の名前）と「message」（文）の組を渡します（欄に結び付かない行の指摘は文字列のまま渡します）。同じ文は1回だけ出し、指摘が無ければ何も描きません。指摘ではなく注意（直さなくても保存・確認は進められるもの）は、messages の組に「tone」の「warn」を付けます。琥珀色の三角のアイコンで出し（読み上げには「注意：」が付く）、赤い丸の指摘と形でも見分けられます。注意には欄の赤枠（invalid）を付けず、文だけを出します。指摘でも注意でもない補足（読んでおくと分かりやすいが、直す必要のないこと。例：直接書いた範囲がどこに当たるか）は、「tone」の「note」を付けます。アイコンはなく、本文の淡い色と本文の太さで出るので、指摘と注意より目立ちません。補足は欄の赤枠を付けず、読み上げにも「注意：」を付けません。文が一覧を途中で切っているとき（「ほか2件を含む」）は、messages の組の「title」に全件の文を渡すと、その行のツールチップに出ます。指摘・注意・補足が並ぶときは、この順に並べます。入力の途中で指摘が出続けないよう、DenseRow と、その下の DenseRowMessages に同じ「group」（行の鍵。行の「inputId」など。LAG の組のように2行で1つの入力になるものは、2行に同じ値）を渡すと、フォーカスがその「group」の中にあるあいだは、欄の赤枠（invalid）と指摘・注意（補足は残ります）を出さず、フォーカスが「group」の外に出ると出ます（次の例。同じ「group」の行の間をフォーカスが移るあいだは出しません）。「group」を渡さない行は、これまでどおりすぐ出します。直前の行の下罫線は消えて、2行がひとつに見えます。表の「fit」は、表を中身の幅で止めて左に寄せ、見出しとセルを左寄せにします（既定は画面の幅いっぱいで中央寄せ）。動作（許可・拒否）を選ぶ Pick には、地の色を付ける「tone」があります（この節の最後の例）。選択（Pick）の幅は、既定では一番長い選択肢に合います。1つの列の選択を、右に別の欄を並べて「選択＋右の欄」の組にするとき（アクセスリストの送信元・宛先。右は直接入力のアドレスの入力欄、台帳の VLAN を選んだときはそのサブネット）は、Pick ではなく PickWithField を使い、右の欄を子として渡します。選択の幅は最小 11rem（選択と右の欄（18文字ぶん）の組を2つ並べても、1440px の画面で表が横にあふれない幅。短い文言（「20 来客無線」など）が収まる）で、セルに空きがあれば 20rem（「100 L3-CPE間の接続用」が読める幅）まで広がり、どの行も同じ幅・右の欄の左端も同じになります（右の欄が空の行（すべて・未指定）も、その場所を空けておきます）。長い名前は後ろが切れ、開いた一覧と、選んだ名前のツールチップには選択肢の文言がそのまま出ます。表に空きがあるときだけ広げたいので、組を入れた列の定義に「grow」を付けます。「grow」のある列を持つ表は枠の幅いっぱいになり、余った幅はその列だけが受け取ります（ほかの列は中身の幅のまま）。「grow」のない表は今までどおりです。サーバーが導いた値を入力欄と同じ形で見せるだけで直せないものは、CellInput の「readOnly」（淡い塗り・Tab の順に入らない）にします。並べ替え・削除のような文字のない操作は IconButton（arrow-up・arrow-down・trash）です。入力欄の幅は「kind」で決まり、入る文字数（text は名前の半角20文字、ip は15文字、interface・network は18文字、vlan は4桁、vrid は3桁）を1か所の表で持つので、画面は幅を指定しません。"
         >
           <SectionHeader
             title="指摘のある表（fit・赤枠だけ＋行の下の文）"
@@ -1066,6 +1066,80 @@ function Gallery() {
               subtle
               id="gallery-lan3-messages"
               messages={[{ field: "VLAN ID", message: "指定可能：1-4094" }]}
+            />
+          </DenseTable>
+
+          <SectionHeader
+            title="入力中の行は指摘を出さない（group）"
+            level={3}
+          />
+          <DenseTable
+            fit
+            label="入力中の行の例"
+            columns={[
+              { id: "name", header: "名前" },
+              { id: "vlan", header: "VLAN ID" },
+            ]}
+          >
+            <DenseRow group="gallery-group-1">
+              <DenseRowHead>行1</DenseRowHead>
+              <DenseCell>
+                <CellInput
+                  label="行1 の名前"
+                  value="行の中にフォーカスがあるあいだ、この行の赤枠と指摘・注意は出ません"
+                  onChange={() => {}}
+                />
+              </DenseCell>
+              <DenseCell>
+                <CellInput
+                  label="行1 のVLAN ID"
+                  kind="vlan"
+                  value="4095"
+                  invalid
+                  describedBy="gallery-group-1-messages"
+                  onChange={() => {}}
+                />
+              </DenseCell>
+            </DenseRow>
+            <DenseRowMessages
+              id="gallery-group-1-messages"
+              group="gallery-group-1"
+              messages={[
+                { field: "VLAN ID", message: "指定可能：1-4094" },
+                {
+                  field: "名前",
+                  message: "前の行と同じ内容です",
+                  tone: "warn",
+                },
+                {
+                  field: "VLAN ID",
+                  message: "補足は入力中も出ます",
+                  tone: "note",
+                },
+              ]}
+            />
+            <DenseRow group="gallery-group-2">
+              <DenseRowHead>行2</DenseRowHead>
+              <DenseCell>
+                <CellInput label="行2 の名前" value="" onChange={() => {}} />
+              </DenseCell>
+              <DenseCell>
+                <CellInput
+                  label="行2 のVLAN ID"
+                  kind="vlan"
+                  value=""
+                  invalid
+                  describedBy="gallery-group-2-messages"
+                  onChange={() => {}}
+                />
+              </DenseCell>
+            </DenseRow>
+            <DenseRowMessages
+              id="gallery-group-2-messages"
+              group="gallery-group-2"
+              messages={[
+                { field: "VLAN ID", message: "VLAN IDを入力してください" },
+              ]}
             />
           </DenseTable>
 
