@@ -282,7 +282,7 @@ const cellKinds: Record<CellKind, { chars: number; max: number }> = {
 };
 
 const cellControl =
-  "h-9 rounded-sx-tile border border-sx-control bg-sx-surface px-2 text-sx-meta text-sx-strong tabular-nums disabled:cursor-not-allowed disabled:bg-sx-fill disabled:text-sx-muted aria-invalid:border-2 aria-invalid:border-sx-error-dot";
+  "h-9 rounded-sx-tile border border-sx-control px-2 text-sx-meta text-sx-strong tabular-nums disabled:cursor-not-allowed disabled:bg-sx-fill disabled:text-sx-muted aria-invalid:border-2 aria-invalid:border-sx-error-dot";
 
 /**
  * An input in a table cell. Its width is set by `kind` (see the table above); maxLength defaults
@@ -299,6 +299,7 @@ export function CellInput({
   onChange,
   kind = "text",
   disabled = false,
+  readOnly = false,
   invalid = false,
   describedBy,
   error = null,
@@ -311,6 +312,8 @@ export function CellInput({
   onChange: (v: string) => void;
   kind?: CellKind;
   disabled?: boolean;
+  /** A value shown in the shape of the input but not editable (a subnet the server derived): a faint fill, out of the tab order. */
+  readOnly?: boolean;
   invalid?: boolean;
   describedBy?: string;
   /** @deprecated Use `invalid` and DenseRowMessages. */
@@ -331,13 +334,15 @@ export function CellInput({
         type={type}
         autoComplete={autoComplete}
         disabled={disabled}
+        readOnly={readOnly}
+        tabIndex={readOnly ? -1 : undefined}
         maxLength={maxLength === null ? undefined : (maxLength ?? max)}
         inputMode={numeric ? "numeric" : undefined}
         aria-invalid={invalid || error ? true : undefined}
         aria-describedby={error ? id : describedBy}
         onChange={(e) => onChange(e.target.value)}
         style={{ width: `calc(${chars}ch + 1.5rem)` }}
-        className={`${cellControl} ${focusRingInput}`}
+        className={`${cellControl} ${readOnly ? "bg-sx-fill" : "bg-sx-surface"} ${focusRingInput}`}
       />
       {error && (
         <span
@@ -352,12 +357,17 @@ export function CellInput({
   );
 }
 
+// The width of a `fixed` Pick. It is what the access list's table can give each select at a 1440px screen
+// without scrolling sideways (two selects, each with an 18-character field, and five other columns): the
+// number of a VLAN and the start of its name show, the rest is cut (the chosen name is also the tooltip).
+const FIXED_PICK_WIDTH = "8rem";
+
 /**
  * A select in a table cell. With allowEmpty the first option is "未指定". Its width follows the
- * longest option. `invalid` draws the red frame only (aria-invalid), as on CellInput. `compact` fixes
- * the width at about four full-width characters and the arrow instead (7rem): for a select whose chosen option is
- * short and that sits beside an input it explains (「直接入力」 beside its value), so the long options
- * do not widen the pair. The open list still shows every option in full.
+ * longest option. `invalid` draws the red frame only (aria-invalid), as on CellInput. `fixed` sets the
+ * width to FIXED_PICK_WIDTH whatever the options are: for the selects of one column that sit beside
+ * another field (the endpoint of an access rule, with its address or subnet), so every row has the same
+ * shape. A name longer than that is cut (the open list and the tooltip still show it in full).
  */
 export function Pick<T extends string>({
   label,
@@ -369,7 +379,7 @@ export function Pick<T extends string>({
   describedBy,
   allowEmpty = true,
   emptyValue = "" as T,
-  compact = false,
+  fixed = false,
 }: {
   label: string;
   value: T;
@@ -380,7 +390,7 @@ export function Pick<T extends string>({
   describedBy?: string;
   allowEmpty?: boolean;
   emptyValue?: T;
-  compact?: boolean;
+  fixed?: boolean;
 }) {
   return (
     <select
@@ -390,9 +400,10 @@ export function Pick<T extends string>({
       disabled={disabled}
       aria-invalid={invalid || undefined}
       aria-describedby={describedBy}
-      style={compact ? { width: "7rem" } : undefined}
+      style={fixed ? { width: FIXED_PICK_WIDTH } : undefined}
+      title={fixed ? options.find(([v]) => v === value)?.[1] : undefined}
       onChange={(e) => onChange(e.target.value as T)}
-      className={`${cellControl} pr-6 ${focusRingInput}`}
+      className={`${cellControl} bg-sx-surface pr-6 ${focusRingInput}`}
     >
       {allowEmpty && <option value={emptyValue}>未指定</option>}
       {options.map(([v, t]) => (

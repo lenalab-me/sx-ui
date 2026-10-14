@@ -1,6 +1,8 @@
 import {
+  ArrowDown,
   ArrowLeft,
   ArrowRight,
+  ArrowUp,
   ChevronDown,
   CircleAlert,
   CircleCheck,
@@ -14,6 +16,7 @@ import {
   LayoutGrid,
   Maximize,
   Plus,
+  Trash2,
   TriangleAlert,
   Undo2,
   X,
@@ -22,8 +25,10 @@ import {
 
 // Screens name an icon; only this package imports the icon library.
 const icons = {
+  "arrow-down": ArrowDown,
   "arrow-left": ArrowLeft,
   "arrow-right": ArrowRight,
+  "arrow-up": ArrowUp,
   "chevron-down": ChevronDown,
   "circle-alert": CircleAlert,
   "circle-check": CircleCheck,
@@ -37,6 +42,7 @@ const icons = {
   "layout-grid": LayoutGrid,
   maximize: Maximize,
   plus: Plus,
+  trash: Trash2,
   "triangle-alert": TriangleAlert,
   undo: Undo2,
   x: X,

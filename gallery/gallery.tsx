@@ -205,8 +205,10 @@ const rows = Array.from({ length: 40 }, (_, i) => ({
 
 // Every icon name; `satisfies` makes the compiler fail when an icon is added to @nd/ui and not here.
 const iconNames = Object.keys({
+  "arrow-down": true,
   "arrow-left": true,
   "arrow-right": true,
+  "arrow-up": true,
   "chevron-down": true,
   "circle-alert": true,
   "circle-check": true,
@@ -220,6 +222,7 @@ const iconNames = Object.keys({
   "layout-grid": true,
   maximize: true,
   plus: true,
+  trash: true,
   "triangle-alert": true,
   undo: true,
   x: true,
@@ -862,7 +865,7 @@ function Gallery() {
         <Section
           title="表の指摘と幅"
           parts={["DenseRowMessages"]}
-          use="機器設定の表で、入力欄に対するサーバーの指摘を出します。欄には CellInput・Pick の「invalid」で赤枠だけを付け、文は行の直下の DenseRowMessages に、表の幅いっぱいで折り返して出します（欄の下に文を出す CellInput の「error」だと、列が文の長さまで広がるので使いません）。文の頭には欄の名前を「名前：文」の形で付けるので、messages には「field」（欄の名前）と「message」（文）の組を渡します（欄に結び付かない行の指摘は文字列のまま渡します）。同じ文は1回だけ出し、指摘が無ければ何も描きません。指摘ではなく注意（直さなくても保存・確認は進められるもの）は、messages の組に「tone」の「warn」を付けます。琥珀色の三角のアイコンで出し（読み上げには「注意：」が付く）、赤い丸の指摘と形でも見分けられます。注意には欄の赤枠（invalid）を付けず、文だけを出します。指摘でも注意でもない補足（読んでおくと分かりやすいが、直す必要のないこと。例：直接書いた範囲がどこに当たるか）は、「tone」の「note」を付けます。アイコンはなく、本文の淡い色と本文の太さで出るので、指摘と注意より目立ちません。補足は欄の赤枠を付けず、読み上げにも「注意：」を付けません。指摘・注意・補足が並ぶときは、この順に並べます。直前の行の下罫線は消えて、2行がひとつに見えます。表の「fit」は、表を中身の幅で止めて左に寄せ、見出しとセルを左寄せにします（既定は画面の幅いっぱいで中央寄せ）。選択（Pick）の幅は、既定では一番長い選択肢に合います。選択肢が長く、選んだ値が短くて、すぐ隣に入力欄を並べるとき（「直接入力」とその値など）だけ、Pick の「compact」で選択を約全角4文字と矢印の分（7rem）に固定します（開いた一覧には選択肢が全部そのまま出ます）。入力欄の幅は「kind」で決まり、入る文字数（text は名前の半角20文字、ip は15文字、interface・network は18文字、vlan は4桁、vrid は3桁）を1か所の表で持つので、画面は幅を指定しません。"
+          use="機器設定の表で、入力欄に対するサーバーの指摘を出します。欄には CellInput・Pick の「invalid」で赤枠だけを付け、文は行の直下の DenseRowMessages に、表の幅いっぱいで折り返して出します（欄の下に文を出す CellInput の「error」だと、列が文の長さまで広がるので使いません）。文の頭には欄の名前を「名前：文」の形で付けるので、messages には「field」（欄の名前）と「message」（文）の組を渡します（欄に結び付かない行の指摘は文字列のまま渡します）。同じ文は1回だけ出し、指摘が無ければ何も描きません。指摘ではなく注意（直さなくても保存・確認は進められるもの）は、messages の組に「tone」の「warn」を付けます。琥珀色の三角のアイコンで出し（読み上げには「注意：」が付く）、赤い丸の指摘と形でも見分けられます。注意には欄の赤枠（invalid）を付けず、文だけを出します。指摘でも注意でもない補足（読んでおくと分かりやすいが、直す必要のないこと。例：直接書いた範囲がどこに当たるか）は、「tone」の「note」を付けます。アイコンはなく、本文の淡い色と本文の太さで出るので、指摘と注意より目立ちません。補足は欄の赤枠を付けず、読み上げにも「注意：」を付けません。指摘・注意・補足が並ぶときは、この順に並べます。直前の行の下罫線は消えて、2行がひとつに見えます。表の「fit」は、表を中身の幅で止めて左に寄せ、見出しとセルを左寄せにします（既定は画面の幅いっぱいで中央寄せ）。選択（Pick）の幅は、既定では一番長い選択肢に合います。1つの列の選択を、右に別の欄を並べて「選択＋右の欄」の組にするとき（アクセスリストの送信元・宛先。右は直接入力のアドレスの入力欄、台帳の VLAN を選んだときはそのサブネット）は、どの行も同じ形にそろえるため、Pick の「fixed」で選択の幅を固定します（8rem。選択と右の欄（18文字ぶん）の組を2つ並べても、1440px の画面で表が横にあふれない幅です。VLAN の番号と名前の頭が見え、残りは切れます。開いた一覧と、選んだ名前のツールチップには全文が出ます）。右の欄が空の行（すべて・未指定）は何も並べません。サーバーが導いた値を入力欄と同じ形で見せるだけで直せないものは、CellInput の「readOnly」（淡い塗り・Tab の順に入らない）にします。並べ替え・削除のような文字のない操作は IconButton（arrow-up・arrow-down・trash）です。入力欄の幅は「kind」で決まり、入る文字数（text は名前の半角20文字、ip は15文字、interface・network は18文字、vlan は4桁、vrid は3桁）を1か所の表で持つので、画面は幅を指定しません。"
         >
           <SectionHeader
             title="指摘のある表（fit・赤枠だけ＋行の下の文）"
@@ -1121,60 +1124,82 @@ function Gallery() {
           </DenseTable>
 
           <SectionHeader
-            title="選択と入力欄を並べる（幅を絞る選択）"
+            title="選択と右の欄を並べる（幅を固定した選択）"
             level={3}
           />
           <DenseTable
             fit
-            label="選択と入力欄を並べる例"
+            label="選択と右の欄を並べる例"
             columns={[
               { id: "from", header: "送信元" },
               { id: "to", header: "宛先" },
+              { id: "ops", header: "操作" },
             ]}
           >
             {[
-              ["VLAN 20（来客無線）", "すべて（any）"],
-              ["直接入力", "支店 VLAN 10（業務）"],
-            ].map(([from, to], i) => (
-              <DenseRow key={from}>
-                <DenseCell align="left">
-                  <div className="flex items-center gap-1">
-                    <Pick
-                      label={`例${i + 1} 送信元`}
-                      value={from}
-                      compact={i === 1}
-                      allowEmpty={false}
-                      options={[
-                        ["すべて（any）", "すべて（any）"],
-                        ["VLAN 20（来客無線）", "VLAN 20（来客無線）"],
-                        ["支店 VLAN 10（業務）", "支店 VLAN 10（業務）"],
-                        ["直接入力", "直接入力"],
-                      ]}
-                      onChange={() => {}}
-                    />
-                    {i === 1 && (
-                      <CellInput
-                        label="例の送信元のアドレス"
-                        kind="network"
-                        value="192.168.40.0/24"
+              [
+                "VLAN 20（来客無線）",
+                "192.168.20.0/24",
+                "支店 VLAN 10（業務）",
+              ],
+              ["直接入力", "192.168.40.0/24", "すべて（any）"],
+              ["すべて（any）", "", "直接入力"],
+            ].map(([from, fromAddress, to], i) => (
+              <DenseRow key={i}>
+                {[
+                  ["送信元", from, fromAddress],
+                  ["宛先", to, i === 0 ? "192.168.110.0/24" : ""],
+                ].map(([side, value, address]) => (
+                  <DenseCell key={side} align="left">
+                    <div className="flex items-center gap-1">
+                      <Pick
+                        label={`例${i + 1} ${side}`}
+                        value={value}
+                        fixed
+                        allowEmpty={false}
+                        options={[
+                          ["すべて（any）", "すべて（any）"],
+                          ["VLAN 20（来客無線）", "VLAN 20（来客無線）"],
+                          ["支店 VLAN 10（業務）", "支店 VLAN 10（業務）"],
+                          ["直接入力", "直接入力"],
+                        ]}
                         onChange={() => {}}
                       />
-                    )}
+                      {value === "直接入力" ? (
+                        <CellInput
+                          label={`例${i + 1} ${side}のアドレス`}
+                          kind="network"
+                          value={address}
+                          onChange={() => {}}
+                        />
+                      ) : (
+                        address && (
+                          <CellInput
+                            label={`例${i + 1} ${side}のサブネット`}
+                            kind="network"
+                            value={address}
+                            readOnly
+                            onChange={() => {}}
+                          />
+                        )
+                      )}
+                    </div>
+                  </DenseCell>
+                ))}
+                <DenseCell>
+                  <div className="flex">
+                    <IconButton
+                      label={`例${i + 1} を上へ`}
+                      icon="arrow-up"
+                      disabled={i === 0}
+                    />
+                    <IconButton
+                      label={`例${i + 1} を下へ`}
+                      icon="arrow-down"
+                      disabled={i === 2}
+                    />
+                    <IconButton label={`例${i + 1} を削除`} icon="trash" />
                   </div>
-                </DenseCell>
-                <DenseCell align="left">
-                  <Pick
-                    label={`例${i + 1} 宛先`}
-                    value={to}
-                    allowEmpty={false}
-                    options={[
-                      ["すべて（any）", "すべて（any）"],
-                      ["VLAN 20（来客無線）", "VLAN 20（来客無線）"],
-                      ["支店 VLAN 10（業務）", "支店 VLAN 10（業務）"],
-                      ["直接入力", "直接入力"],
-                    ]}
-                    onChange={() => {}}
-                  />
                 </DenseCell>
               </DenseRow>
             ))}
