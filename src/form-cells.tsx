@@ -136,10 +136,16 @@ export function DenseRow({
  * or "note" (a plain remark that is neither: the body color, no icon, the weight of body text, for
  * what the reader may want to know about the row but need not act on).
  * A bare string is an error message about the row itself; without a `field` the message stands alone.
+ * `title` is the tooltip of the line: the whole of what the line shortens (a list cut at five, say).
  */
 export type RowMessage =
   | string
-  | { field?: string; message: string; tone?: "error" | "warn" | "note" };
+  | {
+      field?: string;
+      message: string;
+      tone?: "error" | "warn" | "note";
+      title?: string;
+    };
 
 const lineLook = {
   error: "font-medium text-sx-error-ink",
@@ -172,9 +178,10 @@ export function DenseRowMessages({
           field,
           message,
           tone = "error",
+          title,
         } = typeof m === "string" ? { message: m } : m;
         const text = field ? `${field}：${message}` : message;
-        return [`${tone}|${text}`, { tone, text }] as const;
+        return [`${tone}|${text}`, { tone, text, title }] as const;
       }),
     ).values(),
   ];
@@ -188,9 +195,10 @@ export function DenseRowMessages({
       <td colSpan={columnCount} className="px-2 pt-0 pb-2 text-left">
         {/* w-0 + min-w-full: the cell takes the width of the table, and does not widen it. */}
         <ul id={id} className="m-0 flex w-0 min-w-full flex-col gap-0.5">
-          {lines.map(({ tone, text }) => (
+          {lines.map(({ tone, text, title }) => (
             <li
               key={`${tone}|${text}`}
+              title={title}
               className={`flex items-start gap-1 text-sx-meta ${lineLook[tone]}`}
             >
               {tone !== "note" && (
@@ -359,15 +367,15 @@ export function CellInput({
 
 // The width of a `fixed` Pick. It is what the access list's table can give each select at a 1440px screen
 // without scrolling sideways (two selects, each with an 18-character field, and five other columns): the
-// number of a VLAN and the start of its name show, the rest is cut (the chosen name is also the tooltip).
-const FIXED_PICK_WIDTH = "8rem";
+// short label of a VLAN ("20 来客無線") fits, a longer name is cut at the end (the chosen option text is also the tooltip).
+const FIXED_PICK_WIDTH = "11rem";
 
 /**
  * A select in a table cell. With allowEmpty the first option is "未指定". Its width follows the
  * longest option. `invalid` draws the red frame only (aria-invalid), as on CellInput. `fixed` sets the
  * width to FIXED_PICK_WIDTH whatever the options are: for the selects of one column that sit beside
  * another field (the endpoint of an access rule, with its address or subnet), so every row has the same
- * shape. A name longer than that is cut (the open list and the tooltip still show it in full).
+ * shape. A name longer than that is cut (the open list and the tooltip still show the option text as it is).
  */
 export function Pick<T extends string>({
   label,
