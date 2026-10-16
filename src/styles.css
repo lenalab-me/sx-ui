@@ -1,4 +1,4 @@
-/* 部品のCSSの入口（@nd/ui/styles.css）。Tailwind は theme と utilities だけを読み、preflight は読まない
+/* 部品のCSSの入口（@sx/ui/styles.css）。Tailwind は theme と utilities だけを読み、preflight は読まない
    （html・body など Shell の外の既定を変えないため。部品に要る分は reset.css が Shell の中だけに持つ）。
    html・body の既定も持ち込まない（Shell のルートが持つ）。 */
 @layer theme, base, components, utilities;
@@ -10,6 +10,6 @@
 @import "@fontsource-variable/inter";
 @import "@fontsource-variable/noto-sans-jp";
 
-@source "../../../src";
+/* 走査するのは部品と見本ページだけ。画面のファイルは、読む側の CSS が自分で @source に足す。 */
 @source "./";
 @source "../gallery";

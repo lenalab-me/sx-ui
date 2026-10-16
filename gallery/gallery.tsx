@@ -1,4 +1,4 @@
-import "@nd/ui/styles.css";
+import "../src/styles.css";
 import { StrictMode, useRef, useState, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import {
@@ -68,14 +68,14 @@ import {
   type SaveState,
   type TabsVariant,
   type TagTone,
-} from "@nd/ui";
+} from "../src";
 
 // A page that shows every component in every state. It is not part of the app build: open it
 // with the dev server at /packages/ui/gallery/. ?open=modal|modal-lg|confirm|menu|popover|table-menu opens that
 // overlay on load. Only layout classes are used here; the look comes from the components.
 // It is also the catalog of the components: every Section lists the parts it shows (`parts`) and
 // says when to use them and when not to (`use`). src/ui-catalog.test.ts checks that every component
-// exported from @nd/ui is in exactly one `parts` and is drawn here.
+// exported from @sx/ui is in exactly one `parts` and is drawn here.
 
 const sizes: ControlSize[] = ["sm", "md", "lg"];
 const variants = ["primary", "secondary", "ghost", "danger"] as const;
@@ -204,7 +204,7 @@ const rows = Array.from({ length: 40 }, (_, i) => ({
   devices: (i % 4) + 1,
 }));
 
-// Every icon name; `satisfies` makes the compiler fail when an icon is added to @nd/ui and not here.
+// Every icon name; `satisfies` makes the compiler fail when an icon is added to @sx/ui and not here.
 const iconNames = Object.keys({
   "arrow-down": true,
   "arrow-left": true,
