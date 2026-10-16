@@ -17,5 +17,5 @@ if git rev-parse -q --verify "refs/tags/v$version" >/dev/null &&
 fi
 sh scripts/check.sh
 npm pack --silent >/dev/null
-git rev-parse -q --verify "refs/tags/v$version" >/dev/null || git tag "v$version"
+git rev-parse -q --verify "refs/tags/v$version" >/dev/null || git tag -a "v$version" -m "v$version"
 echo "$(pwd)/sx-ui-${version}.tgz を作りました（タグ v${version}）。"
