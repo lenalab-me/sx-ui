@@ -22,7 +22,8 @@
 1. 直して `npm run check` を通し、コミットする。
 2. `package.json` の `version` を上げてコミットする（0.x のあいだ、引数の名前を変える・部品を消すなど画面を直す必要がある変更は minor、それ以外は patch。画面の直し方はコミットの文に書く）。
 3. `npm run release`：check を流し、`sx-ui-<版>.tgz` を作り、タグ `v<版>` を付ける。`git push --follow-tags`。
-4. アプリで取り込む（network-designer は `npm run ui:update -- <tgz のパス>` のあと、check・e2e・承認・`npm run ui:approve`）。
+4. 雛形（`~/project/prod/template`）の `vendor/` を、版を出すたびに入れ替える（`npm run ui:update -- <tgz のパス>` のあと、check・e2e・承認・`npm run ui:approve`。見た目が変わる版なら、基準画像の差分を見て撮り直す）。新しいアプリがいつも最新の部品から始まるようにする。デザインの知識（部品・トークン・使い分け）は雛形に貯めず、ここで育てる。
+5. 既存のアプリ（network-designer など）は、必要になったときに同じ手順で取り込む。
 
 ## 開発
 
