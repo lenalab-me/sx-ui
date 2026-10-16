@@ -4,9 +4,10 @@
 # the package (dist/check and dist/vite, what `@sx/ui/check` and `@sx/ui/vite` give to the apps).
 set -eu
 cd "$(dirname "$0")/.."
-npx prettier --check src gallery check vite test
+npx prettier --check src gallery check vite test e2e playwright.config.ts
 shellcheck bin/*.sh scripts/*.sh
 npm test
 npx tsc --noEmit
+npx tsc --noEmit -p e2e
 rm -rf dist && npx tsc -p tsconfig.check.json
 echo "すべてのチェックが通りました"

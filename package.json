@@ -29,6 +29,7 @@
     "dev": "vite --host 0.0.0.0",
     "test": "node --test test/*.test.ts",
     "check": "sh scripts/check.sh",
+    "e2e": "sh scripts/e2e.sh",
     "prepack": "rm -rf dist && tsc -p tsconfig.check.json",
     "release": "sh scripts/release.sh"
   },
@@ -43,6 +44,7 @@
     "lucide-react": "1.55.0"
   },
   "devDependencies": {
+    "@playwright/test": "1.63.0",
     "@tailwindcss/vite": "4.3.3",
     "@types/node": "24.19.1",
     "@types/react": "19.2.18",

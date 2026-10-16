@@ -2,3 +2,5 @@ node_modules/
 dist/
 *.tgz
 .serena/
+test-results/
+playwright-report/
