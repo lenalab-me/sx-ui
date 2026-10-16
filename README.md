@@ -2,6 +2,36 @@
 
 画面の共通部品（React 19＋Tailwind v4）と、それを使うアプリの画面ファイルを検査する道具。全部品を全状態で並べた見本ページ（`gallery/`）が部品の台帳を兼ねる。network-designer の `packages/ui`（`@nd/ui`）から履歴ごと切り出した（2026-10-17）。新しいアプリの画面は、この部品で組むのが既定。
 
+## やりたいこと → 部品
+
+どの部品を使うか迷ったら、まずこの表を引く。使い分けの詳しい文（いつ使う・いつ使わない）は見本ページの各節の `use` が正で、ここには写さない。
+
+| やりたいこと                                   | 部品                                                                        |
+| ---------------------------------------------- | --------------------------------------------------------------------------- |
+| 画面の枠（左ペイン・見出し・現在位置）         | `Shell`・`Page`・`PageTitle`・`Crumbs`                                      |
+| 白い面を作る                                   | `Card`（表を縁まで入れるときは `flush`、上端にタブを置くときは `CardHead`） |
+| 状態で絞り込む・同じ画面で表示を切り替える     | `Tabs`（絞り込みは `variant="pill"`、`TabPanel` と組む）                    |
+| 工程を前後に移る                               | `Stepper`（工程以外には使わない）                                           |
+| 入力欄（ラベル・補足・エラーつき）             | `Field`（横に並べるときは `FieldGrid`）                                     |
+| 読むだけの値（直せない項目）                   | `DescriptionList`                                                           |
+| 画面の中に残す注意・結果・エラー               | `Notice`（出た瞬間に読み上げるなら `live`）                                 |
+| 操作の結果を一行だけ伝える                     | `StatusLine`（`Page` の `status`）                                          |
+| 状態を示す小さな表示                           | `Pill`・`Tag`・`SaveStatus`                                                 |
+| 一覧の表（1行1件）                             | `Table`・`THead`・`Th`・`Tr`・`RowHead`・`Td`                               |
+| 表のセルから詳細へ行くリンク・本文の中のリンク | `TextLink`（ボタンに見せる移動は `ButtonLink`）                             |
+| 入力する表（機器設定）                         | `DenseTable`・`DenseRow`・`CellInput`・`Pick`                               |
+| 行の末尾の「…」の操作の一覧                    | `Menu`                                                                      |
+| ボタンの近くに出す小さな枠                     | `Popover`                                                                   |
+| 入力を求める窓                                 | `Modal`                                                                     |
+| 取り消せない操作の前の確認                     | `ConfirmDialog`                                                             |
+| 入力内容を確定の前に見せる確認                 | `ConfirmDialog` の子に `DescriptionList`                                    |
+| 開閉する見出し                                 | `Disclosure`                                                                |
+| 生成した Config・JSON を見せる                 | `CodeBlock`                                                                 |
+| 物理構成の作図                                 | `DiagramFrame`・`DiagramDevice`・`DiagramPort`                              |
+| 論理接続図（L3 の見取り図）                    | `LadderDiagram`                                                             |
+| 空の状態の案内                                 | `EmptyState`                                                                |
+| 文字のない操作（ダウンロード・削除など）       | `IconButton`（名前が必須）                                                  |
+
 ## アプリでの使い方
 
 - **入れ方**：版ごとの tarball（`npm run release` で作る `sx-ui-<版>.tgz`）をアプリの `vendor/` に置き、`"@sx/ui": "file:vendor/sx-ui-<版>.tgz"` で入れる。レジストリも認証も要らず、Docker のビルドでもそのまま入る。peer は `react`・`react-dom` 19 と `tailwindcss` 4（Vite なら `@tailwindcss/vite` も）。アイコン（`lucide-react`）とフォントは部品が持つので、アプリは入れない。
@@ -38,19 +68,94 @@
 
 ## 部品の書き方
 
+### 共通の決まり
+
 - 見た目は `tone`・`variant`・`size`（`sm`・`md`・`lg`）のような意味の指定で受ける。`className` を受けるのは配置のためだけで、`Field`・`Card`・`Button`／`ButtonLink`・`Input`／`Select`／`Textarea`／`NumberInput`・`Checkbox` に限る。ほかの部品は受けない（表のセルの寄せ・折り返しは `Th`／`Td` の `align`・`numeric`・`nowrap`・`truncate`）。
 - アイコンは名前（`IconName`）で渡す。アイコンのライブラリを import するのはこのパッケージだけで、画面は `lucide-react` を import しない。
 - 色・角丸・影はトークンの名前（`bg-sx-accent`・`rounded-sx-control` など）だけで書き、`#` の色の直書きは `tokens.css` の外に置かない。文字サイズも `text-[16px]` のような任意値でなく名前つきのトークンを使う。
 - 読み上げ（`role="alert"`・`"status"`）は部品が持つ。画面は `Notice` に `live`（出た瞬間に読み上げる。`error`・`warn` は alert、`info`・`ok` は status）、`SaveStatus` に `live` を渡すだけで、role を書かない。
-- 開いたら重なって出る部品（`Menu` の一覧、`anchor` つきの `Popover`）は、HTML の popover（`popover="manual"` と `showPopover()`）で最前面の層に出し、置き方は CSS anchor positioning（押したボタンの下、`Menu` は右端・`Popover` は `align` に揃え、下に収まらなければ上）にする。表の枠（`overflow`）にもモーダル（`<dialog>`）の中にも切られない。モーダルの中で開いた `Menu`・`Popover` は、Esc で自分だけを閉じ（`preventDefault` で `<dialog>` の閉じる要求を止める）、モーダルは次の Esc で閉じる。`anchor` の無い `Popover` は、呼び出し側の `relative` の枠の中に置く。置き方と最前面の出し方は `src/topLayer.ts` の1か所に持つ。
-- 画面ごとの形を持つ部品の引数は次のとおり（見本ページの `use` が正）。`PageTitle` の `subtitle` は h1 の右に出す画面の対象（Project名など）。`CardHead` は `Card` の上端の帯で、下罫線の上に下線タブ（`Tabs variant="underline"`）を置き、`note` は右寄せの案内文。`EmptyState` の `support` は2行目の小さい文。`DescriptionList` は `{ term, value }` の並びを2列で見せる（STEP1の値のように、ここでは直せない項目の表示）。`Field` の `inline` はラベル左・部品右の1行（機種ごとの台数の欄）。`Modal` の `size` は `sm`・`md`・`lg`（760px。5つのタブを持つ申込など）。`StatusLine` の `tone="neutral"` はアイコン無しの控えめな表示（「読み込み中…」）。
-- 作図は `DiagramFrame`（枠。React Flow はこの中に置く）・`DiagramDevice`（機器の箱）・`DiagramPort`（箱の中のポート。React Flow の `Handle` を中身として渡す）・`DiagramRouteError`（配線できない印と理由）で見た目を持ち、`@xyflow/react` はこのパッケージが読まない。箱とポートの寸法は `diagramGeometry` の1か所で、整列の見積もり（network-designer の `src/Physical.tsx`）も同じ値を読む。作図の中（`[data-diagram]`）の機器名・ポート番号は 14px 未満でもよい（コントラストは見る。network-designer の `e2e/contrast-audit.ts`）。ポートを置く段（上・下・右端）は配線の向きで決まるので、呼び出し側が並べて渡す。
-- 論理接続図（L3 の見取り図）は `LadderDiagram`（はしご図）で描く。縦の線＝ルーティングする機器（`rails`）、横の帯＝台帳の VLAN（`bands`。`tone` は `normal`・`warn`（琥珀色＝注意の色。理由を `note` に）・`l2only`（破線））、交点の点と文字＝その機器がそこに持つ IP（`taps`）で、上の破線の楕円（`top`。WAN など対象外）と下の一覧（`footer`。静的経路など）も受ける。受けるのは導いた結果だけで、画面や API の形を知らず、IP の求め方も検証もしない（サーバーが導く）。React Flow は使わず SVG で描き（`stable: "diagram"` のノード数の待ちとぶつからない）、`DiagramFrame` の `fit`（内容の高さ）の枠に入れる。行の高さ・列の間隔は一定で、帯が増えれば縦に、機器が増えれば横に伸び、横は枠の中でスクロールする（キーボードでも動かせる）。文字は SVG の中の `foreignObject` に置き、はみ出す分は行数で切ってブラウザの実際の字幅で収める（全文は `title` と表にある）。寸法は `Ladder.tsx` の1か所、色と文字サイズ（`text-sx-ladder-*`）はトークン。絵は読み上げに出さず（`role="img"`）、同じ内容の表（`sr-only`）を部品が併せて持つので、画面は別の代わりを用意しない。
-- 生成した Config や設計データの JSON のような整形済みの長い文字列は `CodeBlock`（`label` で枠に名前を付ける。等幅・折り返しなし・あふれたら枠の中でスクロール）で見せ、画面は `<pre>` に色や枠を書かない。部品ごとの使い分けは見本ページの `use` が正。
-- 機器設定の表の指摘は、欄に `invalid`（`CellInput`・`Pick`。赤枠だけ）を付け、文は行の直下に `DenseRowMessages` で出す（表の幅いっぱいで折り返す。文の頭に「欄の名前：」を付け、同じ文は1回だけ。使い分けは見本ページの `use`）。指摘ではなく注意の文は、messages の組に `tone: "warn"` を付けると琥珀色の三角のアイコン（読み上げには「注意：」が付く）で出る。注意には欄の赤枠を付けず、文だけを出す。指摘でも注意でもない補足（直す必要のない、読んでおくと分かりやすいこと）は `tone: "note"` で、アイコンなし・本文の淡い色で出る（指摘・注意より目立たない。欄の赤枠は付けない）。入力の途中で指摘が出続けないよう、`DenseRow` と、その下の `DenseRowMessages` に同じ `group`（行の鍵。行の inputId など。LAG の組のように2行で1つの入力になるものは2行に同じ値）を渡すと、フォーカスがその `group` の中にあるあいだは、欄の赤枠（`invalid`）と指摘・注意（`tone: "note"` の補足は残る）を出さず、`group` の外に出ると出る。`group` を渡さない行は今までどおりすぐ出す。`DenseTable` の `fit` は表を中身の幅で止めて左寄せにする。`Pick` の幅は一番長い選択肢に合うが、1つの列の選択の右に別の欄を並べて「選択＋右の欄」の組にするとき（アクセスリストの送信元・宛先）は `PickWithField`（右の欄を子で渡す）を使う。選択は最小11rem（1440pxの画面で表が横に溢れない幅）で、セルに空きがあれば20rem（長い名前が読める幅）まで広がり、右の欄の場所は空の行も空けておくので、どの行も選択の幅と右の欄の左端がそろう（長い名前は後ろが切れ、開いた一覧と選んだ名前のツールチップには選択肢の文言がそのまま出る）。表に空きがあるときだけ広げるには、その組を入れた列の定義に `DenseColumn` の `grow` を付ける。`grow` のある列を持つ表は枠の幅いっぱいになり、余った幅はその列だけが受け取る（ほかの列は中身の幅のまま。`grow` のない表は今までどおり）。サーバーが導いた値を入力欄と同じ形で見せるだけで直せないものは `CellInput` の `readOnly`（塗り（disabled と同じ淡い灰色）・Tabの順に入れない）。並べ替え・削除のような文字のない操作は `IconButton`（`arrow-up`・`arrow-down`・`trash`）。入力欄の幅と桁数（`maxLength`）は `CellInput` の `kind` が決め、入る文字数は `src/form-cells.tsx` の1つの表（`cellKinds`）だけが持つ。画面は幅も桁数も書かない。
-- アクセスリストの動作（許可・拒否）のように、緑と赤が意味を持つ区分は、色だけで伝えず文字とアイコンを添える（DADS）。読むだけの表は `Tag` の `tone`：`permit`（濃い緑の塗り・白文字・チェック）と `deny`（濃い赤の塗り・白文字・禁止の印）は書いたルールの動作に、`implicit-deny`（赤の枠線だけ・赤の文字・禁止の印。塗らない）は書いていない暗黙の拒否に使い、書いたルールの拒否と見分ける。入力の表で動作を選ぶ `Pick` には `tone`（`positive`＝薄い緑の地・濃い緑の文字、`negative`＝薄い赤の地・濃い赤の文字）を付ける。選択欄の文字（許可・拒否）はそのままで、地の色だけが付く。`invalid` は白い地に太い赤の枠で、地の色が付く `tone` と見分けがつく（同時に付けると、地の上に太い赤の枠が出る）。塗りの白文字は ok・error の濃い色（`sx-ok-ink` 5.70:1・`sx-error-ink` 7.10:1）の上にだけ置き、薄い地と濃い文字の組は `sx-ok-bg`／`sx-ok-ink` 5.06:1・`sx-error-bg`／`sx-error-ink` 6.11:1。色は部品がテーマのトークンから取るので、画面に色を書かない（見本ページの「状態」の節（Tag）と「表の指摘と幅」の節（Pick の tone））。
 - 部品は値を検証しない。エラー文はサーバーの検証の結果を、呼び出し側が `error` などで渡す（検証の規則を画面に写さない）。
-- `Shell` はロゴの横のアプリの名前を `product` で、左ペインの項目を `entries`（`{ label, href, icon, current? }`。`icon` は `NavIconName`＝`home`・`list`・`tasks`・`calendar`・`users`・`package`・`chart`・`history`・`settings`・`projects`。足すときは `src/Shell.tsx` の `navIcons` に足し、見本ページの `navLabels` にも足す）で受け、左下に「ローカル利用／ログインなし」の枠を持つ。ルートは `h-dvh` で、`html`・`body` には何も書かない。
+
+### 開いたら重なって出る部品
+
+`Menu` の一覧と、`anchor` つきの `Popover`。
+
+- HTML の popover（`popover="manual"` と `showPopover()`）で最前面の層に出し、置き方は CSS anchor positioning（押したボタンの下、`Menu` は右端・`Popover` は `align` に揃え、下に収まらなければ上）にする。表の枠（`overflow`）にもモーダル（`<dialog>`）の中にも切られない。
+- モーダルの中で開いた `Menu`・`Popover` は、Esc で自分だけを閉じ（`preventDefault` で `<dialog>` の閉じる要求を止める）、モーダルは次の Esc で閉じる。
+- `anchor` の無い `Popover` は、呼び出し側の `relative` の枠の中に置く。
+- 置き方と最前面の出し方は `src/topLayer.ts` の1か所に持つ。
+
+### 画面ごとの形を持つ部品の引数
+
+見本ページの `use` が正。
+
+- `PageTitle` の `subtitle` は h1 の右に出す画面の対象（Project名など）。
+- `Card` は余白を持たない（呼び出し側が `className` で付ける）。表を縁まで入れるときは `flush`（余白は付けない）。内容を角丸で切り、`THead` の帯が角からはみ出さず、先頭の表の上の罫線と最後の行の下の罫線は Card の枠と二重にならないよう消える。
+- `CardHead` は `Card` の上端の帯で、下罫線の上に下線タブ（`Tabs variant="underline"`）を置き、`note` は右寄せの案内文。
+- `EmptyState` の `support` は2行目の小さい文。
+- `DescriptionList` は `{ term, value }` の並びを2列で見せる（STEP1の値のように、ここでは直せない項目の表示）。
+- `Field` の `inline` はラベル左・部品右の1行（機種ごとの台数の欄）。
+- `Field` を横に並べるときは `FieldGrid`（`columns` は2が標準）に入れる。`Field` はラベル・補足・入力欄・エラーを grid の行（subgrid）に置くので、補足やエラーの有無が隣と違っても入力欄が行ごとにそろう。`FieldGrid` には `Field` だけを入れ、行間の余白は部品が持つ。
+- `Modal` の `size` は `sm`・`md`・`lg`（760px。5つのタブを持つ申込など）。
+- `ConfirmDialog` は子（`children`）を `message` の下に出す。確定の前に入力内容（借りる人・期間など）を見せるときは `DescriptionList` を入れる。ボタンの並びと Esc の答えは変わらない。
+- `StatusLine` の `tone="neutral"` はアイコン無しの控えめな表示（「読み込み中…」）。
+- `TextLink` は表のセルや本文の中のリンク。余白なし・下線・フォーカスリングで、見出しと左がそろう。全角の閉じ括弧で終わる名前でも下線が文字の右にはみ出さない。
+- `Shell` はロゴの横のアプリの名前を `product` で、左ペインの項目を `entries`（`{ label, href, icon, current? }`）で受け、左下に「ローカル利用／ログインなし」の枠を持つ。ルートは `h-dvh` で、`html`・`body` には何も書かない。
+- 左ペインの `icon` は `NavIconName`＝`home`・`list`・`tasks`・`calendar`・`users`・`package`・`chart`・`history`・`settings`・`projects`。足すときは `src/Shell.tsx` の `navIcons` に足し、見本ページの `navLabels` にも足す。
+
+### 作図（物理構成）
+
+- `DiagramFrame`（枠。React Flow はこの中に置く）・`DiagramDevice`（機器の箱）・`DiagramPort`（箱の中のポート。React Flow の `Handle` を中身として渡す）・`DiagramRouteError`（配線できない印と理由）で見た目を持ち、`@xyflow/react` はこのパッケージが読まない。
+- 箱とポートの寸法は `diagramGeometry` の1か所で、整列の見積もり（network-designer の `src/Physical.tsx`）も同じ値を読む。
+- 作図の中（`[data-diagram]`）の機器名・ポート番号は 14px 未満でもよい（コントラストは見る。network-designer の `e2e/contrast-audit.ts`）。
+- ポートを置く段（上・下・右端）は配線の向きで決まるので、呼び出し側が並べて渡す。
+
+### 論理接続図（L3 の見取り図）
+
+`LadderDiagram`（はしご図）で描く。
+
+- 縦の線＝ルーティングする機器（`rails`）、横の帯＝台帳の VLAN（`bands`。`tone` は `normal`・`warn`（琥珀色＝注意の色。理由を `note` に）・`l2only`（破線））、交点の点と文字＝その機器がそこに持つ IP（`taps`）で、上の破線の楕円（`top`。WAN など対象外）と下の一覧（`footer`。静的経路など）も受ける。
+- 受けるのは導いた結果だけで、画面や API の形を知らず、IP の求め方も検証もしない（サーバーが導く）。
+- React Flow は使わず SVG で描き（`stable: "diagram"` のノード数の待ちとぶつからない）、`DiagramFrame` の `fit`（内容の高さ）の枠に入れる。
+- 行の高さ・列の間隔は一定で、帯が増えれば縦に、機器が増えれば横に伸び、横は枠の中でスクロールする（キーボードでも動かせる）。
+- 文字は SVG の中の `foreignObject` に置き、はみ出す分は行数で切ってブラウザの実際の字幅で収める（全文は `title` と表にある）。
+- 寸法は `Ladder.tsx` の1か所、色と文字サイズ（`text-sx-ladder-*`）はトークン。
+- 絵は読み上げに出さず（`role="img"`）、同じ内容の表（`sr-only`）を部品が併せて持つので、画面は別の代わりを用意しない。
+
+### 設定の本文
+
+生成した Config や設計データの JSON のような整形済みの長い文字列は `CodeBlock`（`label` で枠に名前を付ける。等幅・折り返しなし・あふれたら枠の中でスクロール）で見せ、画面は `<pre>` に色や枠を書かない。部品ごとの使い分けは見本ページの `use` が正。
+
+### 機器設定の表（DenseTable）
+
+指摘の出し方
+
+- 機器設定の表の指摘は、欄に `invalid`（`CellInput`・`Pick`。赤枠だけ）を付け、文は行の直下に `DenseRowMessages` で出す（表の幅いっぱいで折り返す。文の頭に「欄の名前：」を付け、同じ文は1回だけ。使い分けは見本ページの `use`）。
+- 指摘ではなく注意の文は、messages の組に `tone: "warn"` を付けると琥珀色の三角のアイコン（読み上げには「注意：」が付く）で出る。注意には欄の赤枠を付けず、文だけを出す。
+- 指摘でも注意でもない補足（直す必要のない、読んでおくと分かりやすいこと）は `tone: "note"` で、アイコンなし・本文の淡い色で出る（指摘・注意より目立たない。欄の赤枠は付けない）。
+- 入力の途中で指摘が出続けないよう、`DenseRow` と、その下の `DenseRowMessages` に同じ `group`（行の鍵。行の inputId など。LAG の組のように2行で1つの入力になるものは2行に同じ値）を渡すと、フォーカスがその `group` の中にあるあいだは、欄の赤枠（`invalid`）と指摘・注意（`tone: "note"` の補足は残る）を出さず、`group` の外に出ると出る。`group` を渡さない行は今までどおりすぐ出す。
+
+幅
+
+- `DenseTable` の `fit` は表を中身の幅で止めて左寄せにする。
+- `Pick` の幅は一番長い選択肢に合うが、1つの列の選択の右に別の欄を並べて「選択＋右の欄」の組にするとき（アクセスリストの送信元・宛先）は `PickWithField`（右の欄を子で渡す）を使う。選択は最小11rem（1440pxの画面で表が横に溢れない幅）で、セルに空きがあれば20rem（長い名前が読める幅）まで広がり、右の欄の場所は空の行も空けておくので、どの行も選択の幅と右の欄の左端がそろう（長い名前は後ろが切れ、開いた一覧と選んだ名前のツールチップには選択肢の文言がそのまま出る）。
+- 表に空きがあるときだけ広げるには、その組を入れた列の定義に `DenseColumn` の `grow` を付ける。`grow` のある列を持つ表は枠の幅いっぱいになり、余った幅はその列だけが受け取る（ほかの列は中身の幅のまま。`grow` のない表は今までどおり）。
+- 入力欄の幅と桁数（`maxLength`）は `CellInput` の `kind` が決め、入る文字数は `src/form-cells.tsx` の1つの表（`cellKinds`）だけが持つ。画面は幅も桁数も書かない。
+
+そのほかの欄
+
+- サーバーが導いた値を入力欄と同じ形で見せるだけで直せないものは `CellInput` の `readOnly`（塗り（disabled と同じ淡い灰色）・Tabの順に入れない）。
+- 並べ替え・削除のような文字のない操作は `IconButton`（`arrow-up`・`arrow-down`・`trash`）。
+
+### 緑と赤が意味を持つ区分（許可・拒否）
+
+アクセスリストの動作（許可・拒否）のように、緑と赤が意味を持つ区分は、色だけで伝えず文字とアイコンを添える（DADS）。
+
+- 読むだけの表は `Tag` の `tone`：`permit`（濃い緑の塗り・白文字・チェック）と `deny`（濃い赤の塗り・白文字・禁止の印）は書いたルールの動作に、`implicit-deny`（赤の枠線だけ・赤の文字・禁止の印。塗らない）は書いていない暗黙の拒否に使い、書いたルールの拒否と見分ける。
+- 入力の表で動作を選ぶ `Pick` には `tone`（`positive`＝薄い緑の地・濃い緑の文字、`negative`＝薄い赤の地・濃い赤の文字）を付ける。選択欄の文字（許可・拒否）はそのままで、地の色だけが付く。
+- `invalid` は白い地に太い赤の枠で、地の色が付く `tone` と見分けがつく（同時に付けると、地の上に太い赤の枠が出る）。
+- 塗りの白文字は ok・error の濃い色（`sx-ok-ink` 5.70:1・`sx-error-ink` 7.10:1）の上にだけ置き、薄い地と濃い文字の組は `sx-ok-bg`／`sx-ok-ink` 5.06:1・`sx-error-bg`／`sx-error-ink` 6.11:1。
+- 色は部品がテーマのトークンから取るので、画面に色を書かない（見本ページの「状態」の節（Tag）と「表の指摘と幅」の節（Pick の tone））。
 
 ## 見本ページ
 
