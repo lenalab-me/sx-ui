@@ -44,3 +44,17 @@ test("監査は、固定幅の表で折り返さない長い値のはみ出し�
   await page.setContent(table(""));
   expect(await page.evaluate(layoutAudit)).toEqual([]);
 });
+
+// A menu opened from a cell is in the top layer, drawn over the table on purpose: it neither leaves
+// its cell nor overlaps the text under it. Two texts in the page under it still count.
+test("監査は、セルから開いたメニュー（popover）を、はみ出し・重なりに数えない", async ({
+  page,
+}) => {
+  await page.setContent(`
+    <table style="table-layout: fixed; width: 300px">
+      <tr><td>行の操作<div popover="manual" id="m" style="position: fixed; inset: 0 auto auto 0; margin: 0; width: 280px">テンプレートから写す・テンプレート化</div></td><td>貸出中</td></tr>
+      <tr><td>2行目の名前</td><td>返却済</td></tr>
+    </table>`);
+  await page.evaluate(() => document.getElementById("m")!.showPopover());
+  expect(await page.evaluate(layoutAudit)).toEqual([]);
+});

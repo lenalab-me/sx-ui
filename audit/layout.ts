@@ -11,6 +11,9 @@
 // frame (what is below the fold is seen too), but does for a text outside it: text scrolled under a
 // fixed header or footer is not on top of it. Text hidden from the screen (display none, visibility
 // hidden, sr-only) is skipped. With a modal open, only the modal is seen, since it covers the page.
+// An open popover (a menu, a floating box) is in the top layer: what is in it is not cut by the
+// clipping around it, does not leave its cell (it is drawn over the table on purpose), and is not
+// compared with the text under it, which it covers.
 // The function is passed to page.evaluate, so it uses nothing outside itself.
 export function layoutAudit(): string[] {
   const skipped = (el: Element): boolean => {
@@ -42,6 +45,7 @@ export function layoutAudit(): string[] {
     rects: Box[];
     painted: Box[];
     frame: Element | null;
+    layer: Element | null;
   }[] = [];
   const root = document.querySelector("dialog[open]") ?? document.body;
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
@@ -59,6 +63,7 @@ export function layoutAudit(): string[] {
     };
     let view = clip;
     let frame: Element | null = null;
+    const layer = el.closest(":popover-open");
     for (let a: Element | null = el; a; a = a.parentElement) {
       const cs = getComputedStyle(a);
       const b = a.getBoundingClientRect();
@@ -69,19 +74,21 @@ export function layoutAudit(): string[] {
         frame ??= a;
         view = cut(view, b);
       }
+      if (a === layer) break;
     }
     const range = document.createRange();
     range.selectNodeContents(node);
     const all = [...range.getClientRects()];
     const rects = all.map((r) => cut(r, clip)).filter((r) => !empty(r));
     const painted = all.map((r) => cut(r, view)).filter((r) => !empty(r));
-    if (rects.length > 0) texts.push({ el, text, rects, painted, frame });
+    if (rects.length > 0)
+      texts.push({ el, text, rects, painted, frame, layer });
   }
   const short = (s: string) => (s.length > 24 ? `${s.slice(0, 24)}…` : s);
   const problems: string[] = [];
   for (const t of texts) {
     const cell = t.el.closest("td,th");
-    if (!cell) continue;
+    if (!cell || (t.layer && cell.contains(t.layer))) continue;
     const c = cell.getBoundingClientRect();
     if (t.rects.some((r) => r.right > c.right + 1 || r.left < c.left - 1))
       problems.push(
@@ -96,6 +103,7 @@ export function layoutAudit(): string[] {
       const a = texts[i]!;
       const b = texts[j]!;
       if (a.el === b.el || a.el.contains(b.el) || b.el.contains(a.el)) continue;
+      if (a.layer !== b.layer) continue;
       const [ra, rb] =
         a.frame === b.frame ? [a.rects, b.rects] : [a.painted, b.painted];
       if (ra.some((x) => rb.some((y) => overlap(x, y))))
