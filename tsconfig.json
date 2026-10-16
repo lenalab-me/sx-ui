@@ -13,5 +13,5 @@
     "allowImportingTsExtensions": true,
     "types": ["node"]
   },
-  "include": ["src", "gallery", "check", "vite", "test"]
+  "include": ["src", "gallery", "check", "vite", "audit", "test"]
 }

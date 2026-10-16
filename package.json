@@ -14,6 +14,10 @@
     "./vite": {
       "types": "./vite/index.ts",
       "default": "./dist/vite/index.js"
+    },
+    "./audit": {
+      "types": "./audit/index.ts",
+      "default": "./dist/audit/index.js"
     }
   },
   "files": [
@@ -21,6 +25,7 @@
     "gallery",
     "check",
     "vite",
+    "audit",
     "bin",
     "dist",
     "tsconfig.json"

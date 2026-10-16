@@ -4,7 +4,7 @@
 # the package (dist/check and dist/vite, what `@sx/ui/check` and `@sx/ui/vite` give to the apps).
 set -eu
 cd "$(dirname "$0")/.."
-npx prettier --check src gallery check vite test e2e playwright.config.ts
+npx prettier --check src gallery check vite audit test e2e playwright.config.ts
 shellcheck bin/*.sh scripts/*.sh
 npm test
 npx tsc --noEmit

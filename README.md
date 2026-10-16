@@ -46,6 +46,7 @@
 - **検査**：`@sx/ui/check` の `scan`（文字列リテラルの取り出し）・`disallowedWords`（配置のクラスの許可リスト `allowedLayout` に無い語）・`colorPattern`・`rolePattern`・`stripCssComments`・`lineOf` で、画面ファイルが配置のクラスしか書かず、色・`role="alert"`／`"status"`・`style=` を書かないことをテストする（network-designer の `src/screen-style.test.ts` が例）。許可リストはこのリポジトリでだけ直す。
 - **見本ページ**：アプリの開発サーバーで `/node_modules/@sx/ui/gallery/` を開くと、入れている版の部品が出る。
 - **ロックと版の入れ替え**：アプリは検査を写さず、部品が配るスクリプトを呼ぶ。`package.json` の scripts に `"ui:approve": "sh node_modules/@sx/ui/bin/ui-lock.sh approve"`・`"ui:update": "sh node_modules/@sx/ui/bin/ui-update.sh"` を置き、check の先頭で `sh node_modules/@sx/ui/bin/ui-lock.sh` を流す。`ui-lock.sh` は、`vendor/` のハッシュが `ui.lock` と同じか、tarball がちょうど1つで `package.json` がそれを指すか、`node_modules/@sx/ui` が tarball の中身と同じか、部品（`vendor/`・`packages/`）と画面（`src/`・`e2e/`・`playwright.config.ts`・`index.html`）に同じコミットで触っていないか（origin/main にまだ無いコミットと作業コピー。origin/main が無ければ全コミット。最初のコミットは除く）を見る。
+- **はみ出し・重なりの監査**：アプリの e2e は、全ルートで `import { layoutAudit } from "@sx/ui/audit";` を `expect(await page.evaluate(layoutAudit), "はみ出し・重なり").toEqual([])` で流す。表のセルから省略記号なしではみ出した文字と、別々の要素の文字の重なりを、文字を挙げて落とす（固定幅の表で `Td nowrap` に長い値を入れると、隣の列の下にもぐる）。基準画像は「前と変わった」しか見ないので、最初に撮ったときから崩れていた画面はこちらで見つける。モーダルが開いていれば中だけ、`overflow` で切った文字（`truncate`・行数の制限）と読み上げだけの文字は見ない。この見本ページも全状態で流す（`e2e/layout.spec.ts`。監査自身が崩れた表を落とすことも確かめる）。
 - **node_modules の部品は直接直さない**：直すのはこのリポジトリで、版を上げて入れ直す。`node_modules/@sx/ui` が tarball の中身と違うと `ui-lock.sh` が止まる。
 
 ## 版を出す
