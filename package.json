@@ -21,6 +21,7 @@
     "gallery",
     "check",
     "vite",
+    "bin",
     "dist",
     "tsconfig.json"
   ],

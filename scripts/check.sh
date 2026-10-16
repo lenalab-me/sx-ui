@@ -5,6 +5,7 @@
 set -eu
 cd "$(dirname "$0")/.."
 npx prettier --check src gallery check vite test
+shellcheck bin/*.sh scripts/*.sh
 npm test
 npx tsc --noEmit
 rm -rf dist && npx tsc -p tsconfig.check.json
