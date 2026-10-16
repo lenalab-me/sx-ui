@@ -2,10 +2,10 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noEmit": false,
-    "outDir": "dist/check",
-    "rootDir": "check",
+    "outDir": "dist",
+    "rootDir": ".",
     "rewriteRelativeImportExtensions": true,
     "erasableSyntaxOnly": true
   },
-  "include": ["check"]
+  "include": ["check", "vite"]
 }

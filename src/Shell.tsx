@@ -51,11 +51,13 @@ function NavItem({
  * no login, so it states the current situation instead of showing a made-up name.
  */
 function Sidebar({
+  product,
   entries,
   homeHref,
   collapsed,
   onToggle,
 }: {
+  product: string;
   entries: NavEntry[];
   homeHref: string;
   collapsed: boolean;
@@ -85,7 +87,7 @@ function Sidebar({
                 : "text-sx-base font-semibold whitespace-nowrap"
             }
           >
-            Network Designer
+            {product}
           </span>
         </a>
         <button
@@ -134,10 +136,13 @@ function Sidebar({
  * written to html or body.
  */
 export function Shell({
+  product,
   entries,
   homeHref,
   children,
 }: {
+  /** The application's name, next to the logo at the top of the pane. */
+  product: string;
   entries: NavEntry[];
   homeHref: string;
   children: ReactNode;
@@ -164,6 +169,7 @@ export function Shell({
       {/* relative: sr-only text is absolutely positioned and must not stretch the document */}
       <div className="relative box-border flex h-full overflow-clip rounded-sx-frame border border-sx-line bg-sx-canvas">
         <Sidebar
+          product={product}
           entries={entries}
           homeHref={homeHref}
           collapsed={collapsed}

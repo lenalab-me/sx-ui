@@ -10,8 +10,9 @@
   @import "@sx/ui/styles.css";
   @source "./";
   ```
+- **Vite**：`vite.config.mjs` に部品のプラグインを足す（`import { sxUi } from "@sx/ui/vite";`、`plugins: [tailwindcss(), sxUi()]`）。部品は TSX のソースのまま node_modules に入り、Vite の esbuild は node_modules の中の tsconfig を読まないので、プラグインが JSX を automatic runtime にし、見本ページ用に React を事前の束ねに入れる。足さないと画面が白くなる（`React is not defined`）。
 - **TypeScript**：部品は TS のソースのまま配り、Vite が変換する（ビルドの手順は無い）。アプリの tsconfig は `jsx: "react-jsx"`・`moduleResolution: "bundler"`・`allowImportingTsExtensions: true`。
-- **入口**：アプリが読めるのは `@sx/ui`（部品）・`@sx/ui/styles.css`（CSS）・`@sx/ui/check`（検査の道具。テストだけが読む）の3つだけで、`@sx/ui/src/...` のような深い import はしない。
+- **入口**：アプリが読めるのは `@sx/ui`（部品）・`@sx/ui/styles.css`（CSS）・`@sx/ui/check`（検査の道具。テストだけが読む）・`@sx/ui/vite`（Vite のプラグイン。`vite.config.mjs` だけが読む）の4つだけで、`@sx/ui/src/...` のような深い import はしない。
 - **検査**：`@sx/ui/check` の `scan`（文字列リテラルの取り出し）・`disallowedWords`（配置のクラスの許可リスト `allowedLayout` に無い語）・`colorPattern`・`rolePattern`・`stripCssComments`・`lineOf` で、画面ファイルが配置のクラスしか書かず、色・`role="alert"`／`"status"`・`style=` を書かないことをテストする（network-designer の `src/screen-style.test.ts` が例）。許可リストはこのリポジトリでだけ直す。
 - **見本ページ**：アプリの開発サーバーで `/node_modules/@sx/ui/gallery/` を開くと、入れている版の部品が出る。
 - **node_modules の部品は直接直さない**：直すのはこのリポジトリで、版を上げて入れ直す。network-designer は `node_modules/@sx/ui` が tarball の中身と違うと check で止まる（`scripts/ui-lock.sh`）。
@@ -45,7 +46,7 @@
 - 機器設定の表の指摘は、欄に `invalid`（`CellInput`・`Pick`。赤枠だけ）を付け、文は行の直下に `DenseRowMessages` で出す（表の幅いっぱいで折り返す。文の頭に「欄の名前：」を付け、同じ文は1回だけ。使い分けは見本ページの `use`）。指摘ではなく注意の文は、messages の組に `tone: "warn"` を付けると琥珀色の三角のアイコン（読み上げには「注意：」が付く）で出る。注意には欄の赤枠を付けず、文だけを出す。指摘でも注意でもない補足（直す必要のない、読んでおくと分かりやすいこと）は `tone: "note"` で、アイコンなし・本文の淡い色で出る（指摘・注意より目立たない。欄の赤枠は付けない）。入力の途中で指摘が出続けないよう、`DenseRow` と、その下の `DenseRowMessages` に同じ `group`（行の鍵。行の inputId など。LAG の組のように2行で1つの入力になるものは2行に同じ値）を渡すと、フォーカスがその `group` の中にあるあいだは、欄の赤枠（`invalid`）と指摘・注意（`tone: "note"` の補足は残る）を出さず、`group` の外に出ると出る。`group` を渡さない行は今までどおりすぐ出す。`DenseTable` の `fit` は表を中身の幅で止めて左寄せにする。`Pick` の幅は一番長い選択肢に合うが、1つの列の選択の右に別の欄を並べて「選択＋右の欄」の組にするとき（アクセスリストの送信元・宛先）は `PickWithField`（右の欄を子で渡す）を使う。選択は最小11rem（1440pxの画面で表が横に溢れない幅）で、セルに空きがあれば20rem（長い名前が読める幅）まで広がり、右の欄の場所は空の行も空けておくので、どの行も選択の幅と右の欄の左端がそろう（長い名前は後ろが切れ、開いた一覧と選んだ名前のツールチップには選択肢の文言がそのまま出る）。表に空きがあるときだけ広げるには、その組を入れた列の定義に `DenseColumn` の `grow` を付ける。`grow` のある列を持つ表は枠の幅いっぱいになり、余った幅はその列だけが受け取る（ほかの列は中身の幅のまま。`grow` のない表は今までどおり）。サーバーが導いた値を入力欄と同じ形で見せるだけで直せないものは `CellInput` の `readOnly`（塗り（disabled と同じ淡い灰色）・Tabの順に入れない）。並べ替え・削除のような文字のない操作は `IconButton`（`arrow-up`・`arrow-down`・`trash`）。入力欄の幅と桁数（`maxLength`）は `CellInput` の `kind` が決め、入る文字数は `src/form-cells.tsx` の1つの表（`cellKinds`）だけが持つ。画面は幅も桁数も書かない。
 - アクセスリストの動作（許可・拒否）のように、緑と赤が意味を持つ区分は、色だけで伝えず文字とアイコンを添える（DADS）。読むだけの表は `Tag` の `tone`：`permit`（濃い緑の塗り・白文字・チェック）と `deny`（濃い赤の塗り・白文字・禁止の印）は書いたルールの動作に、`implicit-deny`（赤の枠線だけ・赤の文字・禁止の印。塗らない）は書いていない暗黙の拒否に使い、書いたルールの拒否と見分ける。入力の表で動作を選ぶ `Pick` には `tone`（`positive`＝薄い緑の地・濃い緑の文字、`negative`＝薄い赤の地・濃い赤の文字）を付ける。選択欄の文字（許可・拒否）はそのままで、地の色だけが付く。`invalid` は白い地に太い赤の枠で、地の色が付く `tone` と見分けがつく（同時に付けると、地の上に太い赤の枠が出る）。塗りの白文字は ok・error の濃い色（`sx-ok-ink` 5.70:1・`sx-error-ink` 7.10:1）の上にだけ置き、薄い地と濃い文字の組は `sx-ok-bg`／`sx-ok-ink` 5.06:1・`sx-error-bg`／`sx-error-ink` 6.11:1。色は部品がテーマのトークンから取るので、画面に色を書かない（見本ページの「状態」の節（Tag）と「表の指摘と幅」の節（Pick の tone））。
 - 部品は値を検証しない。エラー文はサーバーの検証の結果を、呼び出し側が `error` などで渡す（検証の規則を画面に写さない）。
-- `Shell` は左ペインの項目を `entries`（`{ label, href, icon, current? }`）で受け、左下に「ローカル利用／ログインなし」の枠を持つ。ルートは `h-dvh` で、`html`・`body` には何も書かない。
+- `Shell` はロゴの横のアプリの名前を `product` で、左ペインの項目を `entries`（`{ label, href, icon, current? }`）で受け、左下に「ローカル利用／ログインなし」の枠を持つ。ルートは `h-dvh` で、`html`・`body` には何も書かない。
 
 ## 見本ページ
 

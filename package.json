@@ -10,13 +10,18 @@
     "./check": {
       "types": "./check/index.ts",
       "default": "./dist/check/index.js"
+    },
+    "./vite": {
+      "types": "./vite/index.ts",
+      "default": "./dist/vite/index.js"
     }
   },
   "files": [
     "src",
     "gallery",
     "check",
-    "dist/check",
+    "vite",
+    "dist",
     "tsconfig.json"
   ],
   "scripts": {

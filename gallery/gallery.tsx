@@ -274,11 +274,13 @@ function Gallery() {
 
   return (
     <Shell
-      homeHref="/packages/ui/gallery/"
+      // The name is still the first app's, so that its screenshots of this page stay the same.
+      product="Network Designer"
+      homeHref="./"
       entries={[
         {
           label: "部品の見本",
-          href: "/packages/ui/gallery/",
+          href: "./",
           icon: "projects",
           current: true,
         },
