@@ -74,7 +74,7 @@ import {
 } from "../src";
 
 // A page that shows every component in every state. It is not part of the app build: open it
-// with the dev server at /gallery/. ?open=modal|modal-lg|confirm|menu|popover|table-menu opens that
+// with the dev server at /gallery/. ?open=modal|modal-lg|confirm|confirm-detail|menu|popover|table-menu opens that
 // overlay on load. Only layout classes are used here; the look comes from the components.
 // It is also the catalog of the components: every Section lists the parts it shows (`parts`) and
 // says when to use them and when not to (`use`). test/catalog.test.ts checks that every component
@@ -289,6 +289,9 @@ function Gallery() {
   const [modal, setModal] = useState(opened === "modal");
   const [modalLg, setModalLg] = useState(opened === "modal-lg");
   const [confirm, setConfirm] = useState(opened === "confirm");
+  const [confirmDetail, setConfirmDetail] = useState(
+    opened === "confirm-detail",
+  );
   const [popover, setPopover] = useState(opened === "popover");
   const [status, setStatus] = useState<string | null>(
     "見本拠点 1 の補足を保存しました。",
@@ -1560,7 +1563,7 @@ function Gallery() {
         <Section
           title="ダイアログ"
           parts={["Modal", "ConfirmDialog"]}
-          use="Modal は背後の操作を止めて入力を求める窓で、閉じても何も送りません。幅は「sm」（確認）・「md」（入力）・「lg」（2列の入力やタブのある窓）から選びます。ConfirmDialog は取り消せない操作の前の確認に使い、入力を求めるときは Modal を使います。"
+          use="Modal は背後の操作を止めて入力を求める窓で、閉じても何も送りません。幅は「sm」（確認）・「md」（入力）・「lg」（2列の入力やタブのある窓）から選びます。ConfirmDialog は取り消せない操作の前の確認に使い、入力を求めるときは Modal を使います。確定の前に入力した内容（借りる人・期間など）を見せるときは、ConfirmDialog の子に DescriptionList を入れます（message の下に出る。ボタンの並びと Esc の答えは変わらない）。Modal と DescriptionList で組み直さず、確認のボタンは ConfirmDialog に任せます。"
         >
           <div className="flex flex-wrap items-center gap-3">
             <Button onClick={() => setModal(true)}>モーダルを開く</Button>
@@ -1568,6 +1571,9 @@ function Gallery() {
               大きいモーダルを開く
             </Button>
             <Button onClick={() => setConfirm(true)}>確認を開く</Button>
+            <Button onClick={() => setConfirmDetail(true)}>
+              内容つきの確認を開く
+            </Button>
           </div>
         </Section>
 
@@ -1719,6 +1725,25 @@ function Gallery() {
             }}
             onAnswer={() => setConfirm(false)}
           />
+        )}
+        {confirmDetail && (
+          <ConfirmDialog
+            q={{
+              title: "貸し出し前の確認",
+              message: "次の内容で貸し出します。",
+              confirm: "貸し出す",
+            }}
+            onAnswer={() => setConfirmDetail(false)}
+          >
+            <DescriptionList
+              items={[
+                { term: "借りる人", value: "見本 太郎" },
+                { term: "備品", value: "ノートPC（軽量）" },
+                { term: "期間", value: "10月19日 〜 10月26日" },
+                { term: "受け渡し", value: "総務の窓口" },
+              ]}
+            />
+          </ConfirmDialog>
         )}
       </Page>
     </Shell>

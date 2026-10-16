@@ -52,7 +52,7 @@
 
 ## 見本ページ
 
-`gallery/`（`index.html`・`gallery.tsx`）は、部品を全部、tone・variant・size・disabled・invalid・必須ごとに並べたページで、`npm run dev` の `/gallery/`（アプリの開発サーバーでは `/node_modules/@sx/ui/gallery/`）で開く。アプリの `vite build` の入口はアプリの `index.html` だけなので配布物には入らない。`?open=modal`・`?open=modal-lg`（幅 760px の `lg`）・`?open=confirm`・`?open=menu`・`?open=popover`・`?open=table-menu`（行が2件だけの表の中の Menu）を付けると、そのモーダル・確認・メニュー・浮き枠を開いた状態で表示する。表は40行あり、ページ全体ではなく `main` の中だけがスクロールする。見本ページは `body` の余白だけを自分の `index.html` で消す（preflight を読まないため。アプリの `index.html` も同じにする）。画面ファイルと同じく、見本ページで使うクラスは配置のクラスだけにする。
+`gallery/`（`index.html`・`gallery.tsx`）は、部品を全部、tone・variant・size・disabled・invalid・必須ごとに並べたページで、`npm run dev` の `/gallery/`（アプリの開発サーバーでは `/node_modules/@sx/ui/gallery/`）で開く。アプリの `vite build` の入口はアプリの `index.html` だけなので配布物には入らない。`?open=modal`・`?open=modal-lg`（幅 760px の `lg`）・`?open=confirm`・`?open=confirm-detail`（内容つきの確認）・`?open=menu`・`?open=popover`・`?open=table-menu`（行が2件だけの表の中の Menu）を付けると、そのモーダル・確認・メニュー・浮き枠を開いた状態で表示する。表は40行あり、ページ全体ではなく `main` の中だけがスクロールする。見本ページは `body` の余白だけを自分の `index.html` で消す（preflight を読まないため。アプリの `index.html` も同じにする）。画面ファイルと同じく、見本ページで使うクラスは配置のクラスだけにする。
 
 見本ページは部品の台帳でもある。各節は `parts`（その節で見せる部品の名前）と `use`（いつ使うか・いつ使わないか。似た部品との使い分け）を持ち、`use` は節の見出しの下に表示される。台帳を別の文書に写さず、部品の一覧と使い分けはこの1か所だけにする。部品を足す・名前を変えるときは、同じ部品のコミットで見本の節に載せる（`parts` に名前を足し、`<名前` で描き、`use` を書く）。`test/catalog.test.ts`（`npm test`）が、`src/index.ts` が値として公開する部品（英大文字で始まる名前。`type` の export と `confirmTitle` のような関数は除く）の次を見る。
 

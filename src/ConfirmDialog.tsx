@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Button } from "./Button";
 import { Modal } from "./Modal";
 
@@ -17,13 +18,18 @@ export type ConfirmResult = "confirm" | "third" | "cancel";
 /** "{ボタン名}前の確認" */
 export const confirmTitle = (button: string) => `${button}前の確認`;
 
-/** The confirmation dialog. Buttons: "キャンセル", the optional third choice, then the confirming one. Esc and × answer "cancel". */
+/**
+ * The confirmation dialog. Buttons: "キャンセル", the optional third choice, then the confirming one. Esc and × answer "cancel".
+ * `children` is the content to confirm, shown under the message (for example a DescriptionList of who borrows what, and until when).
+ */
 export function ConfirmDialog({
   q,
   onAnswer,
+  children,
 }: {
   q: ConfirmQuestion;
   onAnswer: (r: ConfirmResult) => void;
+  children?: ReactNode;
 }) {
   return (
     <Modal
@@ -46,6 +52,7 @@ export function ConfirmDialog({
       }
     >
       <p className="text-sx-body">{q.message}</p>
+      {children}
     </Modal>
   );
 }
