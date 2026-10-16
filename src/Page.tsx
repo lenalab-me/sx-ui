@@ -74,23 +74,31 @@ export function PageTitle({
   );
 }
 
-/** A white card. Give it `label` or `labelledBy` so the section has a name. */
+/**
+ * A white card. Give it `label` or `labelledBy` so the section has a name. A card has no padding
+ * of its own (the caller adds it with `className`). `flush` is for a Table (or a CardHead and then
+ * a Table) that runs edge to edge: the content is clipped to the rounded corners, so the header
+ * band does not stick out of them, and a Table placed first drops its top border and the last
+ * row its bottom border (the card's border is already there). Do not add padding to a flush card.
+ */
 export function Card({
   children,
   className = "",
   label,
   labelledBy,
+  flush = false,
 }: {
   children: ReactNode;
   className?: string;
   label?: string;
   labelledBy?: string;
+  flush?: boolean;
 }) {
   return (
     <section
       aria-label={label}
       aria-labelledby={labelledBy}
-      className={`rounded-sx-card border border-sx-line bg-sx-surface shadow-sx-card ${className}`}
+      className={`rounded-sx-card border border-sx-line bg-sx-surface shadow-sx-card ${flush ? "overflow-clip [&>div:first-child_thead_tr]:border-t-0 [&_tbody_tr:last-child]:border-b-0" : ""} ${className}`}
     >
       {children}
     </section>

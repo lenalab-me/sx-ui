@@ -68,3 +68,4 @@ export { Stepper, type Step } from "./Stepper";
 export { RowHead, Table, Td, Th, THead, Tr } from "./Table";
 export { Tag, type TagTone } from "./Tag";
 export { TabPanel, Tabs, type TabItem, type TabsVariant } from "./Tabs";
+export { TextLink } from "./TextLink";

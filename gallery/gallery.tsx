@@ -58,6 +58,7 @@ import {
   Textarea,
   Th,
   THead,
+  TextLink,
   Tr,
   type ControlSize,
   type IconName,
@@ -1560,8 +1561,8 @@ function Gallery() {
 
         <Section
           title="一覧の表"
-          parts={["Table", "THead", "Th", "Tr", "RowHead", "Td"]}
-          use="1行1件の一覧用の表で、行は56pxです。入力する表には使わず、機器設定の表（DenseTable）を使います。"
+          parts={["Table", "THead", "Th", "Tr", "RowHead", "Td", "TextLink"]}
+          use="1行1件の一覧用の表で、行は56pxです。入力する表には使わず、機器設定の表（DenseTable）を使います。名前のセルから詳細へ行くリンクは TextLink（下線つき・余白なしで、見出しと左がそろう。ButtonLink の「ghost」で代用しない。本文の中のリンクにも使う）で、ボタンに見せる移動は ButtonLink です。表を Card に入れるときは、Card に「flush」を付けます（余白は付けない）。内容が角丸に沿って切られ、THead の帯が角からはみ出さず、枠線が二重になりません。Card に余白を付けて表を入れると、帯が角丸の内側で浮いて見えます。見出しや操作を表の上に置くときは、CardHead か、Card の中の別の行に置きます。"
         >
           <Table caption="見本拠点の一覧" minWidth={720}>
             <colgroup>
@@ -1580,13 +1581,43 @@ function Gallery() {
               {rows.map((r, i) => (
                 <Tr key={r.number} selected={i === 2}>
                   <RowHead nowrap>{r.number}</RowHead>
-                  <Td truncate>{r.name}</Td>
+                  <Td truncate>
+                    <TextLink href={`#site-${r.number}`}>{r.name}</TextLink>
+                  </Td>
                   <Td nowrap>{r.kind}</Td>
                   <Td numeric>{r.devices}</Td>
                 </Tr>
               ))}
             </tbody>
           </Table>
+          <SectionHeader title="Card に入れた表" level={3} />
+          <Card label="Card に入れた表の例" flush>
+            <Table caption="Card に入れた表" minWidth={480}>
+              <colgroup>
+                <col className="w-32" />
+                <col />
+                <col className="w-28" />
+              </colgroup>
+              <THead>
+                <Th>拠点番号</Th>
+                <Th>拠点名</Th>
+                <Th numeric>機器数</Th>
+              </THead>
+              <tbody>
+                {rows.slice(0, 3).map((r) => (
+                  <Tr key={r.number}>
+                    <RowHead nowrap>{r.number}</RowHead>
+                    <Td truncate>
+                      <TextLink href={`#card-${r.number}`}>
+                        {r.number === "001" ? "ノートPC（軽量）" : r.name}
+                      </TextLink>
+                    </Td>
+                    <Td numeric>{r.devices}</Td>
+                  </Tr>
+                ))}
+              </tbody>
+            </Table>
+          </Card>
         </Section>
 
         {modal && (
