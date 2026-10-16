@@ -71,10 +71,10 @@ import {
 } from "../src";
 
 // A page that shows every component in every state. It is not part of the app build: open it
-// with the dev server at /packages/ui/gallery/. ?open=modal|modal-lg|confirm|menu|popover|table-menu opens that
+// with the dev server at /gallery/. ?open=modal|modal-lg|confirm|menu|popover|table-menu opens that
 // overlay on load. Only layout classes are used here; the look comes from the components.
 // It is also the catalog of the components: every Section lists the parts it shows (`parts`) and
-// says when to use them and when not to (`use`). src/ui-catalog.test.ts checks that every component
+// says when to use them and when not to (`use`). test/catalog.test.ts checks that every component
 // exported from @sx/ui is in exactly one `parts` and is drawn here.
 
 const sizes: ControlSize[] = ["sm", "md", "lg"];
@@ -274,8 +274,7 @@ function Gallery() {
 
   return (
     <Shell
-      // The name is still the first app's, so that its screenshots of this page stay the same.
-      product="Network Designer"
+      product="sx-ui"
       homeHref="./"
       entries={[
         {
@@ -327,6 +326,14 @@ function Gallery() {
               { label: "Project", href: "/" },
               { label: "見本拠点" },
               { label: "機器設定" },
+            ]}
+          />
+          {/* A link that ends with fullwidth closing punctuation: the underline stops at the ink */}
+          <Crumbs
+            items={[
+              { label: "Project", href: "/" },
+              { label: "ノートPC（軽量）", href: "#laptop" },
+              { label: "貸し出し" },
             ]}
           />
           <Card label="CardHead（案内あり）">

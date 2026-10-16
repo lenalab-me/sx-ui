@@ -1,4 +1,5 @@
 import { focusRing } from "./focus";
+import { LinkText } from "./LinkText";
 
 export interface Crumb {
   label: string;
@@ -23,7 +24,7 @@ export function Crumbs({ items }: { items: Crumb[] }) {
               href={it.href}
               className={`underline underline-offset-4 hover:text-sx-strong ${focusRing}`}
             >
-              {it.label}
+              <LinkText>{it.label}</LinkText>
             </a>
           ) : (
             <span aria-current="page" className="truncate text-sx-body">
