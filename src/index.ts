@@ -22,6 +22,7 @@ export {
   CheckboxInput,
   ErrorText,
   Field,
+  FieldGrid,
   Input,
   Label,
   NumberInput,

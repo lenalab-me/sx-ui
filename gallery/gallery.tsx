@@ -27,6 +27,7 @@ import {
   EmptyState,
   ErrorText,
   Field,
+  FieldGrid,
   Icon,
   IconButton,
   Input,
@@ -462,6 +463,7 @@ function Gallery() {
           title="入力"
           parts={[
             "Field",
+            "FieldGrid",
             "Label",
             "SupportText",
             "ErrorText",
@@ -472,9 +474,9 @@ function Gallery() {
             "Checkbox",
             "CheckboxInput",
           ]}
-          use="ラベル・補足・エラーと入力欄を組む Field が基本で、Label・SupportText・ErrorText は Field の中身です。機器の台数のような短い値は「inline」で、ラベルを左・入力欄を右の1行に並べます（長い値や選択肢の多いものには使いません）。表の中には使わず、表のセルには機器設定の表の部品を使います。"
+          use="ラベル・補足・エラーと入力欄を組む Field が基本で、Label・SupportText・ErrorText は Field の中身です。機器の台数のような短い値は「inline」で、ラベルを左・入力欄を右の1行に並べます（長い値や選択肢の多いものには使いません）。Field を横に並べるときは FieldGrid（「columns」は2が標準）に入れます。補足やエラーの有無が隣と違っても、ラベル・入力欄が行ごとにそろいます（Field を grid で並べると、補足のある Field の入力欄だけが下にずれます）。FieldGrid には Field だけを入れ、行間の余白は部品が持ちます。表の中には使わず、表のセルには機器設定の表の部品を使います。"
         >
-          <div className="grid grid-cols-2 gap-6">
+          <FieldGrid>
             <Field label="拠点名" support="20文字以内で入力します。" required>
               {(f) => (
                 <Input
@@ -540,18 +542,18 @@ function Gallery() {
                 />
               )}
             </Field>
-            <div className="flex flex-col gap-3">
-              {sizes.map((size) => (
-                <Input
-                  key={size}
-                  size={size}
-                  aria-label={`入力欄 ${size}`}
-                  defaultValue={`size ${size}`}
-                />
-              ))}
-            </div>
+          </FieldGrid>
+          <div className="flex flex-col gap-3">
+            {sizes.map((size) => (
+              <Input
+                key={size}
+                size={size}
+                aria-label={`入力欄 ${size}`}
+                defaultValue={`size ${size}`}
+              />
+            ))}
           </div>
-          <div className="grid grid-cols-2 gap-6">
+          <FieldGrid>
             <Field label="ルーターの台数" inline>
               {(f) => (
                 <NumberInput
@@ -595,7 +597,7 @@ function Gallery() {
                 />
               )}
             </Field>
-          </div>
+          </FieldGrid>
           <div className="flex flex-col gap-3">
             <Checkbox
               label="チェックの例（操作できる）"
@@ -1667,7 +1669,7 @@ function Gallery() {
               </>
             }
           >
-            <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+            <FieldGrid>
               <Field label="拠点番号" required>
                 {(f) => <Input id={f.id} defaultValue="" />}
               </Field>
@@ -1703,7 +1705,7 @@ function Gallery() {
               <Field label="スイッチの台数" inline>
                 {(f) => <NumberInput id={f.id} size="md" defaultValue="2" />}
               </Field>
-            </div>
+            </FieldGrid>
           </Modal>
         )}
         {confirm && (

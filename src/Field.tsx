@@ -1,6 +1,8 @@
 import { Check } from "lucide-react";
 import {
+  createContext,
   forwardRef,
+  useContext,
   useId,
   type InputHTMLAttributes,
   type ReactNode,
@@ -76,6 +78,43 @@ export function ErrorText({
   );
 }
 
+const InFieldGrid = createContext(false);
+
+const gridColumns = {
+  1: "grid-cols-1",
+  2: "grid-cols-2",
+  3: "grid-cols-3",
+} as const;
+
+/**
+ * Fields side by side in columns. Every Field in it spans four rows of the grid (the label, the
+ * support text, the control, the error), so the controls line up across a row whether or not
+ * a neighbor has support text or an error. Put only Fields in it.
+ */
+export function FieldGrid({
+  columns = 2,
+  children,
+}: {
+  columns?: keyof typeof gridColumns;
+  children: ReactNode;
+}) {
+  return (
+    <InFieldGrid value={true}>
+      {/* Each Field carries pb-4 as the space to the next row; -mb-4 takes the last one back */}
+      <div className={`-mb-4 grid gap-x-6 ${gridColumns[columns]}`}>
+        {children}
+      </div>
+    </InFieldGrid>
+  );
+}
+
+const rowStart = {
+  1: "row-start-1",
+  2: "row-start-2",
+  3: "row-start-3",
+  4: "row-start-4",
+} as const;
+
 export interface FieldIds {
   id: string;
   describedBy: string | undefined;
@@ -110,26 +149,47 @@ export function Field({
   const describedBy =
     [supportId, errorId].filter(Boolean).join(" ") || undefined;
   const control = children({ id, describedBy, invalid: Boolean(error) });
+  const inGrid = useContext(InFieldGrid);
+  // In a FieldGrid each part sits on its own row of the grid, with its spacing as padding
+  // (an empty row then takes no space); alone, the parts are stacked with a gap.
+  const slot = (row: keyof typeof rowStart, pad: string, node: ReactNode) =>
+    inGrid ? <div className={`${rowStart[row]} ${pad}`}>{node}</div> : node;
+  const supportText = support && (
+    <SupportText id={supportId}>{support}</SupportText>
+  );
+  const labelText = (
+    <Label htmlFor={id} required={required}>
+      {label}
+    </Label>
+  );
   return (
-    <div className={`flex flex-col gap-1.5 ${className}`}>
+    <div
+      className={
+        inGrid
+          ? `row-span-4 grid grid-rows-subgrid pb-4 ${className}`
+          : `flex flex-col gap-1.5 ${className}`
+      }
+    >
       {inline ? (
-        <div className="flex items-center justify-between gap-3">
-          <Label htmlFor={id} required={required}>
-            {label}
-          </Label>
-          <div className="w-24 shrink-0">{control}</div>
-        </div>
+        <>
+          {slot(
+            1,
+            "",
+            <div className="flex items-center justify-between gap-3">
+              {labelText}
+              <div className="w-24 shrink-0">{control}</div>
+            </div>,
+          )}
+          {supportText && slot(2, "pt-1.5", supportText)}
+        </>
       ) : (
         <>
-          <Label htmlFor={id} required={required}>
-            {label}
-          </Label>
-          {support && <SupportText id={supportId}>{support}</SupportText>}
-          {control}
+          {slot(1, "pb-1.5", labelText)}
+          {supportText && slot(2, "pb-1.5", supportText)}
+          {slot(3, "", control)}
         </>
       )}
-      {inline && support && <SupportText id={supportId}>{support}</SupportText>}
-      {error && <ErrorText id={errorId}>{error}</ErrorText>}
+      {error && slot(4, "pt-1.5", <ErrorText id={errorId}>{error}</ErrorText>)}
     </div>
   );
 }
