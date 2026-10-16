@@ -58,3 +58,60 @@ test("監査は、セルから開いたメニュー（popover）を、はみ出�
   await page.evaluate(() => document.getElementById("m")!.showPopover());
   expect(await page.evaluate(layoutAudit)).toEqual([]);
 });
+
+// The audit itself, for each of the other kinds: the broken form is caught, the right one passes.
+const audit = async (page: import("@playwright/test").Page, html: string) => {
+  await page.setContent(html);
+  return page.evaluate(layoutAudit);
+};
+
+test("監査は、省略記号も行数の制限も無く途中で切れた文字を落とし、truncate・行数の制限なら通す", async ({
+  page,
+}) => {
+  const box = (style: string) =>
+    `<div style="width: 120px; overflow: hidden; white-space: nowrap; ${style}">見本拠点 001 〜 見本拠点 120 の一括登録</div>`;
+  const cut = await audit(page, box(""));
+  expect(cut.some((p) => p.startsWith("文字が途中で切れている"))).toBe(true);
+  expect(await audit(page, box("text-overflow: ellipsis"))).toEqual([]);
+  expect(
+    await audit(
+      page,
+      `<div style="width: 120px; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1">見本拠点 001 〜 見本拠点 120 の一括登録</div>`,
+    ),
+  ).toEqual([]);
+});
+
+test("監査は、文字に重なったアイコンを落とし、並んだアイコンなら通す", async ({
+  page,
+}) => {
+  const icon = (style: string) =>
+    `<p style="position: relative; font-size: 16px">保存しました<svg width="16" height="16" style="${style}"><circle cx="8" cy="8" r="8"/></svg></p>`;
+  const hit = await audit(
+    page,
+    icon("position: absolute; left: 4px; top: 4px"),
+  );
+  expect(hit.some((p) => p.startsWith("アイコンと文字が重なっている"))).toBe(
+    true,
+  );
+  expect(await audit(page, icon("margin-left: 8px"))).toEqual([]);
+});
+
+test("監査は、ページの横のはみ出しと、キーボードで入れない横スクロールの枠を落とし、入れる枠なら通す", async ({
+  page,
+}) => {
+  const wide = await audit(page, `<div style="width: 3000px">広い表</div>`);
+  expect(wide.some((p) => p.startsWith("ページが横にはみ出している"))).toBe(
+    true,
+  );
+  const frame = (attrs: string) =>
+    `<div ${attrs} style="width: 300px; overflow-x: auto"><div style="width: 900px">広い表の中身</div></div>`;
+  const locked = await audit(page, frame(""));
+  expect(
+    locked.some((p) =>
+      p.startsWith("横にスクロールする枠にキーボードで入れない"),
+    ),
+  ).toBe(true);
+  expect(
+    await audit(page, frame('tabindex="0" role="region" aria-label="表"')),
+  ).toEqual([]);
+});
