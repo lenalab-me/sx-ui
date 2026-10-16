@@ -1,16 +1,44 @@
-import { FileStack, Network, PanelLeft, UserRound } from "lucide-react";
+import {
+  CalendarDays,
+  ChartColumn,
+  ClipboardList,
+  FileStack,
+  History,
+  House,
+  List,
+  Network,
+  Package,
+  PanelLeft,
+  Settings,
+  UserRound,
+  Users,
+} from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { focusRing } from "./focus";
 
 const MENU_KEY = "nd-menu";
 
 // Screens name an icon; the mapping to the icon library stays in this package.
-const navIcons = { projects: FileStack };
+const navIcons = {
+  calendar: CalendarDays,
+  chart: ChartColumn,
+  history: History,
+  home: House,
+  list: List,
+  package: Package,
+  projects: FileStack,
+  settings: Settings,
+  tasks: ClipboardList,
+  users: Users,
+};
+
+/** The icons the left pane offers (a separate set from IconName: the pane's are 20px and carry a label beside them). */
+export type NavIconName = keyof typeof navIcons;
 
 export interface NavEntry {
   label: string;
   href: string;
-  icon: keyof typeof navIcons;
+  icon: NavIconName;
   current?: boolean;
 }
 
