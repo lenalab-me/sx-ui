@@ -272,11 +272,14 @@ function Section({
   title,
   parts,
   use,
+  narrow,
   children,
 }: {
   title: string;
   parts: string[];
   use: string;
+  /** How the parts behave on a phone (below md). A paragraph of its own, at least 112px high. */
+  narrow?: string;
   children: ReactNode;
 }) {
   const heading = `${title}（${parts.join("・")}）`;
@@ -284,6 +287,13 @@ function Section({
     <Card label={heading} className="flex flex-col gap-4 p-6 max-md:p-4">
       <SectionHeader title={heading} level={2} />
       <SupportText>{use}</SupportText>
+      {/* min-h-28 (112px) is five lines of SupportText at 1440px: with a whole number of px added,
+          the sections below stay where they were, to the pixel (their baseline images do not change). */}
+      {narrow && (
+        <div className="min-h-28">
+          <SupportText>{narrow}</SupportText>
+        </div>
+      )}
       {children}
     </Card>
   );
@@ -355,6 +365,7 @@ function Gallery() {
 
         <Section
           title="画面の枠組み"
+          narrow="狭い画面（幅 768px 未満。スマホ）では、左ペインが隠れて上端の帯（ロゴ・製品名・メニューのボタン）に変わり、ボタンを押すと同じ項目と「account」（名前・ログアウト）が右から出る引き出しに並びます（Esc・背景のクリック・項目の選択で閉じます。「pane」を「false」にした画面は、帯に製品名だけを出してメニューのボタンは出しません）。CardHead の「note」は、狭い画面ではタブの下に左そろえで出ます。Page・PageTitle も余白を詰め、操作を折り返します。画面は何も書き足さず、部品が切り替わります。"
           parts={["Shell", "Page", "PageTitle", "Card", "CardHead", "Crumbs"]}
           use="Shell は左ペインとページの枠で、画面は Page を1つ入れます。左ペインの項目（「entries」）は名前（「icon」）でアイコンを選びます（home・list・tasks・calendar・users・package・chart・history・settings・projects・play・book・shield。この見本の左ペインに全部並んでいます）。ログインのあるアプリは「account」で左下に利用者の名前とログアウトを出し、「mark」でロゴに頭文字を入れます（?shell=account）。見出しの行は PageTitle（何の画面かを添えるときは「subtitle」。この見本の見出しの右）、白い面は Card、現在位置は Crumbs（Page に渡した経路から描かれる）です。Card の上端にタブを置くときは CardHead に下線のタブ（Tabs の「underline」）を入れ、その面が何を並べるかの案内は「note」で右に添えます。タブのない Card には使いません。Page の「footer」は、本文の下端に固定される帯（本文がスクロールしても動かない。この見本の画面の下端）で、工程や画面を前後に移るボタンを置きます（前へ・戻るは左端、次へは右端）。保存や削除のような操作は置かず、本文の中か Modal の下端の帯に置きます。"
         >
@@ -1601,6 +1612,7 @@ function Gallery() {
 
         <Section
           title="一覧の表"
+          narrow="狭い画面（幅 768px 未満。スマホ）では、列の少ない表に「stack」を付けると、行が縦に積まれて横にスクロールしなくなります（見出しの行は読み上げ専用になり、各行のセルが下へ並ぶ）。各 Td の「label」に列の名前を書くと値の前に出ます（RowHead には書かない。行の見出しなので、積んだ行の先頭にそのまま出る）。選んだ行（Tr の「selected」）でも、列の名前は読める濃さのまま出ます。「stack」の表は、「table・row・columnheader・rowheader・cell」の「role」を部品が付けます。幅 768px 以上は「stack」なしと同じ表で、読み上げも変わりません。列が多くて横にスクロールさせたい表（この節の上の表）には「stack」を付けません。"
           parts={["Table", "THead", "Th", "Tr", "RowHead", "Td", "TextLink"]}
           use="1行1件の一覧用の表で、行は56pxです。入力する表には使わず、機器設定の表（DenseTable）を使います。名前のセルから詳細へ行くリンクは TextLink（下線つき・余白なしで、見出しと左がそろう。ButtonLink の「ghost」で代用しない。本文の中のリンクにも使う）で、ボタンに見せる移動は ButtonLink です。表を Card に入れるときは、Card に「flush」を付けます（余白は付けない）。内容が角丸に沿って切られ、THead の帯が角からはみ出さず、枠線が二重になりません。Card に余白を付けて表を入れると、帯が角丸の内側で浮いて見えます。見出しや操作を表の上に置くときは、CardHead か、Card の中の別の行に置きます。"
         >
@@ -1644,8 +1656,8 @@ function Gallery() {
                 <Th numeric>機器数</Th>
               </THead>
               <tbody>
-                {rows.slice(0, 3).map((r) => (
-                  <Tr key={r.number}>
+                {rows.slice(0, 3).map((r, i) => (
+                  <Tr key={r.number} selected={i === 1}>
                     <RowHead nowrap>{r.number}</RowHead>
                     <Td truncate label="拠点名">
                       <TextLink href={`#card-${r.number}`}>

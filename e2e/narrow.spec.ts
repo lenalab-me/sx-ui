@@ -97,3 +97,55 @@ test("この検査は、枠からはみ出した箱と、断りなく横に動�
   await page.setContent(frame("overflow-x-auto", "overflow-x: auto"));
   expect(await page.evaluate(stickingOut)).toEqual([]);
 });
+
+// A stacked table (Table `stack`) is display: block below md, which in some browsers drops the
+// table's meaning; the roles Table sets say it again. The header row stays (sr-only), so the
+// columns keep their names.
+test("積んだ表は、表・行・列見出し・行見出し・セルとして読まれ、見出しの行が残る", async ({
+  page,
+}) => {
+  await page.goto("/gallery/");
+  const table = page.getByRole("table", { name: "Card に入れた表" });
+  await expect(table).toBeAttached();
+  await table.scrollIntoViewIfNeeded();
+  await expect(table.getByRole("columnheader")).toHaveText([
+    "拠点番号",
+    "拠点名",
+    "機器数",
+  ]);
+  await expect(table.getByRole("rowgroup")).toHaveCount(2);
+  await expect(table.getByRole("row")).toHaveCount(4);
+  await expect(table.getByRole("rowheader")).toHaveCount(3);
+  await expect(table.getByRole("cell")).toHaveCount(6);
+  // The header row is not drawn (sr-only: 1px) but is in the page.
+  const head = await table.locator("thead").boundingBox();
+  expect(head!.width).toBeLessThanOrEqual(1);
+  // Without `stack` the table keeps the DOM the browser already reads as a table (no roles).
+  const plain = page.getByRole("table", { name: "見本拠点の一覧" });
+  expect(await plain.locator("[role]").count()).toBe(0);
+  expect(await plain.getAttribute("role")).toBeNull();
+});
+
+// A pill tab list with more tabs than fit scrolls sideways in one row (like underline and
+// segmented) instead of wrapping into several rows.
+test("pill のタブは、あふれても折り返さず、1行のまま横にスクロールする", async ({
+  page,
+}) => {
+  await page.goto("/gallery/");
+  const row = await page.evaluate(() => {
+    const list = document.querySelector(
+      '[role="tablist"][aria-label="タブ（pill）"]',
+    )!;
+    const first = list.firstElementChild!;
+    for (let i = 0; i < 6; i++) list.append(first.cloneNode(true));
+    const tops = new Set(
+      [...list.children].map((c) => Math.round(c.getBoundingClientRect().top)),
+    );
+    return {
+      rows: tops.size,
+      scrolls: list.scrollWidth > list.clientWidth,
+      overflowX: getComputedStyle(list).overflowX,
+    };
+  });
+  expect(row).toEqual({ rows: 1, scrolls: true, overflowX: "auto" });
+});
