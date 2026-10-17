@@ -36,6 +36,7 @@ import {
   Menu,
   Meter,
   Modal,
+  Prose,
   Notice,
   NumberInput,
   Page,
@@ -1700,6 +1701,49 @@ function Gallery() {
               />
             </li>
           </ul>
+        </Section>
+
+        <Section
+          title="本文"
+          parts={["Prose"]}
+          use="記事や解説のような、読むための長い文を組みます。画面は Markdown を描いた要素（または消毒した HTML）を中に入れるだけで、見出し・段落・箇条書き・コード・引用・リンク・表の見た目は部品が持ちます。1行の長さは読みやすい幅（最大720px）に抑えます。設定の本文のような整形済みの長い文字列は CodeBlock、1行の補足は SupportText を使います。"
+        >
+          <Prose>
+            <h2>タイポスクワッティング</h2>
+            <p>
+              利用者が打ち間違えた<strong>ドメイン名</strong>
+              の通信を受け取るために、似た名前を先に登録しておく手口です。たとえば
+              <code>googel.com</code> や <a href="#prose">google.edu</a>{" "}
+              のような名前が使われます。
+            </p>
+            <ul>
+              <li>綴りの間違い（googel.com）</li>
+              <li>打ち間違い（gooogle.com）</li>
+              <li>トップレベルドメインの違い（google.edu）</li>
+            </ul>
+            <blockquote>
+              予測できる変形を押さえておくと、正規の通信の一部を横取りできます。
+            </blockquote>
+            <h3>対策</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>手口</th>
+                  <th>対策</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>打ち間違い</td>
+                  <td>似たドメインを先に登録する</td>
+                </tr>
+                <tr>
+                  <td>クリックジャッキング</td>
+                  <td>フレームでの表示を禁じる</td>
+                </tr>
+              </tbody>
+            </table>
+          </Prose>
         </Section>
 
         {modal && (

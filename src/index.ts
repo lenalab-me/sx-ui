@@ -58,6 +58,7 @@ export {
 export { Menu, type MenuItem } from "./Menu";
 export { Meter, type MeterTone } from "./Meter";
 export { Modal } from "./Modal";
+export { Prose } from "./Prose";
 export { Notice, type NoticeTone } from "./Notice";
 export { Card, CardHead, Page, PageTitle } from "./Page";
 export { Pill, type PillTone } from "./Pill";

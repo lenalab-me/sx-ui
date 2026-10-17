@@ -18,6 +18,7 @@
 | 操作の結果を一行だけ伝える                     | `StatusLine`（`Page` の `status`）                                          |
 | 状態を示す小さな表示                           | `Pill`・`Tag`・`SaveStatus`                                                 |
 | 全体のうちどれだけか（進み具合・正答率）       | `Meter`（並べるときは画面で `ul` に入れる）                                 |
+| 記事・解説のような読むための長い文             | `Prose`（中に Markdown を描いた要素を入れる）                               |
 | 一覧の表（1行1件）                             | `Table`・`THead`・`Th`・`Tr`・`RowHead`・`Td`                               |
 | 表のセルから詳細へ行くリンク・本文の中のリンク | `TextLink`（ボタンに見せる移動は `ButtonLink`）                             |
 | 入力する表（機器設定）                         | `DenseTable`・`DenseRow`・`CellInput`・`Pick`                               |
