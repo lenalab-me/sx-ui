@@ -111,7 +111,8 @@ export function Card({
 
 /**
  * The top edge of a Card that holds tabs: `children` (an underline Tabs) at the left on a bottom
- * rule, and an optional `note` at the right (a sentence about what the card lists).
+ * rule, and an optional `note` at the right (a sentence about what the card lists). Below md the
+ * note goes under the tabs, flush left.
  */
 export function CardHead({
   children,
@@ -124,7 +125,7 @@ export function CardHead({
     <div className="flex items-end gap-6 border-b border-sx-row px-4 pt-5 max-md:flex-col max-md:items-stretch max-md:gap-3 md:px-7">
       {children}
       {note && (
-        <p className="ml-auto max-w-160 pb-3 text-sx-meta text-sx-muted">
+        <p className="ml-auto max-w-160 pb-3 text-sx-meta text-sx-muted max-md:ml-0 max-md:text-left">
           {note}
         </p>
       )}

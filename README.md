@@ -98,7 +98,7 @@
 
 - `PageTitle` の `subtitle` は h1 の右に出す画面の対象（Project名など）。
 - `Card` は余白を持たない（呼び出し側が `className` で付ける）。表を縁まで入れるときは `flush`（余白は付けない）。内容を角丸で切り、`THead` の帯が角からはみ出さず、先頭の表の上の罫線と最後の行の下の罫線は Card の枠と二重にならないよう消える。
-- `CardHead` は `Card` の上端の帯で、下罫線の上に下線タブ（`Tabs variant="underline"`）を置き、`note` は右寄せの案内文。
+- `CardHead` は `Card` の上端の帯で、下罫線の上に下線タブ（`Tabs variant="underline"`）を置き、`note` は右寄せの案内文（`md` 未満ではタブの下に左そろえ）。
 - `EmptyState` の `support` は2行目の小さい文。
 - `DescriptionList` は `{ term, value }` の並びを2列で見せる（STEP1の値のように、ここでは直せない項目の表示）。
 - `Field` の `inline` はラベル左・部品右の1行（機種ごとの台数の欄）。
@@ -108,7 +108,7 @@
 - `StatusLine` の `tone="neutral"` はアイコン無しの控えめな表示（「読み込み中…」）。
 - `Meter` は名前（`label`）と値の文字（`valueText`。無ければ百分率）を必ず出し、`tone`（`accent`・`ok`・`warn`・`error`）の色は文字に添えるだけ。まだ測るものが無いときは `value` を `null` にして `valueText` に理由を書く（棒は空、`role="meter"` を持たない）。棒の幅だけは値そのものなので `style` で書く。
 - `TextLink` は表のセルや本文の中のリンク。余白なし・下線・フォーカスリングで、見出しと左がそろう。全角の閉じ括弧で終わる名前でも下線が文字の右にはみ出さない。
-- `Table` の `stack` は、`md` 未満で行を縦に積む（見出しの行は隠し、各 `Td` が `label`〔列の名前〕を値の前に出す）。`md` 以上は `stack` なしと同じ表。横にスクロールさせたい表（列が多い表）には付けない。`stack` の表は `md` 未満で `minWidth` を持たず、画面の幅に収まる。
+- `Table` の `stack` は、`md` 未満で行を縦に積む（見出しの行は隠し、各 `Td` が `label`〔列の名前〕を値の前に出す）。`md` 以上は `stack` なしと同じ表。横にスクロールさせたい表（列が多い表）には付けない。`stack` の表は `md` 未満で `minWidth` を持たず、画面の幅に収まる。表として読み上げられるよう、`stack` のときだけ `table`・`rowgroup`・`row`・`columnheader`・`rowheader`・`cell` の `role` を部品が付ける（`stack` なしの表の DOM は変えない）。選んだ行（`Tr selected`）では `label` の色が `sx-body` に変わり、4.5:1 を保つ。
 - `Shell` は `md` 未満で左ペインを隠し、代わりに上端の帯（ロゴ・製品名・メニューのボタン）を出す。ボタンは同じ項目と `account`（名前・ログアウト）を右から出る引き出し（ネイティブの `<dialog>`＋`showModal()`。Esc・背景のクリック・項目を選んだときに閉じ、開いたボタンにフォーカスを戻す）に出す。`pane={false}` のときは帯に製品名だけを出し、メニューのボタンは出さない。
 - `Shell` はロゴの横のアプリの名前を `product` で、左ペインの項目を `entries`（`{ label, href, icon, current? }`）で受ける。ロゴの丸にはアプリの頭文字を `mark`（1〜2 文字）で入れられ、渡さなければネットワークのアイコン。左下の枠は、ログインのあるアプリなら `account`（`{ name, detail?, onSignOut? }`。`onSignOut` を渡すとログアウトのボタンが出る）で利用者を出し、渡さなければ「ローカル利用／ログインなし」。`pane={false}` は左ペインを出さない（試験に解答している画面のように、利用者が1つのことに集中する画面。見本は `?shell=focus`）。ルートは `h-dvh` で、`html`・`body` には何も書かない。
 - 左ペインの `icon` は `NavIconName`＝`home`・`list`・`tasks`・`calendar`・`users`・`package`・`chart`・`history`・`settings`・`projects`・`play`・`book`・`shield`。足すときは `src/Shell.tsx` の `navIcons` に足し、見本ページの `navLabels` にも足す。

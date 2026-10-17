@@ -38,7 +38,10 @@ type CellProps<E> = Omit<E, "className" | "style" | "scope"> & CellLook;
  * relative. Column widths come from a <colgroup> placed first in the children.
  * `stack` is for a phone: below md each row becomes a block of its own (the cells one under the
  * other, the header row hidden) and each `Td` shows its `label` before the value, so the table
- * needs no sideways scrolling. From md up it is the same table as without `stack`.
+ * needs no sideways scrolling. From md up it is the same table as without `stack`. A stacked
+ * table sets the table roles (table, rowgroup, row, columnheader, rowheader, cell) itself: with
+ * display: block some browsers drop the table's meaning, and the roles say the same thing the
+ * elements already do from md up.
  */
 export function Table({
   caption,
@@ -61,6 +64,7 @@ export function Table({
               ? ({ "--sx-table-min": `${minWidth ?? 0}px` } as CSSProperties)
               : { minWidth }
           }
+          role={stack ? "table" : undefined}
           className={`w-full table-fixed border-collapse text-left ${stack ? "md:min-w-(--sx-table-min) max-md:block max-md:[&_tbody]:block" : ""}`}
         >
           <caption className="sr-only">{caption}</caption>
@@ -76,9 +80,15 @@ export function THead({ children }: { children: ReactNode }) {
   const stack = useContext(Stack);
   return (
     <thead
+      role={stack ? "rowgroup" : undefined}
       className={`bg-sx-subtle text-sx-muted ${stack ? "max-md:sr-only" : ""}`}
     >
-      <tr className="h-11 border-y border-sx-row">{children}</tr>
+      <tr
+        role={stack ? "row" : undefined}
+        className="h-11 border-y border-sx-row"
+      >
+        {children}
+      </tr>
     </thead>
   );
 }
@@ -91,9 +101,11 @@ export function Th({
   truncate,
   ...rest
 }: CellProps<ThHTMLAttributes<HTMLTableCellElement>>) {
+  const stack = useContext(Stack);
   return (
     <th
       scope="col"
+      role={stack ? "columnheader" : undefined}
       className={`px-3 font-normal first:pl-7 last:pr-7 ${cellLook({ align, numeric, nowrap, truncate })}`}
       {...rest}
     >
@@ -112,8 +124,9 @@ export function Tr({
   const stack = useContext(Stack);
   return (
     <tr
+      role={stack ? "row" : undefined}
       aria-selected={selected || undefined}
-      className={`h-14 border-b border-sx-row ${selected ? "bg-sx-accent-soft" : "hover:bg-sx-subtle"} ${stack ? "max-md:flex max-md:h-auto max-md:flex-col max-md:gap-1 max-md:px-4 max-md:py-3" : ""}`}
+      className={`h-14 border-b border-sx-row ${selected ? "bg-sx-accent-soft" : "hover:bg-sx-subtle"} ${stack ? "group/row max-md:flex max-md:h-auto max-md:flex-col max-md:gap-1 max-md:px-4 max-md:py-3" : ""}`}
     >
       {children}
     </tr>
@@ -133,6 +146,7 @@ export function RowHead({
   return (
     <th
       scope="row"
+      role={stack ? "rowheader" : undefined}
       className={`px-3 text-left font-medium first:pl-7 ${cellLook({ align, numeric, nowrap, truncate })} ${stack ? "max-md:px-0 max-md:first:pl-0" : ""}`}
       {...rest}
     >
@@ -156,11 +170,12 @@ export function Td({
   const stack = useContext(Stack);
   return (
     <td
+      role={stack ? "cell" : undefined}
       className={`px-3 first:pl-7 last:pr-7 ${cellLook({ align, numeric, nowrap, truncate })} ${stack ? "max-md:flex max-md:items-center max-md:gap-3 max-md:px-0 max-md:text-left max-md:first:pl-0 max-md:last:pr-0" : ""}`}
       {...rest}
     >
       {stack && label && (
-        <span className="w-24 shrink-0 text-sx-meta text-sx-muted md:hidden">
+        <span className="w-24 shrink-0 text-sx-meta text-sx-muted group-aria-selected/row:text-sx-body md:hidden">
           {label}
         </span>
       )}

@@ -26,11 +26,13 @@ const look: Record<
     tab: (on) =>
       `flex items-center gap-2 rounded-sx-tile px-4 py-1.5 max-md:shrink-0 max-md:whitespace-nowrap ${on ? "bg-sx-surface font-medium text-sx-strong shadow-sx-raised" : "text-sx-body hover:text-sx-strong"}`,
   },
-  // Status filters and the five order tabs
+  // Status filters and the five order tabs. Below md they scroll sideways like the other two
+  // (wrapping would stack them in several rows); the padding with the negative margin leaves room
+  // for the focus ring, which the scroll frame would clip.
   pill: {
-    list: "flex flex-wrap gap-1",
+    list: "flex flex-wrap gap-1 max-md:-m-2 max-md:flex-nowrap max-md:overflow-x-auto max-md:p-2",
     tab: (on) =>
-      `flex items-center gap-2 rounded-sx-control px-4 py-2 ${on ? "bg-sx-fill font-medium text-sx-strong" : "text-sx-body hover:bg-sx-subtle"}`,
+      `flex items-center gap-2 rounded-sx-control px-4 py-2 max-md:shrink-0 max-md:whitespace-nowrap ${on ? "bg-sx-fill font-medium text-sx-strong" : "text-sx-body hover:bg-sx-subtle"}`,
   },
 };
 
