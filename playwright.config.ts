@@ -1,4 +1,4 @@
-import { defineConfig } from "@playwright/test";
+import { defineConfig, devices } from "@playwright/test";
 
 // E2E tests drive the gallery in Playwright's Chromium against their own Vite, beside the
 // development server. The port is E2E_WEB_PORT (default 5191), so checkouts can run the tests side
@@ -36,6 +36,20 @@ export default defineConfig({
     // so the baseline images do not change when Google Chrome updates itself.
     trace: "retain-on-failure",
   },
+  projects: [
+    // Desktop (1440×900): the baseline images in e2e/__screenshots__/ that the apps rely on.
+    { name: "desktop", testIgnore: /narrow\.spec\.ts/ },
+    // A phone (Pixel 7, 412×915), with its own baseline images in e2e/__screenshots__/narrow/. The
+    // device pixel ratio stays 1 so the images are as small as the desktop ones. The audits run on
+    // the gallery as on the desktop; the audits' own tests (they set their own content) run once.
+    {
+      name: "narrow",
+      use: { ...devices["Pixel 7"], deviceScaleFactor: 1 },
+      snapshotPathTemplate:
+        "{testDir}/__screenshots__/narrow/{arg}-{platform}{ext}",
+      grepInvert: /監査は/,
+    },
+  ],
   webServer: {
     command: `npx vite --port ${webPort} --strictPort`,
     url: `http://localhost:${webPort}/gallery/`,

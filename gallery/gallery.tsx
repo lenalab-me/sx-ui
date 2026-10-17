@@ -281,7 +281,7 @@ function Section({
 }) {
   const heading = `${title}（${parts.join("・")}）`;
   return (
-    <Card label={heading} className="flex flex-col gap-4 p-6">
+    <Card label={heading} className="flex flex-col gap-4 p-6 max-md:p-4">
       <SectionHeader title={heading} level={2} />
       <SupportText>{use}</SupportText>
       {children}
@@ -1632,7 +1632,7 @@ function Gallery() {
           </Table>
           <SectionHeader title="Card に入れた表" level={3} />
           <Card label="Card に入れた表の例" flush>
-            <Table caption="Card に入れた表" minWidth={480}>
+            <Table caption="Card に入れた表" minWidth={480} stack>
               <colgroup>
                 <col className="w-32" />
                 <col />
@@ -1647,12 +1647,14 @@ function Gallery() {
                 {rows.slice(0, 3).map((r) => (
                   <Tr key={r.number}>
                     <RowHead nowrap>{r.number}</RowHead>
-                    <Td truncate>
+                    <Td truncate label="拠点名">
                       <TextLink href={`#card-${r.number}`}>
                         {r.number === "001" ? "ノートPC（軽量）" : r.name}
                       </TextLink>
                     </Td>
-                    <Td numeric>{r.devices}</Td>
+                    <Td numeric label="機器数">
+                      {r.devices}
+                    </Td>
                   </Tr>
                 ))}
               </tbody>

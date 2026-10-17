@@ -113,3 +113,63 @@ test("各節が基準画像と一致する", async ({ page }) => {
       });
   }
 });
+
+// Below md the left pane gives way to a band along the top and a drawer (the Shell's TopBar). Only
+// the phone project has it: the drawer's baseline image, and how it opens and closes.
+test.describe("狭い画面の引き出し", () => {
+  test.skip(({ viewport }) => viewport!.width >= 768, "引き出しは md 未満だけ");
+
+  test("メニューの引き出しを開いた状態が基準画像と一致する", async ({
+    page,
+  }) => {
+    await page.goto("/gallery/?shell=account");
+    await page.getByRole("button", { name: "メニューを開く" }).click();
+    await expect(page.getByRole("dialog", { name: "メニュー" })).toBeVisible();
+    await page.evaluate(async () => {
+      await document.fonts.ready;
+      for (let i = 0; i < 2; i++)
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+    });
+    await expect(page).toHaveScreenshot("gallery-shell-drawer.png", {
+      animations: "disabled",
+      caret: "hide",
+    });
+  });
+
+  test("引き出しは、Esc・背景のクリック・項目の選択で閉じ、開いたボタンにフォーカスを戻す", async ({
+    page,
+  }) => {
+    await page.goto("/gallery/?shell=account");
+    const open = page.getByRole("button", { name: "メニューを開く" });
+    const drawer = page.getByRole("dialog", { name: "メニュー" });
+    const closes = [
+      () => page.keyboard.press("Escape"),
+      () => page.mouse.click(10, 400),
+      async () => {
+        // The entries are links to "#nav-…": choosing one closes the drawer.
+        await drawer.locator('a[href^="#nav-"]').first().click();
+      },
+    ];
+    for (const close of closes) {
+      await open.click();
+      await expect(drawer).toBeVisible();
+      await close();
+      await expect(drawer).toBeHidden();
+      await expect(open).toBeFocused();
+    }
+  });
+
+  test("引き出しにも左ペインと同じ項目とアカウント（ログアウト）が出る", async ({
+    page,
+  }) => {
+    await page.goto("/gallery/?shell=account");
+    await page.getByRole("button", { name: "メニューを開く" }).click();
+    const drawer = page.getByRole("dialog", { name: "メニュー" });
+    await expect(
+      drawer.getByRole("navigation", { name: "メインメニュー" }),
+    ).toBeVisible();
+    await expect(
+      drawer.getByRole("button", { name: "ログアウト" }),
+    ).toBeVisible();
+  });
+});

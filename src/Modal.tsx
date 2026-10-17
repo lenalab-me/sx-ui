@@ -57,9 +57,9 @@ export function Modal({
         e.preventDefault();
         if (!busy) onClose();
       }}
-      className={`${width[size]} flex-col overflow-hidden rounded-sx-card border border-sx-line bg-sx-surface text-sx-strong shadow-sx-overlay backdrop:bg-sx-scrim open:flex`}
+      className={`${width[size]} max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-sx-card border border-sx-line bg-sx-surface text-sx-strong shadow-sx-overlay backdrop:bg-sx-scrim open:flex`}
     >
-      <div className="flex items-start gap-4 px-7 pt-6 pb-3">
+      <div className="flex items-start gap-4 px-5 pt-6 pb-3 md:px-7">
         <h2
           ref={heading}
           id={titleId}
@@ -70,7 +70,7 @@ export function Modal({
         </h2>
         <IconButton label="閉じる" icon="x" onClick={onClose} disabled={busy} />
       </div>
-      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-7 pb-6">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 pb-6 md:px-7">
         {description && (
           <div id={descId} className="text-sx-body">
             {description}
@@ -79,7 +79,7 @@ export function Modal({
         {children}
       </div>
       {footer && (
-        <div className="flex flex-wrap items-center justify-end gap-2 border-t border-sx-row bg-sx-subtle px-7 py-4">
+        <div className="flex flex-wrap items-center justify-end gap-2 border-t border-sx-row bg-sx-subtle px-5 py-4 md:px-7">
           {footer}
         </div>
       )}

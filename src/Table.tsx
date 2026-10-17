@@ -1,4 +1,14 @@
-import type { ReactNode, TdHTMLAttributes, ThHTMLAttributes } from "react";
+import {
+  createContext,
+  useContext,
+  type CSSProperties,
+  type ReactNode,
+  type TdHTMLAttributes,
+  type ThHTMLAttributes,
+} from "react";
+
+// Whether the table stacks its rows below md (Table's `stack`), for the parts inside it.
+const Stack = createContext(false);
 
 /** How a cell lays out its text. `numeric` right-aligns with tabular figures. */
 interface CellLook {
@@ -26,33 +36,48 @@ type CellProps<E> = Omit<E, "className" | "style" | "scope"> & CellLook;
 /**
  * A list table (rows 56px high, one line per record). The caption is sr-only. The scroll frame is
  * relative. Column widths come from a <colgroup> placed first in the children.
+ * `stack` is for a phone: below md each row becomes a block of its own (the cells one under the
+ * other, the header row hidden) and each `Td` shows its `label` before the value, so the table
+ * needs no sideways scrolling. From md up it is the same table as without `stack`.
  */
 export function Table({
   caption,
   children,
   minWidth,
+  stack = false,
 }: {
   caption: string;
   children: ReactNode;
   minWidth?: number;
+  stack?: boolean;
 }) {
   return (
-    <div className="relative overflow-x-auto">
-      <table
-        style={{ minWidth }}
-        className="w-full table-fixed border-collapse text-left"
-      >
-        <caption className="sr-only">{caption}</caption>
-        {children}
-      </table>
-    </div>
+    <Stack.Provider value={stack}>
+      <div className="relative overflow-x-auto">
+        <table
+          // A stacked table has no minimum width below md (it would bring the scrolling back).
+          style={
+            stack
+              ? ({ "--sx-table-min": `${minWidth ?? 0}px` } as CSSProperties)
+              : { minWidth }
+          }
+          className={`w-full table-fixed border-collapse text-left ${stack ? "md:min-w-(--sx-table-min) max-md:block max-md:[&_tbody]:block" : ""}`}
+        >
+          <caption className="sr-only">{caption}</caption>
+          {children}
+        </table>
+      </div>
+    </Stack.Provider>
   );
 }
 
 /** The header row: <THead><Th>…</Th></THead> */
 export function THead({ children }: { children: ReactNode }) {
+  const stack = useContext(Stack);
   return (
-    <thead className="bg-sx-subtle text-sx-muted">
+    <thead
+      className={`bg-sx-subtle text-sx-muted ${stack ? "max-md:sr-only" : ""}`}
+    >
       <tr className="h-11 border-y border-sx-row">{children}</tr>
     </thead>
   );
@@ -84,10 +109,11 @@ export function Tr({
   children: ReactNode;
   selected?: boolean;
 }) {
+  const stack = useContext(Stack);
   return (
     <tr
       aria-selected={selected || undefined}
-      className={`h-14 border-b border-sx-row ${selected ? "bg-sx-accent-soft" : "hover:bg-sx-subtle"}`}
+      className={`h-14 border-b border-sx-row ${selected ? "bg-sx-accent-soft" : "hover:bg-sx-subtle"} ${stack ? "max-md:flex max-md:h-auto max-md:flex-col max-md:gap-1 max-md:px-4 max-md:py-3" : ""}`}
     >
       {children}
     </tr>
@@ -103,10 +129,11 @@ export function RowHead({
   truncate,
   ...rest
 }: CellProps<ThHTMLAttributes<HTMLTableCellElement>>) {
+  const stack = useContext(Stack);
   return (
     <th
       scope="row"
-      className={`px-3 text-left font-medium first:pl-7 ${cellLook({ align, numeric, nowrap, truncate })}`}
+      className={`px-3 text-left font-medium first:pl-7 ${cellLook({ align, numeric, nowrap, truncate })} ${stack ? "max-md:px-0 max-md:first:pl-0" : ""}`}
       {...rest}
     >
       {children}
@@ -120,13 +147,23 @@ export function Td({
   numeric,
   nowrap,
   truncate,
+  label,
   ...rest
-}: CellProps<TdHTMLAttributes<HTMLTableCellElement>>) {
+}: CellProps<TdHTMLAttributes<HTMLTableCellElement>> & {
+  /** The column's name, shown before the value in a stacked table (below md). */
+  label?: string;
+}) {
+  const stack = useContext(Stack);
   return (
     <td
-      className={`px-3 first:pl-7 last:pr-7 ${cellLook({ align, numeric, nowrap, truncate })}`}
+      className={`px-3 first:pl-7 last:pr-7 ${cellLook({ align, numeric, nowrap, truncate })} ${stack ? "max-md:flex max-md:items-center max-md:gap-3 max-md:px-0 max-md:text-left max-md:first:pl-0 max-md:last:pr-0" : ""}`}
       {...rest}
     >
+      {stack && label && (
+        <span className="w-24 shrink-0 text-sx-meta text-sx-muted md:hidden">
+          {label}
+        </span>
+      )}
       {children}
     </td>
   );

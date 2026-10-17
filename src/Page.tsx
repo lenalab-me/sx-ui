@@ -24,10 +24,10 @@ export function Page({
 }) {
   return (
     <>
-      <header className="flex min-h-13 shrink-0 flex-wrap items-center gap-x-4 gap-y-2 border-b border-sx-line px-10 py-3">
+      <header className="flex min-h-13 shrink-0 flex-wrap items-center gap-x-4 gap-y-2 border-b border-sx-line px-4 py-3 md:px-10">
         <Crumbs items={crumbs} />
         {meta && (
-          <div className="ml-auto flex items-center gap-3 text-sx-meta text-sx-muted">
+          <div className="ml-auto flex items-center gap-3 text-sx-meta text-sx-muted max-md:flex-wrap">
             {meta}
           </div>
         )}
@@ -35,13 +35,13 @@ export function Page({
       <main
         id="main"
         tabIndex={-1}
-        className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-10 py-6 outline-none"
+        className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 py-4 outline-none md:gap-5 md:px-10 md:py-6"
       >
         <StatusLine text={status} />
         {children}
       </main>
       {footer && (
-        <footer className="flex shrink-0 items-center justify-between gap-3 border-t border-sx-line bg-sx-surface px-10 py-3">
+        <footer className="flex shrink-0 items-center justify-between gap-3 border-t border-sx-line bg-sx-surface px-4 py-3 max-md:flex-wrap md:px-10">
           {footer}
         </footer>
       )}
@@ -64,11 +64,15 @@ export function PageTitle({
 }) {
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
-      <h1 className="text-sx-title leading-tight font-medium">{title}</h1>
+      <h1 className="text-sx-heading leading-tight font-medium md:text-sx-title">
+        {title}
+      </h1>
       {subtitle && <p className="text-sx-lead text-sx-body">{subtitle}</p>}
       {after}
       {children && (
-        <div className="ml-auto flex items-center gap-2">{children}</div>
+        <div className="flex flex-wrap items-center gap-2 md:ml-auto md:flex-nowrap">
+          {children}
+        </div>
       )}
     </div>
   );
@@ -117,7 +121,7 @@ export function CardHead({
   note?: ReactNode;
 }) {
   return (
-    <div className="flex items-end gap-6 border-b border-sx-row px-7 pt-5">
+    <div className="flex items-end gap-6 border-b border-sx-row px-4 pt-5 max-md:flex-col max-md:items-stretch max-md:gap-3 md:px-7">
       {children}
       {note && (
         <p className="ml-auto max-w-160 pb-3 text-sx-meta text-sx-muted">
