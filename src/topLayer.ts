@@ -22,7 +22,7 @@ export const anchoredStyle = (
     ...(align === "end"
       ? { right: "anchor(right)" }
       : { left: "anchor(left)" }),
-    positionTryFallbacks: "flip-block",
+    positionTryFallbacks: "flip-block, flip-inline, flip-block flip-inline",
   }) as CSSProperties;
 
 /** Shows the element in the top layer while it is mounted (and `enabled`). Needs popover="manual" on it. */

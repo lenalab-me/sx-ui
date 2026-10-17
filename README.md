@@ -45,6 +45,7 @@
 - **Vite**：`vite.config.mjs` に部品のプラグインを足す（`import { sxUi } from "@sx/ui/vite";`、`plugins: [tailwindcss(), sxUi()]`）。部品は TSX のソースのまま node_modules に入り、Vite の esbuild は node_modules の中の tsconfig を読まないので、プラグインが JSX を automatic runtime にし、見本ページ用に React を事前の束ねに入れる。足さないと画面が白くなる（`React is not defined`）。
 - **TypeScript**：部品は TS のソースのまま配り、Vite が変換する（ビルドの手順は無い）。アプリの tsconfig は `jsx: "react-jsx"`・`moduleResolution: "bundler"`・`allowImportingTsExtensions: true`。
 - **入口**：アプリが読めるのは `@sx/ui`（部品）・`@sx/ui/styles.css`（CSS）・`@sx/ui/check`（検査の道具。テストだけが読む）・`@sx/ui/vite`（Vite のプラグイン。`vite.config.mjs` だけが読む）の4つだけで、`@sx/ui/src/...` のような深い import はしない。
+- **狭い画面（スマホ）**：部品は幅 `md`（768px）未満で狭い画面の形になり、`md` 以上は今のままの見た目（`max-md:` で書くか、`md:` で元の値に戻す）。画面ファイルも、配置のクラスなら `md:`・`max-md:`（と `sm:`・`lg:`・`max-sm:`・`max-lg:`）を付けて書ける（`allowedLayout` はこの接頭辞を外してから当てる）。狭い画面向けの枠は `Shell`（左ペインが上端の帯と引き出しになる）・`Page`・`PageTitle`・`CardHead`・`Table` の `stack`・`FieldGrid`（1列）・`Stepper`（縦）・`Tabs`（横にスクロール）・`DescriptionList`（1列）・`Modal`（画面の幅に収まる）。
 - **検査**：`@sx/ui/check` の `scan`（文字列リテラルの取り出し）・`disallowedWords`（配置のクラスの許可リスト `allowedLayout` に無い語）・`colorPattern`・`rolePattern`・`stripCssComments`・`lineOf` で、画面ファイルが配置のクラスしか書かず、色・`role="alert"`／`"status"`・`style=` を書かないことをテストする（network-designer の `src/screen-style.test.ts` が例）。許可リストはこのリポジトリでだけ直す。
 - **見本ページ**：アプリの開発サーバーで `/node_modules/@sx/ui/gallery/` を開くと、入れている版の部品が出る。
 - **ロックと版の入れ替え**：アプリは検査を写さず、部品が配るスクリプトを呼ぶ。`package.json` の scripts に `"ui:approve": "sh node_modules/@sx/ui/bin/ui-lock.sh approve"`・`"ui:update": "sh node_modules/@sx/ui/bin/ui-update.sh"` を置き、check の先頭で `sh node_modules/@sx/ui/bin/ui-lock.sh` を流す。`ui-lock.sh` は、`vendor/` のハッシュが `ui.lock` と同じか、tarball がちょうど1つで `package.json` がそれを指すか、`node_modules/@sx/ui` が tarball の中身と同じか、部品（`vendor/`・`packages/`）と画面（`src/`・`e2e/`・`playwright.config.ts`・`index.html`）に同じコミットで触っていないか（origin/main にまだ無いコミットと作業コピー。origin/main が無ければ全コミット。最初のコミットは除く）を見る。
@@ -66,7 +67,7 @@
 
 `npm install` のあと `npm run dev` で `/gallery/` を開く。`npm run check` が整形・テスト（台帳と書き方）・型・検査の道具のビルドを見る。
 
-見た目を変えたら `npm run e2e` を流す。見本ページを Playwright（Chromium、locale `ja-JP`、1440×900）で撮り、`e2e/__screenshots__/` の基準画像と1ピクセルも違わないことを見る（先頭の画面と `?open=` の7状態と `?shell=account` に加え、16の節ごとに1枚。節の画像は、節が入る高さの窓で撮る）。落ちたら `npm run e2e -- --last-failed` で落ちた分だけ流し直す。差分は人が見て、意図した変えならそのとき `npm run e2e -- --update-snapshots` で基準画像を撮り直して承認する（画像はプラットフォームごとで、いまは `darwin`）。部品を変える・足すときは、同じコミットで基準画像を更新する。ポートは `E2E_WEB_PORT`（既定 5191）で変えられる。
+見た目を変えたら `npm run e2e` を流す。見本ページを Playwright（Chromium、locale `ja-JP`）で撮る。プロジェクトは2つで、`desktop`（1440×900。下の基準画像）と `narrow`（Pixel 7 の 412×915。基準画像は `e2e/__screenshots__/narrow/`、監査・はみ出しの検査〔`e2e/narrow.spec.ts`〕と引き出しの確かめも流す）。`desktop` は、`e2e/__screenshots__/` の基準画像と1ピクセルも違わないことを見る（先頭の画面と `?open=` の7状態と `?shell=account` に加え、16の節ごとに1枚。節の画像は、節が入る高さの窓で撮る）。落ちたら `npm run e2e -- --last-failed` で落ちた分だけ流し直す。差分は人が見て、意図した変えならそのとき `npm run e2e -- --update-snapshots` で基準画像を撮り直して承認する（画像はプラットフォームごとで、いまは `darwin`）。部品を変える・足すときは、同じコミットで基準画像を更新する。ポートは `E2E_WEB_PORT`（既定 5191）で変えられる。
 
 ## CSS とトークン
 
@@ -107,6 +108,8 @@
 - `StatusLine` の `tone="neutral"` はアイコン無しの控えめな表示（「読み込み中…」）。
 - `Meter` は名前（`label`）と値の文字（`valueText`。無ければ百分率）を必ず出し、`tone`（`accent`・`ok`・`warn`・`error`）の色は文字に添えるだけ。まだ測るものが無いときは `value` を `null` にして `valueText` に理由を書く（棒は空、`role="meter"` を持たない）。棒の幅だけは値そのものなので `style` で書く。
 - `TextLink` は表のセルや本文の中のリンク。余白なし・下線・フォーカスリングで、見出しと左がそろう。全角の閉じ括弧で終わる名前でも下線が文字の右にはみ出さない。
+- `Table` の `stack` は、`md` 未満で行を縦に積む（見出しの行は隠し、各 `Td` が `label`〔列の名前〕を値の前に出す）。`md` 以上は `stack` なしと同じ表。横にスクロールさせたい表（列が多い表）には付けない。`stack` の表は `md` 未満で `minWidth` を持たず、画面の幅に収まる。
+- `Shell` は `md` 未満で左ペインを隠し、代わりに上端の帯（ロゴ・製品名・メニューのボタン）を出す。ボタンは同じ項目と `account`（名前・ログアウト）を右から出る引き出し（ネイティブの `<dialog>`＋`showModal()`。Esc・背景のクリック・項目を選んだときに閉じ、開いたボタンにフォーカスを戻す）に出す。`pane={false}` のときは帯に製品名だけを出し、メニューのボタンは出さない。
 - `Shell` はロゴの横のアプリの名前を `product` で、左ペインの項目を `entries`（`{ label, href, icon, current? }`）で受ける。ロゴの丸にはアプリの頭文字を `mark`（1〜2 文字）で入れられ、渡さなければネットワークのアイコン。左下の枠は、ログインのあるアプリなら `account`（`{ name, detail?, onSignOut? }`。`onSignOut` を渡すとログアウトのボタンが出る）で利用者を出し、渡さなければ「ローカル利用／ログインなし」。`pane={false}` は左ペインを出さない（試験に解答している画面のように、利用者が1つのことに集中する画面。見本は `?shell=focus`）。ルートは `h-dvh` で、`html`・`body` には何も書かない。
 - 左ペインの `icon` は `NavIconName`＝`home`・`list`・`tasks`・`calendar`・`users`・`package`・`chart`・`history`・`settings`・`projects`・`play`・`book`・`shield`。足すときは `src/Shell.tsx` の `navIcons` に足し、見本ページの `navLabels` にも足す。
 

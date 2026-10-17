@@ -1,4 +1,4 @@
-import type { MouseEvent } from "react";
+import type { CSSProperties, MouseEvent } from "react";
 import { focusRing } from "./focus";
 
 export interface Step {
@@ -24,13 +24,16 @@ export function Stepper({
   return (
     <nav
       aria-label="工程"
-      className="shrink-0 rounded-sx-card border border-sx-line bg-sx-surface px-6 py-3 shadow-sx-card"
+      className="shrink-0 rounded-sx-card border border-sx-line bg-sx-surface px-4 py-3 shadow-sx-card md:px-6"
     >
+      {/* Side by side from md; one under the other below it (the steps' names do not fit a phone in a row). */}
       <ol
-        className="grid gap-2"
-        style={{
-          gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))`,
-        }}
+        className="grid grid-cols-1 gap-2 md:grid-cols-(--sx-step-columns)"
+        style={
+          {
+            "--sx-step-columns": `repeat(${steps.length}, minmax(0, 1fr))`,
+          } as CSSProperties
+        }
       >
         {steps.map((s, i) => {
           const cur = s.id === current;

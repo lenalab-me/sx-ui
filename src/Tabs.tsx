@@ -16,15 +16,15 @@ const look: Record<
 > = {
   // Page-level sections, such as "拠点 / テンプレート" on the project overview
   underline: {
-    list: "flex gap-6",
+    list: "flex gap-6 max-md:gap-4 max-md:overflow-x-auto max-md:pb-px",
     tab: (on) =>
-      `-mb-px flex items-center gap-2 border-b-3 pb-3 pt-1 text-sx-lead ${on ? "border-sx-accent font-medium text-sx-strong" : "border-transparent text-sx-muted hover:text-sx-strong"}`,
+      `-mb-px flex items-center gap-2 border-b-3 pb-3 pt-1 text-sx-lead max-md:shrink-0 max-md:whitespace-nowrap ${on ? "border-sx-accent font-medium text-sx-strong" : "border-transparent text-sx-muted hover:text-sx-strong"}`,
   },
   // A view switch, such as "作図 / フォーム"
   segmented: {
-    list: "flex gap-1 rounded-sx-control bg-sx-fill p-1",
+    list: "flex gap-1 rounded-sx-control bg-sx-fill p-1 max-md:overflow-x-auto",
     tab: (on) =>
-      `flex items-center gap-2 rounded-sx-tile px-4 py-1.5 ${on ? "bg-sx-surface font-medium text-sx-strong shadow-sx-raised" : "text-sx-body hover:text-sx-strong"}`,
+      `flex items-center gap-2 rounded-sx-tile px-4 py-1.5 max-md:shrink-0 max-md:whitespace-nowrap ${on ? "bg-sx-surface font-medium text-sx-strong shadow-sx-raised" : "text-sx-body hover:text-sx-strong"}`,
   },
   // Status filters and the five order tabs
   pill: {

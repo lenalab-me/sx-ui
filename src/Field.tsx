@@ -80,10 +80,11 @@ export function ErrorText({
 
 const InFieldGrid = createContext(false);
 
+// Below md the columns become one (two or three Fields side by side do not fit a phone).
 const gridColumns = {
   1: "grid-cols-1",
-  2: "grid-cols-2",
-  3: "grid-cols-3",
+  2: "grid-cols-2 max-md:grid-cols-1",
+  3: "grid-cols-3 max-md:grid-cols-1",
 } as const;
 
 /**

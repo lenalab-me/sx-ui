@@ -90,7 +90,7 @@ export function Popover({
       data-boundary
       popover={topLayer ? "manual" : undefined}
       style={topLayer ? anchoredStyle(name, align) : undefined}
-      className={`${topLayer ? "inset-auto m-0 overflow-visible text-inherit" : `absolute top-full z-30 ${align === "end" ? "right-0" : "left-0"}`} mt-1 flex ${size === "md" ? "w-96" : "w-70"} flex-col gap-2 rounded-sx-control border border-sx-control bg-sx-surface p-3 text-left shadow-sx-overlay`}
+      className={`${topLayer ? "inset-auto m-0 overflow-visible text-inherit" : `absolute top-full z-30 ${align === "end" ? "right-0" : "left-0"}`} mt-1 flex ${size === "md" ? "w-96" : "w-70"} max-w-[calc(100vw-1rem)] flex-col gap-2 rounded-sx-control border border-sx-control bg-sx-surface p-3 text-left shadow-sx-overlay`}
     >
       <div className="flex items-center justify-between gap-2">
         <p className="text-sx-meta font-medium text-sx-body">{label}</p>
