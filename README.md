@@ -106,7 +106,7 @@
 - `StatusLine` の `tone="neutral"` はアイコン無しの控えめな表示（「読み込み中…」）。
 - `Meter` は名前（`label`）と値の文字（`valueText`。無ければ百分率）を必ず出し、`tone`（`accent`・`ok`・`warn`・`error`）の色は文字に添えるだけ。まだ測るものが無いときは `value` を `null` にして `valueText` に理由を書く（棒は空、`role="meter"` を持たない）。棒の幅だけは値そのものなので `style` で書く。
 - `TextLink` は表のセルや本文の中のリンク。余白なし・下線・フォーカスリングで、見出しと左がそろう。全角の閉じ括弧で終わる名前でも下線が文字の右にはみ出さない。
-- `Shell` はロゴの横のアプリの名前を `product` で、左ペインの項目を `entries`（`{ label, href, icon, current? }`）で受ける。ロゴの丸にはアプリの頭文字を `mark`（1〜2 文字）で入れられ、渡さなければネットワークのアイコン。左下の枠は、ログインのあるアプリなら `account`（`{ name, detail?, onSignOut? }`。`onSignOut` を渡すとログアウトのボタンが出る）で利用者を出し、渡さなければ「ローカル利用／ログインなし」。ルートは `h-dvh` で、`html`・`body` には何も書かない。
+- `Shell` はロゴの横のアプリの名前を `product` で、左ペインの項目を `entries`（`{ label, href, icon, current? }`）で受ける。ロゴの丸にはアプリの頭文字を `mark`（1〜2 文字）で入れられ、渡さなければネットワークのアイコン。左下の枠は、ログインのあるアプリなら `account`（`{ name, detail?, onSignOut? }`。`onSignOut` を渡すとログアウトのボタンが出る）で利用者を出し、渡さなければ「ローカル利用／ログインなし」。`pane={false}` は左ペインを出さない（試験に解答している画面のように、利用者が1つのことに集中する画面。見本は `?shell=focus`）。ルートは `h-dvh` で、`html`・`body` には何も書かない。
 - 左ペインの `icon` は `NavIconName`＝`home`・`list`・`tasks`・`calendar`・`users`・`package`・`chart`・`history`・`settings`・`projects`・`play`・`book`・`shield`。足すときは `src/Shell.tsx` の `navIcons` に足し、見本ページの `navLabels` にも足す。
 
 ### 作図（物理構成）

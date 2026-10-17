@@ -229,6 +229,7 @@ export function Shell({
   entries,
   homeHref,
   account,
+  pane = true,
   children,
 }: {
   /** The application's name, next to the logo at the top of the pane. */
@@ -239,6 +240,8 @@ export function Shell({
   homeHref: string;
   /** The signed-in user for the bottom-left slot. Without it the slot says the app is used locally without login. */
   account?: ShellAccount;
+  /** false: no left pane, for a screen that has the user's whole attention (answering an exam). The page fills the frame. */
+  pane?: boolean;
   children: ReactNode;
 }) {
   const [collapsed, setCollapsed] = useState(
@@ -262,15 +265,17 @@ export function Shell({
       </a>
       {/* relative: sr-only text is absolutely positioned and must not stretch the document */}
       <div className="relative box-border flex h-full overflow-clip rounded-sx-frame border border-sx-line bg-sx-canvas">
-        <Sidebar
-          product={product}
-          mark={mark}
-          entries={entries}
-          homeHref={homeHref}
-          collapsed={collapsed}
-          onToggle={toggle}
-          account={account}
-        />
+        {pane && (
+          <Sidebar
+            product={product}
+            mark={mark}
+            entries={entries}
+            homeHref={homeHref}
+            collapsed={collapsed}
+            onToggle={toggle}
+            account={account}
+          />
+        )}
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">{children}</div>
       </div>
     </div>

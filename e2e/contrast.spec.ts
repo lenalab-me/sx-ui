@@ -17,6 +17,7 @@ const paths = [
   "/gallery/?open=popover",
   "/gallery/?open=table-menu",
   "/gallery/?shell=account",
+  "/gallery/?shell=focus",
 ];
 
 for (const path of paths) {

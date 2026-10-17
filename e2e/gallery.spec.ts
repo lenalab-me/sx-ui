@@ -46,6 +46,11 @@ const states = [
     path: "/gallery/?shell=account",
     title: "ログインのあるアプリの枠",
   },
+  {
+    id: "gallery-shell-focus",
+    path: "/gallery/?shell=focus",
+    title: "左ペインのない枠",
+  },
 ];
 
 for (const state of states) {

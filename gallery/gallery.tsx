@@ -263,6 +263,8 @@ const opened = new URLSearchParams(location.search).get("open");
 // ?shell=account: the shell of an app with login (the user's name and sign-out at the bottom left, an initial in the logo).
 const signedIn =
   new URLSearchParams(location.search).get("shell") === "account";
+// ?shell=focus: the shell without its left pane (a screen that has the user's whole attention).
+const focused = new URLSearchParams(location.search).get("shell") === "focus";
 
 // The heading is the title and the names in `parts`, so the names are written once.
 function Section({
@@ -311,6 +313,7 @@ function Gallery() {
       product="sx-ui"
       homeHref="./"
       entries={navEntries}
+      pane={!focused}
       mark={signedIn ? "S" : undefined}
       account={
         signedIn
