@@ -34,6 +34,7 @@ import {
   Label,
   LadderDiagram,
   Menu,
+  Meter,
   Modal,
   Notice,
   NumberInput,
@@ -1653,6 +1654,49 @@ function Gallery() {
               </tbody>
             </Table>
           </Card>
+        </Section>
+
+        <Section
+          title="進み具合"
+          parts={["Meter"]}
+          use="全体のうちどれだけか（進み具合・正答率）を棒で見せます。名前は左、値は右に文字で必ず書き（「23 / 1054問」のように数で書くときは「valueText」）、棒の色（「tone」）は文字に添えるだけです。まだ測るものが無いとき（未回答）は「value」を「null」にして、理由を「valueText」に書きます（棒は空のまま）。分野ごとの正答率のように並べるときは、画面で「ul」に入れて縦に並べます。操作の結果や状態の一言には使わず、Pill・StatusLine を使います。"
+        >
+          <div className="grid grid-cols-2 gap-x-8 gap-y-5">
+            <Meter
+              label="解いた問題"
+              value={23}
+              max={1054}
+              valueText="23 / 1054問"
+            />
+            <Meter label="正答率" value={48} tone="warn" />
+            <Meter label="合格の目安" value={82} tone="ok" />
+            <Meter label="残り時間" value={12} tone="error" />
+          </div>
+          <ul className="flex list-none flex-col gap-4 p-0">
+            <li>
+              <Meter
+                label="D1_Architecture"
+                value={33}
+                valueText="33%（1 / 3問）"
+                tone="warn"
+              />
+            </li>
+            <li>
+              <Meter
+                label="D2_Virtualization"
+                value={null}
+                valueText="未回答"
+              />
+            </li>
+            <li>
+              <Meter
+                label="D5_Security"
+                value={100}
+                valueText="100%（1 / 1問）"
+                tone="ok"
+              />
+            </li>
+          </ul>
         </Section>
 
         {modal && (
