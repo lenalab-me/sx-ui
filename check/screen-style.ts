@@ -120,7 +120,8 @@ export function scan(source: string): { code: string; literals: Literal[] } {
 // ---- 画面ファイルが書いてよいクラス -----------------------------------------------------------
 
 // 配置のクラス。これ以外（色・文字サイズ・枠・角丸・影・hover など状態・任意値・-sx- を含む語）は
-// 画面に書けない。sm: md: lg: の接頭辞は外してから当てる。
+// 画面に書けない。sm: md: lg: と max-sm: max-md: max-lg: の接頭辞（画面の幅で配置を変える。狭い画面は
+// max-md: で書く）は外してから当てるので、配置のクラスなら幅の接頭辞が付いていても書ける。
 export const allowedLayout: RegExp[] = [
   /flex|inline-flex|grid|block|inline|inline-block|hidden|contents|sr-only|not-sr-only/,
   /flex-(row|col|wrap|nowrap|1|auto|none)/,
@@ -149,7 +150,7 @@ export function disallowedWords(literal: Literal): string[] {
   const words = literal.text.split(/\s+/).filter((w) => w !== "");
   const bad: string[] = [];
   for (const word of words) {
-    const bare = word.replace(/^(?:sm|md|lg):/, "");
+    const bare = word.replace(/^(?:max-)?(?:sm|md|lg):/, "");
     if (allowedLayout.some((re) => re.test(bare))) continue;
     if (!classLike.test(word)) continue;
     if (words.length > 1 || literal.inClass || decorative.test(word))

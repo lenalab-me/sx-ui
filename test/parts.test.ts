@@ -110,6 +110,19 @@ test("検査は、装飾のクラスを落とし、配置のクラスと部品�
   assert.deepEqual(bad('<div className="md:grid-cols-2 hover:bg-x" />'), [
     "hover:bg-x",
   ]);
+  // 幅の接頭辞（md: と、狭い画面の max-md:）は、配置のクラスなら通し、装飾のクラスには効かない。
+  assert.deepEqual(
+    bad(
+      '<div className="flex-col md:flex-row max-md:hidden md:grid-cols-3" />',
+    ),
+    [],
+  );
+  assert.deepEqual(
+    bad(
+      '<div className="max-md:flex-col max-md:bg-sx-fill max-md:hover:flex" />',
+    ),
+    ["max-md:bg-sx-fill", "max-md:hover:flex"],
+  );
   assert.deepEqual(bad("<p className={`mt-2 ${a ? 'text-sx-body' : ''}`} />"), [
     "text-sx-body",
   ]);
