@@ -41,6 +41,11 @@ const states = [
     path: "/gallery/?open=table-menu",
     title: "短い表の中のメニューを開いた状態",
   },
+  {
+    id: "gallery-shell-account",
+    path: "/gallery/?shell=account",
+    title: "ログインのあるアプリの枠",
+  },
 ];
 
 for (const state of states) {

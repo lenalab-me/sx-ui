@@ -20,6 +20,7 @@ import {
   Plus,
   Trash2,
   TriangleAlert,
+  RotateCw,
   Undo2,
   X,
   type LucideIcon,
@@ -48,6 +49,7 @@ const icons = {
   plus: Plus,
   trash: Trash2,
   "triangle-alert": TriangleAlert,
+  refresh: RotateCw,
   undo: Undo2,
   x: X,
 } satisfies Record<string, LucideIcon>;

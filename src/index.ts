@@ -62,7 +62,12 @@ export { Card, CardHead, Page, PageTitle } from "./Page";
 export { Pill, type PillTone } from "./Pill";
 export { Popover } from "./Popover";
 export { SaveStatus, type SaveState } from "./SaveStatus";
-export { Shell, type NavEntry, type NavIconName } from "./Shell";
+export {
+  Shell,
+  type NavEntry,
+  type NavIconName,
+  type ShellAccount,
+} from "./Shell";
 export { type ControlSize } from "./size";
 export { StatusLine } from "./StatusLine";
 export { Stepper, type Step } from "./Stepper";

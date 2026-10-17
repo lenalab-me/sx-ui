@@ -1,4 +1,5 @@
 import {
+  BookOpen,
   CalendarDays,
   ChartColumn,
   ClipboardList,
@@ -6,10 +7,13 @@ import {
   History,
   House,
   List,
+  LogOut,
   Network,
   Package,
   PanelLeft,
+  Play,
   Settings,
+  ShieldCheck,
   UserRound,
   Users,
 } from "lucide-react";
@@ -20,20 +24,30 @@ const MENU_KEY = "nd-menu";
 
 // Screens name an icon; the mapping to the icon library stays in this package.
 const navIcons = {
+  book: BookOpen,
   calendar: CalendarDays,
   chart: ChartColumn,
   history: History,
   home: House,
   list: List,
   package: Package,
+  play: Play,
   projects: FileStack,
   settings: Settings,
+  shield: ShieldCheck,
   tasks: ClipboardList,
   users: Users,
 };
 
 /** The icons the left pane offers (a separate set from IconName: the pane's are 20px and carry a label beside them). */
 export type NavIconName = keyof typeof navIcons;
+
+/** The signed-in user, for the bottom-left slot: a name, a line under it (a role), and a sign-out button when given. */
+export interface ShellAccount {
+  name: string;
+  detail?: string;
+  onSignOut?: () => void;
+}
 
 export interface NavEntry {
   label: string;
@@ -75,21 +89,25 @@ function NavItem({
 
 /**
  * The left pane is the entry to the whole app. It holds no workflow steps (those are the Stepper
- * at the top of a site screen). The bottom-left slot is where the signed-in user goes; there is
- * no login, so it states the current situation instead of showing a made-up name.
+ * at the top of a site screen). The bottom-left slot is where the signed-in user goes; an app
+ * without login gives no account, and the slot states that instead of showing a made-up name.
  */
 function Sidebar({
   product,
+  mark,
   entries,
   homeHref,
   collapsed,
   onToggle,
+  account,
 }: {
   product: string;
+  mark?: string;
   entries: NavEntry[];
   homeHref: string;
   collapsed: boolean;
   onToggle: () => void;
+  account?: ShellAccount;
 }) {
   return (
     <aside
@@ -106,7 +124,11 @@ function Sidebar({
             aria-hidden="true"
             className="flex size-9 shrink-0 items-center justify-center rounded-full bg-sx-accent text-sx-on-solid"
           >
-            <Network size={18} />
+            {mark ? (
+              <span className="text-sx-base font-semibold">{mark}</span>
+            ) : (
+              <Network size={18} />
+            )}
           </span>
           <span
             className={
@@ -139,8 +161,14 @@ function Sidebar({
 
       <div
         data-user-slot
-        className={`mt-auto flex items-center gap-3 border-t border-sx-line pt-4 ${collapsed ? "justify-center" : "px-1"}`}
-        title={collapsed ? "ローカル利用（ログインなし）" : undefined}
+        className={`mt-auto flex items-center gap-3 border-t border-sx-line pt-4 ${collapsed ? `justify-center ${account?.onSignOut ? "flex-col" : ""}` : "px-1"}`}
+        title={
+          collapsed
+            ? account
+              ? account.name
+              : "ローカル利用（ログインなし）"
+            : undefined
+        }
       >
         <span
           aria-hidden="true"
@@ -148,10 +176,42 @@ function Sidebar({
         >
           <UserRound size={20} />
         </span>
-        <div className={collapsed ? "sr-only" : "flex flex-col leading-tight"}>
-          <span className="font-medium">ローカル利用</span>
-          <span className="text-sx-meta text-sx-muted">ログインなし</span>
+        <div
+          className={
+            collapsed
+              ? "sr-only"
+              : account
+                ? "flex min-w-0 flex-1 flex-col leading-tight"
+                : "flex flex-col leading-tight"
+          }
+        >
+          {account ? (
+            <>
+              <span className="truncate font-medium">{account.name}</span>
+              {account.detail && (
+                <span className="truncate text-sx-meta text-sx-muted">
+                  {account.detail}
+                </span>
+              )}
+            </>
+          ) : (
+            <>
+              <span className="font-medium">ローカル利用</span>
+              <span className="text-sx-meta text-sx-muted">ログインなし</span>
+            </>
+          )}
         </div>
+        {account?.onSignOut && (
+          <button
+            type="button"
+            aria-label="ログアウト"
+            title="ログアウト"
+            onClick={account.onSignOut}
+            className={`rounded-sx-tile p-1.5 text-sx-muted hover:bg-sx-fill ${focusRing}`}
+          >
+            <LogOut size={20} aria-hidden="true" />
+          </button>
+        )}
       </div>
     </aside>
   );
@@ -165,14 +225,20 @@ function Sidebar({
  */
 export function Shell({
   product,
+  mark,
   entries,
   homeHref,
+  account,
   children,
 }: {
   /** The application's name, next to the logo at the top of the pane. */
   product: string;
+  /** One or two letters in the logo's circle (the app's initial). Without it the circle shows the network icon. */
+  mark?: string;
   entries: NavEntry[];
   homeHref: string;
+  /** The signed-in user for the bottom-left slot. Without it the slot says the app is used locally without login. */
+  account?: ShellAccount;
   children: ReactNode;
 }) {
   const [collapsed, setCollapsed] = useState(
@@ -198,10 +264,12 @@ export function Shell({
       <div className="relative box-border flex h-full overflow-clip rounded-sx-frame border border-sx-line bg-sx-canvas">
         <Sidebar
           product={product}
+          mark={mark}
           entries={entries}
           homeHref={homeHref}
           collapsed={collapsed}
           onToggle={toggle}
+          account={account}
         />
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">{children}</div>
       </div>

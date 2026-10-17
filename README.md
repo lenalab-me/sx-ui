@@ -64,7 +64,7 @@
 
 `npm install` のあと `npm run dev` で `/gallery/` を開く。`npm run check` が整形・テスト（台帳と書き方）・型・検査の道具のビルドを見る。
 
-見た目を変えたら `npm run e2e` を流す。見本ページを Playwright（Chromium、locale `ja-JP`、1440×900）で撮り、`e2e/__screenshots__/` の基準画像と1ピクセルも違わないことを見る（先頭の画面と `?open=` の7状態に加え、16の節ごとに1枚。節の画像は、節が入る高さの窓で撮る）。落ちたら `npm run e2e -- --last-failed` で落ちた分だけ流し直す。差分は人が見て、意図した変えならそのとき `npm run e2e -- --update-snapshots` で基準画像を撮り直して承認する（画像はプラットフォームごとで、いまは `darwin`）。部品を変える・足すときは、同じコミットで基準画像を更新する。ポートは `E2E_WEB_PORT`（既定 5191）で変えられる。
+見た目を変えたら `npm run e2e` を流す。見本ページを Playwright（Chromium、locale `ja-JP`、1440×900）で撮り、`e2e/__screenshots__/` の基準画像と1ピクセルも違わないことを見る（先頭の画面と `?open=` の7状態と `?shell=account` に加え、16の節ごとに1枚。節の画像は、節が入る高さの窓で撮る）。落ちたら `npm run e2e -- --last-failed` で落ちた分だけ流し直す。差分は人が見て、意図した変えならそのとき `npm run e2e -- --update-snapshots` で基準画像を撮り直して承認する（画像はプラットフォームごとで、いまは `darwin`）。部品を変える・足すときは、同じコミットで基準画像を更新する。ポートは `E2E_WEB_PORT`（既定 5191）で変えられる。
 
 ## CSS とトークン
 
@@ -104,8 +104,8 @@
 - `ConfirmDialog` は子（`children`）を `message` の下に出す。確定の前に入力内容（借りる人・期間など）を見せるときは `DescriptionList` を入れる。ボタンの並びと Esc の答えは変わらない。
 - `StatusLine` の `tone="neutral"` はアイコン無しの控えめな表示（「読み込み中…」）。
 - `TextLink` は表のセルや本文の中のリンク。余白なし・下線・フォーカスリングで、見出しと左がそろう。全角の閉じ括弧で終わる名前でも下線が文字の右にはみ出さない。
-- `Shell` はロゴの横のアプリの名前を `product` で、左ペインの項目を `entries`（`{ label, href, icon, current? }`）で受け、左下に「ローカル利用／ログインなし」の枠を持つ。ルートは `h-dvh` で、`html`・`body` には何も書かない。
-- 左ペインの `icon` は `NavIconName`＝`home`・`list`・`tasks`・`calendar`・`users`・`package`・`chart`・`history`・`settings`・`projects`。足すときは `src/Shell.tsx` の `navIcons` に足し、見本ページの `navLabels` にも足す。
+- `Shell` はロゴの横のアプリの名前を `product` で、左ペインの項目を `entries`（`{ label, href, icon, current? }`）で受ける。ロゴの丸にはアプリの頭文字を `mark`（1〜2 文字）で入れられ、渡さなければネットワークのアイコン。左下の枠は、ログインのあるアプリなら `account`（`{ name, detail?, onSignOut? }`。`onSignOut` を渡すとログアウトのボタンが出る）で利用者を出し、渡さなければ「ローカル利用／ログインなし」。ルートは `h-dvh` で、`html`・`body` には何も書かない。
+- 左ペインの `icon` は `NavIconName`＝`home`・`list`・`tasks`・`calendar`・`users`・`package`・`chart`・`history`・`settings`・`projects`・`play`・`book`・`shield`。足すときは `src/Shell.tsx` の `navIcons` に足し、見本ページの `navLabels` にも足す。
 
 ### 作図（物理構成）
 
@@ -163,7 +163,7 @@
 
 ## 見本ページ
 
-`gallery/`（`index.html`・`gallery.tsx`）は、部品を全部、tone・variant・size・disabled・invalid・必須ごとに並べたページで、`npm run dev` の `/gallery/`（アプリの開発サーバーでは `/node_modules/@sx/ui/gallery/`）で開く。アプリの `vite build` の入口はアプリの `index.html` だけなので配布物には入らない。`?open=modal`・`?open=modal-lg`（幅 760px の `lg`）・`?open=confirm`・`?open=confirm-detail`（内容つきの確認）・`?open=menu`・`?open=popover`・`?open=table-menu`（行が2件だけの表の中の Menu）を付けると、そのモーダル・確認・メニュー・浮き枠を開いた状態で表示する。表は40行あり、ページ全体ではなく `main` の中だけがスクロールする。見本ページは `body` の余白だけを自分の `index.html` で消す（preflight を読まないため。アプリの `index.html` も同じにする）。画面ファイルと同じく、見本ページで使うクラスは配置のクラスだけにする。
+`gallery/`（`index.html`・`gallery.tsx`）は、部品を全部、tone・variant・size・disabled・invalid・必須ごとに並べたページで、`npm run dev` の `/gallery/`（アプリの開発サーバーでは `/node_modules/@sx/ui/gallery/`）で開く。アプリの `vite build` の入口はアプリの `index.html` だけなので配布物には入らない。`?open=modal`・`?open=modal-lg`（幅 760px の `lg`）・`?open=confirm`・`?open=confirm-detail`（内容つきの確認）・`?open=menu`・`?open=popover`・`?open=table-menu`（行が2件だけの表の中の Menu）を付けると、そのモーダル・確認・メニュー・浮き枠を開いた状態で表示する。`?shell=account` はログインのあるアプリの枠（左下に利用者とログアウト、ロゴに頭文字）。表は40行あり、ページ全体ではなく `main` の中だけがスクロールする。見本ページは `body` の余白だけを自分の `index.html` で消す（preflight を読まないため。アプリの `index.html` も同じにする）。画面ファイルと同じく、見本ページで使うクラスは配置のクラスだけにする。
 
 見本ページは部品の台帳でもある。各節は `parts`（その節で見せる部品の名前）と `use`（いつ使うか・いつ使わないか。似た部品との使い分け）を持ち、`use` は節の見出しの下に表示される。台帳を別の文書に写さず、部品の一覧と使い分けはこの1か所だけにする。部品を足す・名前を変えるときは、同じ部品のコミットで見本の節に載せる（`parts` に名前を足し、`<名前` で描き、`use` を書く）。`test/catalog.test.ts`（`npm test`）が、`src/index.ts` が値として公開する部品（英大文字で始まる名前。`type` の export と `confirmTitle` のような関数は除く）の次を見る。
 

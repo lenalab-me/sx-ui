@@ -228,6 +228,7 @@ const iconNames = Object.keys({
   "layout-grid": true,
   maximize: true,
   plus: true,
+  refresh: true,
   trash: true,
   "triangle-alert": true,
   undo: true,
@@ -246,6 +247,9 @@ const navLabels = {
   chart: "集計",
   history: "履歴",
   settings: "設定",
+  play: "始める",
+  book: "資料",
+  shield: "管理",
 } satisfies Record<NavIconName, string>;
 const navEntries = (Object.keys(navLabels) as NavIconName[]).map((icon) => ({
   label: navLabels[icon],
@@ -255,6 +259,9 @@ const navEntries = (Object.keys(navLabels) as NavIconName[]).map((icon) => ({
 }));
 
 const opened = new URLSearchParams(location.search).get("open");
+// ?shell=account: the shell of an app with login (the user's name and sign-out at the bottom left, an initial in the logo).
+const signedIn =
+  new URLSearchParams(location.search).get("shell") === "account";
 
 // The heading is the title and the names in `parts`, so the names are written once.
 function Section({
@@ -299,7 +306,17 @@ function Gallery() {
   const anchor = useRef<HTMLButtonElement>(null);
 
   return (
-    <Shell product="sx-ui" homeHref="./" entries={navEntries}>
+    <Shell
+      product="sx-ui"
+      homeHref="./"
+      entries={navEntries}
+      mark={signedIn ? "S" : undefined}
+      account={
+        signedIn
+          ? { name: "見本 太郎", detail: "管理者", onSignOut: () => {} }
+          : undefined
+      }
+    >
       <Page
         crumbs={[{ label: "Project", href: "/" }, { label: "部品の見本" }]}
         meta={<SaveStatus state="saved" live />}
@@ -334,7 +351,7 @@ function Gallery() {
         <Section
           title="画面の枠組み"
           parts={["Shell", "Page", "PageTitle", "Card", "CardHead", "Crumbs"]}
-          use="Shell は左ペインとページの枠で、画面は Page を1つ入れます。左ペインの項目（「entries」）は名前（「icon」）でアイコンを選びます（home・list・tasks・calendar・users・package・chart・history・settings・projects。この見本の左ペインに全部並んでいます）。見出しの行は PageTitle（何の画面かを添えるときは「subtitle」。この見本の見出しの右）、白い面は Card、現在位置は Crumbs（Page に渡した経路から描かれる）です。Card の上端にタブを置くときは CardHead に下線のタブ（Tabs の「underline」）を入れ、その面が何を並べるかの案内は「note」で右に添えます。タブのない Card には使いません。Page の「footer」は、本文の下端に固定される帯（本文がスクロールしても動かない。この見本の画面の下端）で、工程や画面を前後に移るボタンを置きます（前へ・戻るは左端、次へは右端）。保存や削除のような操作は置かず、本文の中か Modal の下端の帯に置きます。"
+          use="Shell は左ペインとページの枠で、画面は Page を1つ入れます。左ペインの項目（「entries」）は名前（「icon」）でアイコンを選びます（home・list・tasks・calendar・users・package・chart・history・settings・projects・play・book・shield。この見本の左ペインに全部並んでいます）。ログインのあるアプリは「account」で左下に利用者の名前とログアウトを出し、「mark」でロゴに頭文字を入れます（?shell=account）。見出しの行は PageTitle（何の画面かを添えるときは「subtitle」。この見本の見出しの右）、白い面は Card、現在位置は Crumbs（Page に渡した経路から描かれる）です。Card の上端にタブを置くときは CardHead に下線のタブ（Tabs の「underline」）を入れ、その面が何を並べるかの案内は「note」で右に添えます。タブのない Card には使いません。Page の「footer」は、本文の下端に固定される帯（本文がスクロールしても動かない。この見本の画面の下端）で、工程や画面を前後に移るボタンを置きます（前へ・戻るは左端、次へは右端）。保存や削除のような操作は置かず、本文の中か Modal の下端の帯に置きます。"
         >
           <Crumbs
             items={[
