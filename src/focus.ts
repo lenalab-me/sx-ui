@@ -4,3 +4,10 @@ export const focusRing =
 
 /** For controls that hold text inside their border: the border color changes too, not only the outline. */
 export const focusRingInput = `${focusRing} focus-visible:border-sx-strong`;
+
+/**
+ * The same ring on a wrapper whose hidden input has the focus (a label around an sr-only radio or
+ * checkbox). The classes are written out because Tailwind reads class names from the source text.
+ */
+export const focusRingWithin =
+  "has-focus-visible:outline has-focus-visible:outline-4 has-focus-visible:outline-sx-focus-outline has-focus-visible:outline-offset-[calc(2/16*1rem)] has-focus-visible:ring-[calc(2/16*1rem)] has-focus-visible:ring-sx-focus";

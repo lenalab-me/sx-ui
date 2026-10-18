@@ -1,3 +1,9 @@
+export {
+  AnswerHint,
+  AnswerVerdict,
+  ChoiceMark,
+  type ChoiceMarkState,
+} from "./Answer";
 export { Button, ButtonLink, IconButton, type ButtonVariant } from "./Button";
 export {
   ConfirmDialog,
@@ -5,6 +11,7 @@ export {
   type ConfirmQuestion,
   type ConfirmResult,
 } from "./ConfirmDialog";
+export { ChoiceList } from "./ChoiceList";
 export { CodeBlock } from "./CodeBlock";
 export { Crumbs, type Crumb } from "./Crumbs";
 export { DescriptionList } from "./DescriptionList";
@@ -55,6 +62,7 @@ export {
   type LadderTap,
   type LadderTone,
 } from "./Ladder";
+export { MatchList, OptionIndex, OrderList } from "./MatchList";
 export { Menu, type MenuItem } from "./Menu";
 export { Meter, type MeterTone } from "./Meter";
 export { Modal } from "./Modal";

@@ -6,33 +6,34 @@
 
 どの部品を使うか迷ったら、まずこの表を引く。使い分けの詳しい文（いつ使う・いつ使わない）は見本ページの各節の `use` が正で、ここには写さない。
 
-| やりたいこと                                   | 部品                                                                        |
-| ---------------------------------------------- | --------------------------------------------------------------------------- |
-| 画面の枠（左ペイン・見出し・現在位置）         | `Shell`・`Page`・`PageTitle`・`Crumbs`                                      |
-| 白い面を作る                                   | `Card`（表を縁まで入れるときは `flush`、上端にタブを置くときは `CardHead`） |
-| 状態で絞り込む・同じ画面で表示を切り替える     | `Tabs`（絞り込みは `variant="pill"`、`TabPanel` と組む）                    |
-| 工程を前後に移る                               | `Stepper`（工程以外には使わない）                                           |
-| 入力欄（ラベル・補足・エラーつき）             | `Field`（横に並べるときは `FieldGrid`）                                     |
-| 読むだけの値（直せない項目）                   | `DescriptionList`                                                           |
-| 画面の中に残す注意・結果・エラー               | `Notice`（出た瞬間に読み上げるなら `live`）                                 |
-| 操作の結果を一行だけ伝える                     | `StatusLine`（`Page` の `status`）                                          |
-| 状態を示す小さな表示                           | `Pill`・`Tag`・`SaveStatus`                                                 |
-| 全体のうちどれだけか（進み具合・正答率）       | `Meter`（並べるときは画面で `ul` に入れる）                                 |
-| 記事・解説のような読むための長い文             | `Prose`（中に Markdown を描いた要素を入れる）                               |
-| 一覧の表（1行1件）                             | `Table`・`THead`・`Th`・`Tr`・`RowHead`・`Td`                               |
-| 表のセルから詳細へ行くリンク・本文の中のリンク | `TextLink`（ボタンに見せる移動は `ButtonLink`）                             |
-| 入力する表（機器設定）                         | `DenseTable`・`DenseRow`・`CellInput`・`Pick`                               |
-| 行の末尾の「…」の操作の一覧                    | `Menu`                                                                      |
-| ボタンの近くに出す小さな枠                     | `Popover`                                                                   |
-| 入力を求める窓                                 | `Modal`                                                                     |
-| 取り消せない操作の前の確認                     | `ConfirmDialog`                                                             |
-| 入力内容を確定の前に見せる確認                 | `ConfirmDialog` の子に `DescriptionList`                                    |
-| 開閉する見出し                                 | `Disclosure`                                                                |
-| 生成した Config・JSON を見せる                 | `CodeBlock`                                                                 |
-| 物理構成の作図                                 | `DiagramFrame`・`DiagramDevice`・`DiagramPort`                              |
-| 論理接続図（L3 の見取り図）                    | `LadderDiagram`                                                             |
-| 空の状態の案内                                 | `EmptyState`                                                                |
-| 文字のない操作（ダウンロード・削除など）       | `IconButton`（名前が必須）                                                  |
+| やりたいこと                                         | 部品                                                                                                                                              |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 画面の枠（左ペイン・見出し・現在位置）               | `Shell`・`Page`・`PageTitle`・`Crumbs`                                                                                                            |
+| 白い面を作る                                         | `Card`（表を縁まで入れるときは `flush`、上端にタブを置くときは `CardHead`）                                                                       |
+| 状態で絞り込む・同じ画面で表示を切り替える           | `Tabs`（絞り込みは `variant="pill"`、`TabPanel` と組む）                                                                                          |
+| 工程を前後に移る                                     | `Stepper`（工程以外には使わない）                                                                                                                 |
+| 入力欄（ラベル・補足・エラーつき）                   | `Field`（横に並べるときは `FieldGrid`）                                                                                                           |
+| 読むだけの値（直せない項目）                         | `DescriptionList`                                                                                                                                 |
+| 画面の中に残す注意・結果・エラー                     | `Notice`（出た瞬間に読み上げるなら `live`）                                                                                                       |
+| 操作の結果を一行だけ伝える                           | `StatusLine`（`Page` の `status`）                                                                                                                |
+| 状態を示す小さな表示                                 | `Pill`・`Tag`・`SaveStatus`                                                                                                                       |
+| 全体のうちどれだけか（進み具合・正答率）             | `Meter`（並べるときは画面で `ul` に入れる）                                                                                                       |
+| 記事・解説のような読むための長い文                   | `Prose`（中に Markdown を描いた要素を入れる）                                                                                                     |
+| 試験の解答欄（選択肢から選ぶ・組み合わせ・並べ替え） | `ChoiceList`（組み合わせは `MatchList`、並べ替えは `OrderList`＋`OptionIndex`。印・案内・正誤の文は `ChoiceMark`・`AnswerHint`・`AnswerVerdict`） |
+| 一覧の表（1行1件）                                   | `Table`・`THead`・`Th`・`Tr`・`RowHead`・`Td`                                                                                                     |
+| 表のセルから詳細へ行くリンク・本文の中のリンク       | `TextLink`（ボタンに見せる移動は `ButtonLink`）                                                                                                   |
+| 入力する表（機器設定）                               | `DenseTable`・`DenseRow`・`CellInput`・`Pick`                                                                                                     |
+| 行の末尾の「…」の操作の一覧                          | `Menu`                                                                                                                                            |
+| ボタンの近くに出す小さな枠                           | `Popover`                                                                                                                                         |
+| 入力を求める窓                                       | `Modal`                                                                                                                                           |
+| 取り消せない操作の前の確認                           | `ConfirmDialog`                                                                                                                                   |
+| 入力内容を確定の前に見せる確認                       | `ConfirmDialog` の子に `DescriptionList`                                                                                                          |
+| 開閉する見出し                                       | `Disclosure`                                                                                                                                      |
+| 生成した Config・JSON を見せる                       | `CodeBlock`                                                                                                                                       |
+| 物理構成の作図                                       | `DiagramFrame`・`DiagramDevice`・`DiagramPort`                                                                                                    |
+| 論理接続図（L3 の見取り図）                          | `LadderDiagram`                                                                                                                                   |
+| 空の状態の案内                                       | `EmptyState`                                                                                                                                      |
+| 文字のない操作（ダウンロード・削除など）             | `IconButton`（名前が必須）                                                                                                                        |
 
 ## アプリでの使い方
 
@@ -67,7 +68,7 @@
 
 `npm install` のあと `npm run dev` で `/gallery/` を開く。`npm run check` が整形・テスト（台帳と書き方）・型・検査の道具のビルドを見る。
 
-見た目を変えたら `npm run e2e` を流す。見本ページを Playwright（Chromium、locale `ja-JP`）で撮る。プロジェクトは2つで、`desktop`（1440×900。下の基準画像）と `narrow`（Pixel 7 の 412×915。基準画像は `e2e/__screenshots__/narrow/`、監査・はみ出しの検査〔`e2e/narrow.spec.ts`〕と引き出しの確かめも流す）。`desktop` は、`e2e/__screenshots__/` の基準画像と1ピクセルも違わないことを見る（先頭の画面と `?open=` の7状態と `?shell=account` に加え、16の節ごとに1枚。節の画像は、節が入る高さの窓で撮る）。落ちたら `npm run e2e -- --last-failed` で落ちた分だけ流し直す。差分は人が見て、意図した変えならそのとき `npm run e2e -- --update-snapshots` で基準画像を撮り直して承認する（画像はプラットフォームごとで、いまは `darwin`）。部品を変える・足すときは、同じコミットで基準画像を更新する。ポートは `E2E_WEB_PORT`（既定 5191）で変えられる。
+見た目を変えたら `npm run e2e` を流す。見本ページを Playwright（Chromium、locale `ja-JP`）で撮る。プロジェクトは2つで、`desktop`（1440×900。下の基準画像）と `narrow`（Pixel 7 の 412×915。基準画像は `e2e/__screenshots__/narrow/`、監査・はみ出しの検査〔`e2e/narrow.spec.ts`〕と引き出しの確かめも流す）。`desktop` は、`e2e/__screenshots__/` の基準画像と1ピクセルも違わないことを見る（先頭の画面と `?open=` の7状態と `?shell=account` に加え、20の節ごとに1枚。節の画像は、節が入る高さの窓で撮る）。落ちたら `npm run e2e -- --last-failed` で落ちた分だけ流し直す。差分は人が見て、意図した変えならそのとき `npm run e2e -- --update-snapshots` で基準画像を撮り直して承認する（画像はプラットフォームごとで、いまは `darwin`）。部品を変える・足すときは、同じコミットで基準画像を更新する。ポートは `E2E_WEB_PORT`（既定 5191）で変えられる。
 
 ## CSS とトークン
 
@@ -179,4 +180,4 @@
 
 限界：`use` の内容が部品の実際の使い方と合っているかは検査しない。レビューで確かめる。
 
-`test/parts.test.ts` は、色の直書きが `src/tokens.css` にだけあること、`role="alert"`／`"status"` が `Notice`・`StatusLine`・`Field`・`SaveStatus` にだけあること、`focus-visible` が `src/focus.ts` にだけあること、見本ページが配置のクラスだけを書くことを見る。検査自身が緩んで黙って通らないよう、落とすべき書き方を落とすことも確かめる。
+`test/parts.test.ts` は、色の直書きが `src/tokens.css` にだけあること、`role="alert"`／`"status"` が `Notice`・`StatusLine`・`Field`・`SaveStatus`・`Answer`（解答の欄の部品が結果を読み上げる隠した1行）にだけあること、`focus-visible` が `src/focus.ts` にだけあること、見本ページが配置のクラスだけを書くことを見る。検査自身が緩んで黙って通らないよう、落とすべき書き方を落とすことも確かめる。

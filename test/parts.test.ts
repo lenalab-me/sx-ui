@@ -33,6 +33,8 @@ const roleAllowed = [
   "src/StatusLine.tsx",
   "src/Field.tsx",
   "src/SaveStatus.tsx",
+  // 解答の欄の部品（ChoiceList・MatchList・OrderList）が、結果を読み上げる隠した1行。結果そのものは行の文字とアイコンで言い、この行は読み上げ専用。
+  "src/Answer.tsx",
 ];
 
 const codeOf = (file: string) => {
@@ -56,7 +58,7 @@ test("色の直書きは src/tokens.css にだけある", () => {
   assert.deepEqual(problems, []);
 });
 
-test('role="alert"・"status" の文字列は、通知の部品（Notice・StatusLine・Field・SaveStatus）にだけある', () => {
+test('role="alert"・"status" の文字列は、通知の部品（Notice・StatusLine・Field・SaveStatus）と、解答の欄の読み上げの1行（Answer）にだけある', () => {
   const problems: string[] = [];
   for (const file of [...partFiles, galleryFile]) {
     if (!file.endsWith(".tsx") || roleAllowed.includes(file)) continue;

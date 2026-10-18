@@ -2,10 +2,14 @@ import "../src/styles.css";
 import { StrictMode, useRef, useState, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import {
+  AnswerHint,
+  AnswerVerdict,
   Button,
   ButtonLink,
   Card,
   CardHead,
+  ChoiceList,
+  ChoiceMark,
   CellInput,
   Check,
   Checkbox,
@@ -33,12 +37,15 @@ import {
   Input,
   Label,
   LadderDiagram,
+  MatchList,
   Menu,
   Meter,
   Modal,
   Prose,
   Notice,
   NumberInput,
+  OptionIndex,
+  OrderList,
   Page,
   PageTitle,
   Pick,
@@ -296,6 +303,229 @@ function Section({
       )}
       {children}
     </Card>
+  );
+}
+
+// Made-up questions for the answer parts (no real exam text).
+const singleChoices = [
+  { id: "A", label: "アクセスポート" },
+  { id: "B", label: "トランクポート", correct: true },
+  { id: "C", label: "ミラーポート" },
+  { id: "D", label: "ルーテッドポート" },
+];
+const multipleChoices = [
+  { id: "A", label: "ループを防ぐ", correct: true },
+  { id: "B", label: "経路を暗号化する" },
+  { id: "C", label: "冗長なリンクの一方を論理的にふさぐ", correct: true },
+  { id: "D", label: "IP アドレスを自動で割り当てる" },
+];
+const matchRows = [
+  { id: "r1", label: "MAC アドレスを学習して、転送先を決める" },
+  { id: "r2", label: "異なるネットワークの間でパケットを中継する" },
+  { id: "r3", label: "IP アドレスを自動で割り当てる" },
+];
+const matchOptions = [
+  { id: "A", label: "ルーター" },
+  { id: "B", label: "L2 スイッチ" },
+  { id: "C", label: "DHCP サーバー" },
+  { id: "D", label: "ファイアウォール" },
+];
+const matchCorrect = ["B", "A", "C"];
+const orderOptions = [
+  { id: "A", label: "インターフェースを有効にする" },
+  { id: "B", label: "IP アドレスを設定する" },
+  { id: "C", label: "ルーティングを設定する" },
+  { id: "D", label: "設定を保存する" },
+  { id: "E", label: "コンソールに接続する" },
+];
+const orderCorrect = ["E", "A", "B", "D"];
+const markStates = [
+  "idle",
+  "chosen",
+  "correct",
+  "wrong",
+  "missed",
+  "dim",
+] as const;
+
+// The answer parts in the states of an exam screen. The lists are live, so the keyboard and the limit
+// can be tried; the revealed ones are fixed.
+function AnswerSamples() {
+  const [answers, setAnswers] = useState<Record<string, string[]>>({
+    single: [],
+    chosen: ["B"],
+    multiple: ["A"],
+    full: ["A", "C"],
+    match: ["B", "", ""],
+    order: ["", "", "B", ""],
+  });
+  const set = (key: string) => (value: string[]) =>
+    setAnswers((prev) => ({ ...prev, [key]: value }));
+  const none = () => {};
+  return (
+    <>
+      <Section
+        title="解答の選択肢"
+        parts={["ChoiceMark", "AnswerVerdict", "AnswerHint", "ChoiceList"]}
+        use="試験の問題の解答欄です。ChoiceList は選択肢から選ぶ問題に使い、1つ選ぶ問題はラジオ、「multiple」を付けると複数選ぶ問題のチェックボックス（印が四角）になります。複数選ぶ問題で「max」を渡すと、上限の数だけ選んだ時点で残りの選択肢が淡い面と淡い文字になって選べなくなります（選んだものを外すと選べるように戻る。文字は 4.5:1 を保つ）。そのとき AnswerHint の文は、画面が「上限の 2 つまで選びました」のように差し替えます（「count」の「選択済み」の表示はそのまま）。「revealed」にすると、正解の選択肢と選んだ不正解を色だけでなく文字とアイコンで示し（AnswerVerdict）、複数選ぶ問題で選ばなかった正解には「正解（選んでいません）」が付きます。結果を読み上げる隠した1行は ChoiceList が持つので、画面は結果を Notice で繰り返しません。ChoiceMark は選択肢・行・手順の頭の文字（番号）の丸、AnswerVerdict は答えの下の「正解／不正解」の文、AnswerHint は解答欄の上の案内で、解答後は「count」を渡しません。組み合わせ・並べ替えは次の節の MatchList・OrderList を使います。"
+      >
+        <div className="flex flex-wrap items-center gap-3">
+          {markStates.map((state) => (
+            <ChoiceMark key={state} state={state}>
+              A
+            </ChoiceMark>
+          ))}
+          {markStates.map((state) => (
+            <ChoiceMark key={state} state={state} shape="square">
+              A
+            </ChoiceMark>
+          ))}
+          <ChoiceMark state="correct" keep>
+            1
+          </ChoiceMark>
+          <ChoiceMark state="wrong" keep>
+            2
+          </ChoiceMark>
+        </div>
+        <div className="flex flex-col gap-1">
+          <AnswerVerdict correct />
+          <AnswerVerdict correct mine={false} />
+          <AnswerVerdict correct={false} right="B. トランクポート" />
+          <AnswerVerdict correct icon />
+          <AnswerVerdict correct={false} right="B. L2 スイッチ" icon />
+        </div>
+        <div className="grid grid-cols-2 gap-x-8 gap-y-6 max-md:grid-cols-1">
+          <div className="flex flex-col gap-3">
+            <SupportText>1つ選ぶ（解答前）</SupportText>
+            <AnswerHint>選択肢から 1 つ選んでください</AnswerHint>
+            <ChoiceList
+              name="解答（解答前）"
+              choices={singleChoices}
+              selected={answers.single!}
+              onChange={set("single")}
+            />
+          </div>
+          <div className="flex flex-col gap-3">
+            <SupportText>1つ選ぶ（選んだところ）</SupportText>
+            <AnswerHint>選択肢から 1 つ選んでください</AnswerHint>
+            <ChoiceList
+              name="解答（選んだところ）"
+              choices={singleChoices}
+              selected={answers.chosen!}
+              onChange={set("chosen")}
+            />
+          </div>
+          <div className="flex flex-col gap-3">
+            <SupportText>複数選ぶ（途中）</SupportText>
+            <AnswerHint count={{ done: answers.multiple!.length, of: 2 }}>
+              2 つ選んでください
+            </AnswerHint>
+            <ChoiceList
+              name="解答（複数・途中）"
+              choices={multipleChoices}
+              selected={answers.multiple!}
+              onChange={set("multiple")}
+              multiple
+              max={2}
+            />
+          </div>
+          <div className="flex flex-col gap-3">
+            <SupportText>複数選ぶ（上限まで選んだ）</SupportText>
+            <AnswerHint count={{ done: answers.full!.length, of: 2 }}>
+              {answers.full!.length >= 2
+                ? "上限の 2 つまで選びました"
+                : "2 つ選んでください"}
+            </AnswerHint>
+            <ChoiceList
+              name="解答（複数・上限）"
+              choices={multipleChoices}
+              selected={answers.full!}
+              onChange={set("full")}
+              multiple
+              max={2}
+            />
+          </div>
+          <div className="flex flex-col gap-3">
+            <SupportText>1つ選ぶ（解答後・不正解）</SupportText>
+            <AnswerHint>選択肢から 1 つ選んでください</AnswerHint>
+            <ChoiceList
+              name="解答（解答後）"
+              choices={singleChoices}
+              selected={["C"]}
+              onChange={none}
+              revealed
+            />
+          </div>
+          <div className="flex flex-col gap-3">
+            <SupportText>
+              複数選ぶ（解答後・不正解と選ばなかった正解）
+            </SupportText>
+            <AnswerHint>2 つ選んでください</AnswerHint>
+            <ChoiceList
+              name="解答（複数・解答後）"
+              choices={multipleChoices}
+              selected={["A", "B"]}
+              onChange={none}
+              revealed
+              multiple
+              max={2}
+            />
+          </div>
+        </div>
+      </Section>
+
+      <Section
+        title="組み合わせと並べ替え"
+        parts={["MatchList", "OrderList", "OptionIndex"]}
+        narrow="狭い画面（幅 768px 未満。スマホ）では、MatchList のプルダウンと解答後の答えが、説明の下（番号の右）に回ります。OrderList は 1 列のまま、OptionIndex は選択肢の文を折り返します。画面は何も書き足しません。"
+        use="MatchList は説明の行それぞれに選択肢から1つ選ぶ組み合わせ（同じ選択肢を複数の行で選べる）、OrderList は手順の行それぞれに選択肢を1つずつ選ぶ並べ替え（ほかの手順が選んだ選択肢は一覧に出ない）で、どちらも行ごとのプルダウンで答えます。「value」は行の順の配列で、未回答の行は空の文字列で残します（OrderList で 3 番目だけ選んでも 1・2 番目は空のままで、配列は詰めません）。「revealed」にするとプルダウンは選んだ答えと AnswerVerdict（正しくは …）に代わり、結果を読み上げる隠した1行も部品が持つので、画面は結果を Notice で繰り返しません。OptionIndex は並べ替えの選択肢を手順の上に一覧し、選ばれたものに「手順 ◯ に選択中」を添えます（「used」に OrderList の「value」を渡す）。選択肢から選ぶ問題には ChoiceList を使います。"
+      >
+        <div className="flex flex-col gap-3">
+          <SupportText>組み合わせ（解答前・途中）</SupportText>
+          <MatchList
+            rows={matchRows}
+            options={matchOptions}
+            value={answers.match!}
+            onChange={set("match")}
+          />
+        </div>
+        <div className="flex flex-col gap-3">
+          <SupportText>組み合わせ（解答後・2 問目が不正解）</SupportText>
+          <MatchList
+            rows={matchRows}
+            options={matchOptions}
+            value={["B", "B", "C"]}
+            onChange={none}
+            revealed
+            correct={matchCorrect}
+          />
+        </div>
+        <div className="flex flex-col gap-3">
+          <SupportText>
+            並べ替え（途中。3 番目の手順から選んだので 1・2 番目は空）
+          </SupportText>
+          <OptionIndex options={orderOptions} used={answers.order!} />
+          <OrderList
+            steps={4}
+            options={orderOptions}
+            value={answers.order!}
+            onChange={set("order")}
+          />
+        </div>
+        <div className="flex flex-col gap-3">
+          <SupportText>並べ替え（解答後・2・3 番目が不正解）</SupportText>
+          <OptionIndex options={orderOptions} used={["E", "B", "A", "D"]} />
+          <OrderList
+            steps={4}
+            options={orderOptions}
+            value={["E", "B", "A", "D"]}
+            onChange={none}
+            revealed
+            correct={orderCorrect}
+          />
+        </div>
+      </Section>
+    </>
   );
 }
 
@@ -1759,6 +1989,8 @@ function Gallery() {
             </table>
           </Prose>
         </Section>
+
+        <AnswerSamples />
 
         {modal && (
           <Modal
