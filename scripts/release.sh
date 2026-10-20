@@ -1,7 +1,7 @@
 #!/bin/sh
 # Packs the version in package.json for the apps, after the checks, from a clean checkout:
 # writes sx-ui-<version>.tgz here and tags the commit v<version>. An app takes it with its
-# own update script (in network-designer: sh scripts/ui-update.sh <path of the .tgz>).
+# own update script (the app's `ui:update`, which takes the path of the .tgz).
 # Usage: npm run release (raise "version" in package.json and commit first)
 set -eu
 cd "$(dirname "$0")/.."

@@ -6,20 +6,18 @@ import { existsSync, readFileSync } from "node:fs";
 //   const { fails, small } = await contrastAudit(page);
 //   expect(fails.map(describeContrastFail), "基準（4.5:1・3:1）に届かない組").toEqual([]);
 //   expect(small.map(describeSmallText), "14px 未満の文字").toEqual([]);
-// WCAG 2.x AA, the Digital Agency's standard, first written for the saas-dashboard template's
-// scripts/contrast-audit.ts and kept by network-designer until it moved here. It reads the
-// foreground and background colors of what the browser actually rendered, so it sees the result of
-// every class and token, not the source:
+// WCAG 2.x AA, the Digital Agency's standard. It reads the foreground and background colors of what
+// the browser actually rendered, so it sees the result of every class and token, not the source:
 //   - text: 4.5:1, or 3:1 for large text (24px and up, or 18.66px and up when bold)
 //   - non-text: 3:1 for icon-only controls and for the edge of every form control
 //   - text under 14px is reported on its own (the Digital Agency's smallest size), except inside a
 //     diagram ([data-diagram]), whose sizes feed the wiring calculation
 //   - disabled controls are exempt (WCAG), and are left out of both lists
-// The original only looked at the edge of elements carrying data-boundary, so an input without the
-// mark passed with a faint border. Here every input, select, textarea and role=checkbox counts as a
-// control boundary whether or not it carries the mark; data-boundary is for the other things whose
-// edge shows where to operate (the popover frame). While a modal dialog is open, only the dialog is
-// audited: what is behind it is inert and dimmed by the scrim, and is audited on the page's own route.
+// Every input, select, textarea and role=checkbox counts as a control boundary whether or not it
+// carries data-boundary, so an input without the mark cannot pass with a faint border;
+// data-boundary is for the other things whose edge shows where to operate (the popover frame).
+// While a modal dialog is open, only the dialog is audited: what is behind it is inert and dimmed
+// by the scrim, and is audited on the page's own route.
 
 const boundarySelector =
   "[data-boundary], input:not([type=hidden]), select, textarea, [role=checkbox]";

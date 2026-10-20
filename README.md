@@ -1,6 +1,6 @@
 # sx-ui（`@sx/ui`）
 
-画面の共通部品（React 19＋Tailwind v4）と、それを使うアプリの画面ファイルを検査する道具。全部品を全状態で並べた見本ページ（`gallery/`）が部品の台帳を兼ねる。network-designer の `packages/ui`（`@nd/ui`）から履歴ごと切り出した（2026-10-17）。新しいアプリの画面は、この部品で組むのが既定。
+持ち主（lenalab-me）のアプリの画面を同じ見た目で組むための共通部品（React 19＋Tailwind v4）と、それを使うアプリの画面ファイルを検査する道具。npm のレジストリには出さず、版ごとの tarball をアプリの `vendor/` に入れて使う。アプリでの入れ方は下の「[アプリでの使い方](#アプリでの使い方)」、版の出し方は「[版を出す](#版を出す)」に書いてある。全部品を全状態で並べた見本ページ（`gallery/`）が部品の台帳を兼ねる。
 
 ## やりたいこと → 部品
 
@@ -47,7 +47,7 @@
 - **TypeScript**：部品は TS のソースのまま配り、Vite が変換する（ビルドの手順は無い）。アプリの tsconfig は `jsx: "react-jsx"`・`moduleResolution: "bundler"`・`allowImportingTsExtensions: true`。
 - **入口**：アプリが読めるのは `@sx/ui`（部品）・`@sx/ui/styles.css`（CSS）・`@sx/ui/check`（検査の道具。テストだけが読む）・`@sx/ui/vite`（Vite のプラグイン。`vite.config.mjs` だけが読む）の4つだけで、`@sx/ui/src/...` のような深い import はしない。
 - **狭い画面（スマホ）**：部品は幅 `md`（768px）未満で狭い画面の形になり、`md` 以上は今のままの見た目（`max-md:` で書くか、`md:` で元の値に戻す）。画面ファイルも、配置のクラスなら `md:`・`max-md:`（と `sm:`・`lg:`・`max-sm:`・`max-lg:`）を付けて書ける（`allowedLayout` はこの接頭辞を外してから当てる）。狭い画面向けの枠は `Shell`（左ペインが上端の帯と引き出しになる）・`Page`・`PageTitle`・`CardHead`・`Table` の `stack`・`FieldGrid`（1列）・`Stepper`（縦）・`Tabs`（横にスクロール）・`DescriptionList`（1列）・`Modal`（画面の幅に収まる）。
-- **検査**：`@sx/ui/check` の `scan`（文字列リテラルの取り出し）・`disallowedWords`（配置のクラスの許可リスト `allowedLayout` に無い語）・`colorPattern`・`rolePattern`・`stripCssComments`・`lineOf` で、画面ファイルが配置のクラスしか書かず、色・`role="alert"`／`"status"`・`style=` を書かないことをテストする（network-designer の `src/screen-style.test.ts` が例）。許可リストはこのリポジトリでだけ直す。
+- **検査**：`@sx/ui/check` の `scan`（文字列リテラルの取り出し）・`disallowedWords`（配置のクラスの許可リスト `allowedLayout` に無い語）・`colorPattern`・`rolePattern`・`stripCssComments`・`lineOf` で、画面ファイルが配置のクラスしか書かず、色・`role="alert"`／`"status"`・`style=` を書かないことをテストする。許可リストはこのリポジトリでだけ直す。
 - **見本ページ**：アプリの開発サーバーで `/node_modules/@sx/ui/gallery/` を開くと、入れている版の部品が出る。
 - **ロックと版の入れ替え**：アプリは検査を写さず、部品が配るスクリプトを呼ぶ。`package.json` の scripts に `"ui:approve": "sh node_modules/@sx/ui/bin/ui-lock.sh approve"`・`"ui:update": "sh node_modules/@sx/ui/bin/ui-update.sh"` を置き、check の先頭で `sh node_modules/@sx/ui/bin/ui-lock.sh` を流す。`ui-lock.sh` は、`vendor/` のハッシュが `ui.lock` と同じか、tarball がちょうど1つで `package.json` がそれを指すか、`node_modules/@sx/ui` が tarball の中身と同じか、部品（`vendor/`・`packages/`）と画面（`src/`・`e2e/`・`playwright.config.ts`・`index.html`）に同じコミットで触っていないか（origin/main にまだ無いコミットと作業コピー。origin/main が無ければ全コミット。最初のコミットは除く）を見る。
 - **画面の監査**（`@sx/ui/audit`）：アプリの e2e は、全ルートで次の2つを流す。どちらもこの見本ページの全状態でも流し（`e2e/layout.spec.ts`・`e2e/contrast.spec.ts`）、監査自身が崩れた形を落とし正しい形を通すことも確かめる。
@@ -61,8 +61,8 @@
 1. 直して `npm run check` を通し、コミットする。
 2. `package.json` の `version` を上げてコミットする（0.x のあいだ、引数の名前を変える・部品を消すなど画面を直す必要がある変更は minor、それ以外は patch。画面の直し方はコミットの文に書く）。
 3. `npm run release`：check を流し、`sx-ui-<版>.tgz` を作り、タグ `v<版>` を付ける。`git push --follow-tags`。
-4. 雛形（`~/project/prod/template`）の `vendor/` を、版を出すたびに入れ替える（`npm run ui:update -- <tgz のパス>` のあと、check・e2e・承認・`npm run ui:approve`。見た目が変わる版なら、基準画像の差分を見て撮り直す）。新しいアプリがいつも最新の部品から始まるようにする。デザインの知識（部品・トークン・使い分け）は雛形に貯めず、ここで育てる。
-5. 既存のアプリ（network-designer など）は、必要になったときに同じ手順で取り込む。
+4. 雛形（app-template）の `vendor/` を、版を出すたびに入れ替える（`npm run ui:update -- <tgz のパス>` のあと、check・e2e・承認・`npm run ui:approve`。見た目が変わる版なら、基準画像の差分を見て撮り直す）。新しいアプリがいつも最新の部品から始まるようにする。デザインの知識（部品・トークン・使い分け）は雛形に貯めず、ここで育てる。
+5. 既存のアプリは、必要になったときに同じ手順で取り込む。
 
 ## 開発
 
@@ -117,8 +117,8 @@
 ### 作図（物理構成）
 
 - `DiagramFrame`（枠。React Flow はこの中に置く）・`DiagramDevice`（機器の箱）・`DiagramPort`（箱の中のポート。React Flow の `Handle` を中身として渡す）・`DiagramRouteError`（配線できない印と理由）で見た目を持ち、`@xyflow/react` はこのパッケージが読まない。
-- 箱とポートの寸法は `diagramGeometry` の1か所で、整列の見積もり（network-designer の `src/Physical.tsx`）も同じ値を読む。
-- 作図の中（`[data-diagram]`）の機器名・ポート番号は 14px 未満でもよい（コントラストは見る。network-designer の `e2e/contrast-audit.ts`）。
+- 箱とポートの寸法は `diagramGeometry` の1か所で、アプリ側の整列の見積もりも同じ値を読む。
+- 作図の中（`[data-diagram]`）の機器名・ポート番号は 14px 未満でもよい（コントラストは見る）。
 - ポートを置く段（上・下・右端）は配線の向きで決まるので、呼び出し側が並べて渡す。
 
 ### 論理接続図（L3 の見取り図）
@@ -127,7 +127,7 @@
 
 - 縦の線＝ルーティングする機器（`rails`）、横の帯＝台帳の VLAN（`bands`。`tone` は `normal`・`warn`（琥珀色＝注意の色。理由を `note` に）・`l2only`（破線））、交点の点と文字＝その機器がそこに持つ IP（`taps`）で、上の破線の楕円（`top`。WAN など対象外）と下の一覧（`footer`。静的経路など）も受ける。
 - 受けるのは導いた結果だけで、画面や API の形を知らず、IP の求め方も検証もしない（サーバーが導く）。
-- React Flow は使わず SVG で描き（`stable: "diagram"` のノード数の待ちとぶつからない）、`DiagramFrame` の `fit`（内容の高さ）の枠に入れる。
+- React Flow は使わず SVG で描き、`DiagramFrame` の `fit`（内容の高さ）の枠に入れる。
 - 行の高さ・列の間隔は一定で、帯が増えれば縦に、機器が増えれば横に伸び、横は枠の中でスクロールする（キーボードでも動かせる）。
 - 文字は SVG の中の `foreignObject` に置き、はみ出す分は行数で切ってブラウザの実際の字幅で収める（全文は `title` と表にある）。
 - 寸法は `Ladder.tsx` の1か所、色と文字サイズ（`text-sx-ladder-*`）はトークン。

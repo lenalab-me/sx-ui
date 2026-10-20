@@ -1,5 +1,4 @@
-/* 見本 network-designer-saas-mock/src/index.css のトークンの値をそのまま写し、エラー系と focus だけを足した。
-   Tailwind の既定のパレット・フォント・角丸・影・文字サイズは initial で消し、ここに書いたものだけを残す
+/* 部品のトークン。Tailwind の既定のパレット・フォント・角丸・影・文字サイズは initial で消し、ここに書いたものだけを残す
    （initial の行はトークンより前に書く）。 */
 @theme {
   --color-*: initial;
