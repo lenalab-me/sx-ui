@@ -45,9 +45,14 @@
   ```
 - **Vite**：`vite.config.mjs` に部品のプラグインを足す（`import { sxUi } from "@sx/ui/vite";`、`plugins: [tailwindcss(), sxUi()]`）。部品は TSX のソースのまま node_modules に入り、Vite の esbuild は node_modules の中の tsconfig を読まないので、プラグインが JSX を automatic runtime にし、見本ページ用に React を事前の束ねに入れる。足さないと画面が白くなる（`React is not defined`）。
 - **TypeScript**：部品は TS のソースのまま配り、Vite が変換する（ビルドの手順は無い）。アプリの tsconfig は `jsx: "react-jsx"`・`moduleResolution: "bundler"`・`allowImportingTsExtensions: true`。
-- **入口**：アプリが読めるのは `@sx/ui`（部品）・`@sx/ui/styles.css`（CSS）・`@sx/ui/check`（検査の道具。テストだけが読む）・`@sx/ui/vite`（Vite のプラグイン。`vite.config.mjs` だけが読む）の4つだけで、`@sx/ui/src/...` のような深い import はしない。
+- **入口**：アプリが読めるのは `@sx/ui`（部品）・`@sx/ui/styles.css`（CSS）・`@sx/ui/check`（検査の道具。テストだけが読む）・`@sx/ui/audit`（画面の監査。e2e だけが読む）・`@sx/ui/vite`（Vite のプラグイン。`vite.config.mjs` だけが読む）の5つだけで、`@sx/ui/src/...` のような深い import はしない。
 - **狭い画面（スマホ）**：部品は幅 `md`（768px）未満で狭い画面の形になり、`md` 以上は今のままの見た目（`max-md:` で書くか、`md:` で元の値に戻す）。画面ファイルも、配置のクラスなら `md:`・`max-md:`（と `sm:`・`lg:`・`max-sm:`・`max-lg:`）を付けて書ける（`allowedLayout` はこの接頭辞を外してから当てる）。狭い画面向けの枠は `Shell`（左ペインが上端の帯と引き出しになる）・`Page`・`PageTitle`・`CardHead`・`Table` の `stack`・`FieldGrid`（1列）・`Stepper`（縦）・`Tabs`（横にスクロール）・`DescriptionList`（1列）・`Modal`（画面の幅に収まる）。
-- **検査**：`@sx/ui/check` の `scan`（文字列リテラルの取り出し）・`disallowedWords`（配置のクラスの許可リスト `allowedLayout` に無い語）・`colorPattern`・`rolePattern`・`stripCssComments`・`lineOf` で、画面ファイルが配置のクラスしか書かず、色・`role="alert"`／`"status"`・`style=` を書かないことをテストする。許可リストはこのリポジトリでだけ直す。
+- **検査**：`@sx/ui/check` の道具で、画面ファイルが配置のクラスしか書かず、色・読み上げ・`style` を書かないことと、アプリの CSS が部品の CSS を読むだけであることをテストする。許可リストと各パターンはこのリポジトリでだけ直す。
+  - `scan`（文字列リテラルの取り出し）と `disallowedWords`（配置のクラスの許可リスト `allowedLayout` に無い語。`2xl:`・`@md:`・`*:` のような接頭辞の付いた語も見る。`className` の外の複数語のリテラルは、クラスの並びに見えるときだけ見る）。
+  - `rolePattern`（`role="alert"`／`"status"`・`log` などの読み上げの role・`aria-live`・`<output>`）と `computedRolePattern`（`role` を式で渡す。画面だけに当てる）。
+  - `stylePattern`（`style=`、spread やオブジェクトの `style:`、`<style>`、要素の `.style`）と `colorPattern`（`#` の色と `rgb(`・`oklch(`・`color-mix(` などの色の関数）。
+  - `appCssProblems`（アプリの CSS に、`@import "@sx/ui/styles.css"` と `@source` のほかを書いていないか。`@theme` でトークンを上書きすると、部品の見た目が画面の側で変わる）と、`stripCssComments`・`lineOf`。
+  - 限界：クラスの文字列を `className` の外で切れ端から組み立てる書き方（`["bg", "sx", "accent"].join("-")`）と、`className` の外の裸の1語（`"border"`。部品の引数の値と見分けられない）は字面では見分けられない。色の名前（`fill="red"`）も見ない。レビューで確かめる。
 - **見本ページ**：アプリの開発サーバーで `/node_modules/@sx/ui/gallery/` を開くと、入れている版の部品が出る。
 - **ロックと版の入れ替え**：アプリは検査を写さず、部品が配るスクリプトを呼ぶ。検査の本体は `node_modules` からではなく `vendor/` の tarball から取り出して流す（`node_modules/@sx/ui` は検査される側なので、そこにあるスクリプトを書き換えれば検査ごと消せてしまう）。
   - アプリは `scripts/ui-lock.sh`（部品の `bin/app-ui-lock.sh` の写し。`ui:update` が入れ替え、手では直さない）を置き、check の先頭で `sh scripts/ui-lock.sh` を流す。`package.json` の scripts は `"ui:approve": "sh scripts/ui-lock.sh approve"`・`"ui:update": "sh scripts/ui-lock.sh update"`（`ui:update` が書く）。
@@ -83,7 +88,7 @@
 
 ### 共通の決まり
 
-- 見た目は `tone`・`variant`・`size`（`sm`・`md`・`lg`）のような意味の指定で受ける。`className` を受けるのは配置のためだけで、`Field`・`Card`・`Button`／`ButtonLink`・`Input`／`Select`／`Textarea`／`NumberInput`・`Checkbox` に限る。ほかの部品は受けない（表のセルの寄せ・折り返しは `Th`／`Td` の `align`・`numeric`・`nowrap`・`truncate`）。
+- 見た目は `tone`・`variant`・`size`（`sm`・`md`・`lg`）のような意味の指定で受け、`style` はどの部品も受けない。`className` を受けるのは配置のためだけで、`Field`・`Card`・`Button`／`ButtonLink`・`Input`／`Select`／`Textarea`／`NumberInput`・`Checkbox` に限る。ほかの部品は受けない（表のセルの寄せ・折り返しは `Th`／`Td` の `align`・`numeric`・`nowrap`・`truncate`）。
 - アイコンは名前（`IconName`）で渡す。アイコンのライブラリを import するのはこのパッケージだけで、画面は `lucide-react` を import しない。
 - 色・角丸・影はトークンの名前（`bg-sx-accent`・`rounded-sx-control` など）だけで書き、`#` の色の直書きは `tokens.css` の外に置かない。文字サイズも `text-[16px]` のような任意値でなく名前つきのトークンを使う。
 - 読み上げ（`role="alert"`・`"status"`）は部品が持つ。画面は `Notice` に `live`（出た瞬間に読み上げる。`error`・`warn` は alert、`info`・`ok` は status）、`SaveStatus` に `live` を渡すだけで、role を書かない。

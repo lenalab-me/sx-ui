@@ -195,7 +195,10 @@ export function Field({
   );
 }
 
-type InputProps = Omit<InputHTMLAttributes<HTMLInputElement>, "size"> & {
+type InputProps = Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  "size" | "style"
+> & {
   invalid?: boolean;
   size?: ControlSize;
 };
@@ -229,7 +232,10 @@ export const NumberInput = forwardRef<HTMLInputElement, InputProps>(
   },
 );
 
-type SelectProps = Omit<SelectHTMLAttributes<HTMLSelectElement>, "size"> & {
+type SelectProps = Omit<
+  SelectHTMLAttributes<HTMLSelectElement>,
+  "size" | "style"
+> & {
   invalid?: boolean;
   size?: ControlSize;
 };
@@ -253,7 +259,10 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   },
 );
 
-type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
+type TextareaProps = Omit<
+  TextareaHTMLAttributes<HTMLTextAreaElement>,
+  "style"
+> & {
   invalid?: boolean;
 };
 
@@ -274,7 +283,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
 
 type CheckboxInputProps = Omit<
   InputHTMLAttributes<HTMLInputElement>,
-  "type" | "size" | "className"
+  "type" | "size" | "className" | "style"
 > & { size?: "sm" | "md" };
 
 /**
@@ -303,7 +312,7 @@ export function CheckboxInput({ size = "md", ...rest }: CheckboxInputProps) {
 
 type CheckboxProps = Omit<
   InputHTMLAttributes<HTMLInputElement>,
-  "type" | "size"
+  "type" | "size" | "style"
 > & { label: ReactNode; support?: ReactNode };
 
 /** A checkbox with its label (the small one inside a table is Check in form-cells). */

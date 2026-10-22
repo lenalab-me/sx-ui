@@ -28,7 +28,8 @@ const iconSizes: Record<ControlSize, number> = { lg: 18, md: 18, sm: 16 };
 const buttonClass = (variant: ButtonVariant, size: ControlSize) =>
   `relative inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-sx-control font-medium disabled:cursor-not-allowed ${controlHeight[size]} ${variants[variant]} ${sizes[size]} ${focusRing}`;
 
-type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+// 見た目は variant・size で受けるので、style は受けない（className は配置のためだけ）。
+type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "style"> & {
   variant?: ButtonVariant;
   size?: ControlSize;
   icon?: IconName;
@@ -62,7 +63,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   },
 );
 
-type LinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
+type LinkProps = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "style"> & {
   variant?: ButtonVariant;
   size?: ControlSize;
   icon?: IconName;
@@ -87,7 +88,7 @@ export function ButtonLink({
 
 type IconButtonProps = Omit<
   ButtonHTMLAttributes<HTMLButtonElement>,
-  "aria-label" | "children" | "className"
+  "aria-label" | "children" | "className" | "style" | "title"
 > & { label: string; icon: IconName; size?: ControlSize };
 
 const iconBox: Record<ControlSize, string> = {

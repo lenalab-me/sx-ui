@@ -7,12 +7,15 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import {
+  appCssProblems,
   colorPattern,
+  computedRolePattern,
   disallowedWords,
   lineOf,
   rolePattern,
   scan,
   stripCssComments,
+  stylePattern,
 } from "../check/screen-style.ts";
 
 const root = new URL("../", import.meta.url);
@@ -90,7 +93,7 @@ test("見本ページは、配置のクラスだけを書き、style=・lucide-r
     for (const word of disallowedWords(literal))
       problems.push(`${galleryFile}:${literal.line} ${word}`);
   for (const [re, what] of [
-    [/\bstyle\s*=\s*\{/, "style="],
+    [stylePattern, "style="],
     [/["']lucide-react["']/, "lucide-react"],
     [/<label\b/, "<label"],
     [/\bplaceholder\s*=/, "placeholder="],
@@ -139,4 +142,104 @@ test("検査は、装飾のクラスを落とし、配置のクラスと部品�
   assert.deepEqual(bad('<a href="#physical">物理構成 STEP1 の申込</a>'), []);
   assert.deepEqual(bad("// className=\"text-red-500\"\nconst a = 'flex';"), []);
   assert.deepEqual(bad('const l = `tabs-${v}`; const p = "/api/x";'), []);
+  // Tailwind の接頭辞のうち、英小文字ではじまらないもの（幅の 2xl:、コンテナの @、子の *:）も見る。
+  assert.deepEqual(
+    bad('<div className="2xl:bg-x @container @md:shadow-lg *:rounded flex" />'),
+    ["2xl:bg-x", "@container", "@md:shadow-lg", "*:rounded"],
+  );
+  assert.deepEqual(bad('const c = "2xl:bg-x"; const d = "*:p-4";'), [
+    "2xl:bg-x",
+    "*:p-4",
+  ]);
+  assert.deepEqual(bad('import { Button } from "@sx/ui";'), []);
+  // className の外の複数語は、クラスの並びに見えるときだけ見る（英語の文は通す）。
+  assert.deepEqual(bad('const c = "rounded shadow";'), ["rounded", "shadow"]);
+  assert.deepEqual(bad('const c = "flex text-sx-body";'), ["text-sx-body"]);
+  assert.deepEqual(
+    bad(
+      '<IconButton label="close dialog" /><a href="https://x.example/a b">x</a>',
+    ),
+    [],
+  );
+  assert.deepEqual(bad('const m = "network error";'), []);
+});
+
+test("検査は、読み上げ・style・色の別の書き方を落とし、部品の引数を通す", () => {
+  const hit = (re: RegExp, source: string) => re.test(scan(source).code);
+  for (const source of [
+    '<div role="alert" />',
+    "<div role={`status`} />",
+    '<div role={ok ? "alert" : undefined} />',
+    '<div {...{ role: "alert" }} />',
+    "<div {...{ role: `alert` }} />",
+    '<div role="log" />',
+    '<div role="alertdialog" />',
+    '<div aria-live="assertive" />',
+    '<div aria-live="polite" />',
+    "<output>{m}</output>",
+  ])
+    assert.ok(hit(rolePattern, source), source);
+  for (const source of [
+    '<div role="img" />',
+    '<Notice live tone="error" />',
+    '<div title="role: alert の説明" />',
+  ])
+    assert.ok(!hit(rolePattern, source), source);
+  for (const source of [
+    "<div role={r} />",
+    "<div {...{ role: r }} />",
+    '<div role={ok ? "alert" : undefined} />',
+  ])
+    assert.ok(hit(computedRolePattern, source), source);
+  assert.ok(
+    !hit(computedRolePattern, '<div role="img" /><div role={"img"} />'),
+  );
+  for (const source of [
+    "<div style={{ color: x }} />",
+    '<div {...{ style: { color: "red" } }} />',
+    '<div {...{ "style": s }} />',
+    '<style>{"main{}"}</style>',
+    'ref.current.style.color = "red";',
+    'el.setAttribute("style", s);',
+  ])
+    assert.ok(hit(stylePattern, source), source);
+  for (const source of [
+    '<Button variant="primary" />',
+    "const fontStyle = 1;",
+    "<p>style を書かない</p>",
+  ])
+    assert.ok(!hit(stylePattern, source), source);
+  for (const source of [
+    "#fff",
+    "rgb(0 0 0)",
+    "oklch(0.5 0.1 200)",
+    "hwb(0 0% 0%)",
+    "lab(50 0 0)",
+    "color-mix(in srgb, red, blue)",
+  ])
+    assert.ok(colorPattern.test(source), source);
+});
+
+test("検査は、アプリの CSS に部品の CSS の読み込みと @source のほかを書かせない", () => {
+  const ok = [
+    "/* 画面の CSS の入口 */",
+    '@import "@sx/ui/styles.css";',
+    '@source "./";',
+    "@source not './legacy';",
+  ].join("\n");
+  assert.deepEqual(appCssProblems(ok), []);
+  assert.deepEqual(
+    appCssProblems(`${ok}\n@theme {\n  --color-sx-accent: #f00;\n}`),
+    [
+      { line: 5, text: "@theme {" },
+      { line: 6, text: "--color-sx-accent: #f00;" },
+      { line: 7, text: "}" },
+    ],
+  );
+  assert.deepEqual(appCssProblems('@import "tailwindcss";'), [
+    { line: 1, text: '@import "tailwindcss";' },
+  ]);
+  assert.deepEqual(appCssProblems("main { color: red }"), [
+    { line: 1, text: "main { color: red }" },
+  ]);
 });
