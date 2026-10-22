@@ -1909,14 +1909,14 @@ function Gallery() {
         <Section
           title="進み具合"
           parts={["Meter"]}
-          use="全体のうちどれだけか（進み具合・正答率）を棒で見せます。名前は左、値は右に文字で必ず書き（「23 / 1054問」のように数で書くときは「valueText」）、棒の色（「tone」）は文字に添えるだけです。まだ測るものが無いとき（未回答）は「value」を「null」にして、理由を「valueText」に書きます（棒は空のまま）。分野ごとの正答率のように並べるときは、画面で「ul」に入れて縦に並べます。操作の結果や状態の一言には使わず、Pill・StatusLine を使います。"
+          use="全体のうちどれだけか（進み具合・正答率）を棒で見せます。名前は左、値は右に文字で必ず書き（「86 / 3941問」のように数で書くときは「valueText」）、棒の色（「tone」）は文字に添えるだけです。まだ測るものが無いとき（未回答）は「value」を「null」にして、理由を「valueText」に書きます（棒は空のまま）。分野ごとの正答率のように並べるときは、画面で「ul」に入れて縦に並べます。操作の結果や状態の一言には使わず、Pill・StatusLine を使います。"
         >
           <div className="grid grid-cols-2 gap-x-8 gap-y-5">
             <Meter
               label="解いた問題"
-              value={23}
-              max={1054}
-              valueText="23 / 1054問"
+              value={86}
+              max={3941}
+              valueText="86 / 3941問"
             />
             <Meter label="正答率" value={48} tone="warn" />
             <Meter label="合格の目安" value={82} tone="ok" />
