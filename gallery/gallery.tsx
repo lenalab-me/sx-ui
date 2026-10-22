@@ -1988,6 +1988,15 @@ function Gallery() {
               </tbody>
             </table>
           </Prose>
+          {/* h-32 (128px) holds up to four lines at any width: with a whole number of px added, the sections
+              below stay where they were, to the pixel (their baseline images do not change). */}
+          <div className="h-32">
+            <Prose width="full">
+              <p>
+                幅の指定（width）を「幅いっぱい」にした本文：親の幅いっぱいに広がります。問題文のように、同じ枠で選択肢のような幅いっぱいの物と並べるときに使います。
+              </p>
+            </Prose>
+          </div>
         </Section>
 
         <AnswerSamples />

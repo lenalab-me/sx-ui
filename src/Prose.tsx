@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 // The typography of the elements a long text is made of; the screen passes the elements (rendered Markdown
 // or sanitized HTML) and writes none of these styles itself.
 const prose = [
-  "max-w-180 break-words text-sx-base leading-[1.85] text-sx-strong",
+  "break-words text-sx-base leading-[1.85] text-sx-strong",
   "[&_h2]:mt-10 [&_h2]:mb-3 [&_h2]:text-sx-heading [&_h2]:leading-snug [&_h2]:font-medium",
   "[&_h3]:mt-8 [&_h3]:mb-2 [&_h3]:text-sx-lead [&_h3]:font-medium",
   "[&>:first-child]:mt-0 [&>:last-child]:mb-0",
@@ -18,11 +18,25 @@ const prose = [
   "[&_img]:max-w-full [&_img]:rounded-sx-control",
 ].join(" ");
 
+const widths = {
+  readable: "max-w-180",
+  full: "",
+} as const;
+
 /**
  * A long text to read (an article, an explanation): headings, paragraphs, lists, code, quotes, links and
  * tables laid out for reading, with the line length kept readable (max 720px). The content is the rendered
  * elements; the screen renders Markdown (or sets sanitized HTML) inside it and does not style them.
+ * `width="full"` takes the whole width of the parent instead, for a text that sits with things as wide as
+ * the parent (a question's stem above its choices, which fill the card) and would otherwise wrap short of them.
  */
-export function Prose({ children }: { children: ReactNode }) {
-  return <div className={prose}>{children}</div>;
+export function Prose({
+  width = "readable",
+  children,
+}: {
+  /** readable (default) keeps the lines at 720px at most; full fills the parent. */
+  width?: keyof typeof widths;
+  children: ReactNode;
+}) {
+  return <div className={`${widths[width]} ${prose}`.trim()}>{children}</div>;
 }
