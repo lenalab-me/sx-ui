@@ -102,7 +102,11 @@ export function ChoiceList({
               {c.id}
             </ChoiceMark>
             <span className="flex min-w-0 flex-1 flex-col gap-1 pt-0.5">
-              <span>{c.label}</span>
+              {/* The mark (aria-hidden) shows the id that the result line speaks ("正解は B です"), so the name has it too. */}
+              <span>
+                <span className="sr-only">{c.id}：</span>
+                {c.label}
+              </span>
               {(state === "correct" || state === "missed") && (
                 <AnswerVerdict correct mine={chosen} />
               )}

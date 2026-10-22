@@ -6,6 +6,7 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -99,6 +100,23 @@ export function DenseTable({
       ? row.getAttribute(groupAttribute)
       : null;
   };
+  // An element that is removed while it has the focus (its row deleted) leaves without a blur: the
+  // focus falls to the body and the group would stay quiet for good. After each render, and on the
+  // next focus or press anywhere, the group follows where the focus is.
+  useEffect(() => {
+    if (focusedGroup === null) return;
+    const follow = () => {
+      const now = groupOf(document.activeElement);
+      if (now !== focusedGroup) setFocusedGroup(now);
+    };
+    follow();
+    document.addEventListener("focusin", follow);
+    document.addEventListener("pointerdown", follow);
+    return () => {
+      document.removeEventListener("focusin", follow);
+      document.removeEventListener("pointerdown", follow);
+    };
+  });
   return (
     <DenseTableContext.Provider value={context}>
       <div
@@ -150,7 +168,7 @@ export function DenseTable({
               ))}
             </tr>
           </thead>
-          <tbody className="[&_tr:has(+[data-row-messages])]:border-b-0">
+          <tbody className="[&_tr:has(+[data-row-messages]:not([hidden]))]:border-b-0">
             {children}
             {empty && (
               <tr>
@@ -195,7 +213,8 @@ export function DenseRow({
     <tr
       data-subtle={subtle || undefined}
       {...{ [groupAttribute]: group }}
-      className={`h-10 border-b border-sx-row last:border-b-0 ${subtle ? "bg-sx-subtle" : ""}`}
+      // The last row that is drawn has no bottom rule (a hidden DenseRowMessages after it does not count).
+      className={`h-10 border-b border-sx-row [&:not(:has(~tr:not([hidden])))]:border-b-0 ${subtle ? "bg-sx-subtle" : ""}`}
     >
       <RowQuietContext.Provider
         value={group !== undefined && group === focusedGroup}
@@ -253,50 +272,59 @@ export function DenseRowMessages({
 }) {
   const { columnCount, focusedGroup } = useContext(DenseTableContext);
   const quiet = group !== undefined && group === focusedGroup;
+  // While the group is quiet, the "error" and "warn" lines are not drawn but stay for readers: the
+  // inputs keep aria-invalid and their describedBy, so a reader on the input still hears the finding.
   const lines = [
     ...new Map(
-      messages
-        .filter((m) => !quiet || (typeof m !== "string" && m.tone === "note"))
-        .map((m) => {
-          const {
-            field,
-            message,
-            tone = "error",
-            title,
-          } = typeof m === "string" ? { message: m } : m;
-          const text = field ? `${field}：${message}` : message;
-          return [`${tone}|${text}`, { tone, text, title }] as const;
-        }),
+      messages.map((m) => {
+        const {
+          field,
+          message,
+          tone = "error",
+          title,
+        } = typeof m === "string" ? { message: m } : m;
+        const text = field ? `${field}：${message}` : message;
+        const unseen = quiet && tone !== "note";
+        return [`${tone}|${text}`, { tone, text, title, unseen }] as const;
+      }),
     ).values(),
   ];
   if (lines.length === 0) return null;
   return (
     <tr
       data-row-messages
+      hidden={lines.every((l) => l.unseen) || undefined}
       data-subtle={subtle || undefined}
       className={`border-b border-sx-row last:border-b-0 ${subtle ? "bg-sx-subtle" : ""}`}
     >
       <td colSpan={columnCount} className="px-2 pt-0 pb-2 text-left">
         {/* w-0 + min-w-full: the cell takes the width of the table, and does not widen it. */}
         <ul id={id} className="m-0 flex w-0 min-w-full flex-col gap-0.5">
-          {lines.map(({ tone, text, title }) => (
-            <li
-              key={`${tone}|${text}`}
-              title={title}
-              className={`flex items-start gap-1 text-sx-meta ${lineLook[tone]}`}
-            >
-              {tone !== "note" && (
-                <span className="flex h-5 shrink-0 items-center">
-                  <Icon
-                    name={tone === "warn" ? "triangle-alert" : "circle-alert"}
-                    size={14}
-                  />
-                </span>
-              )}
-              {tone === "warn" && <span className="sr-only">注意：</span>}
-              {text}
-            </li>
-          ))}
+          {lines.map(({ tone, text, title, unseen }) =>
+            unseen ? (
+              <li key={`${tone}|${text}`} className="sr-only">
+                {tone === "warn" && "注意："}
+                {text}
+              </li>
+            ) : (
+              <li
+                key={`${tone}|${text}`}
+                title={title}
+                className={`flex items-start gap-1 text-sx-meta ${lineLook[tone]}`}
+              >
+                {tone !== "note" && (
+                  <span className="flex h-5 shrink-0 items-center">
+                    <Icon
+                      name={tone === "warn" ? "triangle-alert" : "circle-alert"}
+                      size={14}
+                    />
+                  </span>
+                )}
+                {tone === "warn" && <span className="sr-only">注意：</span>}
+                {text}
+              </li>
+            ),
+          )}
         </ul>
       </td>
     </tr>
@@ -378,7 +406,7 @@ const cellWidth = (kind: CellKind) =>
   `calc(${cellKinds[kind].chars}ch + 1.5rem)`;
 
 const cellControlShape =
-  "h-9 rounded-sx-tile border border-sx-control px-2 text-sx-meta tabular-nums disabled:cursor-not-allowed disabled:bg-sx-fill disabled:text-sx-muted aria-invalid:border-2 aria-invalid:border-sx-error-dot";
+  "h-9 rounded-sx-tile border border-sx-control px-2 text-sx-meta tabular-nums disabled:cursor-not-allowed disabled:bg-sx-fill disabled:text-sx-muted data-invalid:border-2 data-invalid:border-sx-error-dot";
 const cellControl = `${cellControlShape} text-sx-strong`;
 
 /**
@@ -429,7 +457,9 @@ export function CellInput({
       tabIndex={readOnly ? -1 : undefined}
       maxLength={maxLength === null ? undefined : (maxLength ?? max)}
       inputMode={numeric ? "numeric" : undefined}
-      aria-invalid={invalid && !quiet ? true : undefined}
+      // The red frame is drawn from data-invalid, which a quiet row leaves off; aria-invalid stays.
+      aria-invalid={invalid || undefined}
+      data-invalid={(invalid && !quiet) || undefined}
       aria-describedby={describedBy}
       onChange={(e) => onChange(e.target.value)}
       style={{ width: cellWidth(kind) }}
@@ -492,7 +522,8 @@ function PickSelect<T extends string>({
       aria-label={label}
       value={value}
       disabled={disabled}
-      aria-invalid={invalid && !quiet ? true : undefined}
+      aria-invalid={invalid || undefined}
+      data-invalid={(invalid && !quiet) || undefined}
       aria-describedby={describedBy}
       title={fill ? options.find(([v]) => v === value)?.[1] : undefined}
       onChange={(e) => onChange(e.target.value as T)}

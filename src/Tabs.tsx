@@ -1,4 +1,9 @@
-import { useRef, type KeyboardEvent, type ReactNode } from "react";
+import {
+  useLayoutEffect,
+  useRef,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 import { focusRing } from "./focus";
 
 export interface TabItem<T extends string> {
@@ -44,7 +49,9 @@ const panelId = (idPrefix: string, id: string) => `${idPrefix}-panel-${id}`;
 
 /**
  * A role=tablist. Left/right arrows, Home and End move focus and selection together (selection
- * follows focus). The panels are <TabPanel>s that share the same idPrefix.
+ * follows focus). The panels are <TabPanel>s that share the same idPrefix. A tab names its panel
+ * (aria-controls) only while that panel is in the page: a panel that is not selected is not drawn
+ * (unless keepMounted), and tabs that only filter (in a CardHead) have no panel at all.
  */
 export function Tabs<T extends string>({
   items,
@@ -63,6 +70,16 @@ export function Tabs<T extends string>({
 }) {
   const refs = useRef(new Map<string, HTMLButtonElement>());
   const enabled = items.filter((i) => !i.disabled);
+  // The tab that Tab enters: the selected one, or the first one that can be used when that is disabled.
+  const entry = enabled.some((t) => t.id === value) ? value : enabled[0]?.id;
+  // The panels are drawn after the list, so they are looked up once the whole page is in place.
+  useLayoutEffect(() => {
+    for (const [id, el] of refs.current) {
+      const panel = document.getElementById(panelId(idPrefix, id));
+      if (panel) el.setAttribute("aria-controls", panel.id);
+      else el.removeAttribute("aria-controls");
+    }
+  });
   const onKey = (e: KeyboardEvent) => {
     const i = enabled.findIndex((t) => t.id === value);
     const to =
@@ -96,8 +113,7 @@ export function Tabs<T extends string>({
             role="tab"
             id={tabId(idPrefix, t.id)}
             aria-selected={on}
-            aria-controls={panelId(idPrefix, t.id)}
-            tabIndex={on ? 0 : -1}
+            tabIndex={t.id === entry ? 0 : -1}
             disabled={t.disabled}
             onClick={() => onChange(t.id)}
             className={`${l.tab(on)} disabled:cursor-not-allowed disabled:text-sx-muted ${focusRing}`}

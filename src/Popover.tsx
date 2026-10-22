@@ -12,8 +12,9 @@ import { anchoredStyle, anchorNameOf, useTopLayer } from "./topLayer";
 /**
  * A floating box. With `anchor` it is shown in the top layer (popover) below that element, so no
  * scroll frame or modal clips it, and above it when there is no room below; without `anchor` it is
- * placed inside the caller's relative frame. A click outside, Esc or "閉じる" closes it.
- * On close, focus returns to `anchor` (the button that opened it); on open, the first control inside takes focus.
+ * placed inside the caller's relative frame. A click outside, Esc, "閉じる" or moving the focus out
+ * (Tab past its last control) closes it. On open, the first control inside takes focus; on close,
+ * focus returns to `anchor`, or without one to the element that had it when the box opened.
  * data-boundary makes the contrast audit check its border.
  */
 export function Popover({
@@ -53,6 +54,12 @@ export function Popover({
     // The refs are detached by the time the cleanup runs, so keep the return target and our own box from the open.
     const anchorEl = anchor?.current;
     const boxEl = box.current;
+    const opener = document.activeElement;
+    const returnTo =
+      anchorEl ??
+      (opener instanceof HTMLElement && opener !== document.body
+        ? opener
+        : null);
     boxEl
       ?.querySelector<HTMLElement>("input,button,select,textarea,a[href]")
       ?.focus();
@@ -68,18 +75,27 @@ export function Popover({
       e.preventDefault();
       closeRef.current();
     };
+    // The focus moved on past the box (Tab from its last control): the box would stay open over the
+    // page and could hide what now has the focus, so it closes, as a Menu does.
+    const onFocus = (e: FocusEvent) => {
+      const t = e.target as Node;
+      if (boxEl?.contains(t) || anchorEl?.contains(t)) return;
+      closeRef.current();
+    };
     document.addEventListener("pointerdown", onDown);
     document.addEventListener("keydown", onKey);
+    document.addEventListener("focusin", onFocus);
     return () => {
       document.removeEventListener("pointerdown", onDown);
       document.removeEventListener("keydown", onKey);
+      document.removeEventListener("focusin", onFocus);
       // When the inner element goes away, focus falls to body. If it moved to an outside element, do not take it.
       const active = document.activeElement;
       if (
-        anchorEl?.isConnected &&
+        returnTo?.isConnected &&
         (!active || active === document.body || boxEl?.contains(active))
       )
-        anchorEl.focus();
+        returnTo.focus();
     };
   }, [anchor]);
   return (

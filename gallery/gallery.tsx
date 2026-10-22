@@ -273,6 +273,8 @@ const signedIn =
   new URLSearchParams(location.search).get("shell") === "account";
 // ?shell=focus: the shell without its left pane (a screen that has the user's whole attention).
 const focused = new URLSearchParams(location.search).get("shell") === "focus";
+// ?busy (with ?open=modal): the modal while it is sending, which Esc and "閉じる" do not close (e2e/parts.spec.ts).
+const busy = new URLSearchParams(location.search).has("busy");
 
 // The heading is the title and the names in `parts`, so the names are written once.
 function Section({
@@ -2005,6 +2007,7 @@ function Gallery() {
           <Modal
             title="拠点を追加"
             description="STEP1 の申込として送ります。"
+            busy={busy}
             onClose={() => setModal(false)}
             footer={
               <>

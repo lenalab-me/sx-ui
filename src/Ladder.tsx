@@ -349,7 +349,11 @@ export function LadderDiagram({
       )}
 
       <table className="sr-only">
-        <caption>{label}</caption>
+        {/* The oval above the first rail (the WAN) is drawn but is no band, so the caption names it. */}
+        <caption>
+          {label}
+          {top && rails[0] ? `（${rails[0].label} の上に ${top.label}）` : ""}
+        </caption>
         <thead>
           <tr>
             <th scope="col">セグメント</th>
@@ -366,6 +370,7 @@ export function LadderDiagram({
               <th scope="row">
                 {[b.label, b.sublabel, b.note].filter(Boolean).join("、")}
                 {b.tone === "l2only" ? "（サブネットなし）" : ""}
+                {b.tone === "warn" ? "（注意）" : ""}
               </th>
               {rails.map((r) => (
                 <td key={r.id}>

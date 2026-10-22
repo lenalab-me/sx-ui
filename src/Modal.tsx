@@ -34,13 +34,31 @@ export function Modal({
   const descId = useId();
   const dialog = useRef<HTMLDialogElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
+  const latest = useRef({ busy, onClose });
+  latest.current = { busy, onClose };
 
   useEffect(() => {
     const opener = document.activeElement;
     const el = dialog.current!;
+    let mounted = true;
     el.showModal();
     heading.current?.focus();
+    // The browser may close the dialog itself: after Esc is pressed again and again with no click
+    // or key in the page between, the cancel event can no longer be stopped. The window is ours to
+    // close, so a busy one opens again, and any other asks the caller (as Esc does).
+    // A close event can also come late from a close() of our own (StrictMode runs this effect twice,
+    // and the first cleanup closes it), when the dialog is open again: that one is not the browser's.
+    const closedByBrowser = () => {
+      if (!mounted || el.open) return;
+      if (latest.current.busy) {
+        el.showModal();
+        heading.current?.focus();
+      } else latest.current.onClose();
+    };
+    el.addEventListener("close", closedByBrowser);
     return () => {
+      mounted = false;
+      el.removeEventListener("close", closedByBrowser);
       el.close();
       if (opener instanceof HTMLElement && opener.isConnected) opener.focus();
     };
