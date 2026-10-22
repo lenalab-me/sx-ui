@@ -48,3 +48,19 @@ test("監査は、基準に届かない文字の色を落とし、届く色な�
   await page.setContent(page_("#333333"));
   expect((await contrastAudit(page)).fails).toEqual([]);
 });
+
+// A disabled control is exempt, but aria-disabled on a wrapper does not take the text in it out of the audit.
+test("監査は、aria-disabled の操作部品は見ず、aria-disabled を付けた枠の中の文字は見る", async ({
+  page,
+}) => {
+  const faint = `color: #aaaaaa; font-size: 16px`;
+  await page.setContent(
+    `<body style="background: #ffffff; margin: 0"><button aria-disabled="true" style="${faint}; border: 0; background: #ffffff">見本の操作</button></body>`,
+  );
+  expect((await contrastAudit(page)).fails).toEqual([]);
+  await page.setContent(
+    `<body style="background: #ffffff; margin: 0"><div aria-disabled="true"><p style="${faint}">見本拠点の補足</p></div></body>`,
+  );
+  const wrapped = await contrastAudit(page);
+  expect(wrapped.fails.map(describeContrastFail).join("\n")).toContain("< 4.5");
+});

@@ -62,7 +62,7 @@
   - 0.4 までの版から乗り換えるとき（`scripts/ui-lock.sh` がまだ無いアプリ）は、新しい版の `ui-update.sh` を tarball から取り出して流す：`d=$(mktemp -d) && tar xzf <tgz> -C "$d" package/bin && sh "$d/package/bin/ui-update.sh" <tgz>`。`scripts/ui-lock.sh` と scripts が入るので、承認（`npm run ui:approve`）して部品のコミットにし、別のコミットで `scripts/check.sh` の先頭を `sh scripts/ui-lock.sh` に替える。
 - **画面の監査**（`@sx/ui/audit`）：アプリの e2e は、全ルートで次の2つを流す。どちらもこの見本ページの全状態でも流し（`e2e/layout.spec.ts`・`e2e/contrast.spec.ts`）、監査自身が崩れた形を落とし正しい形を通すことも確かめる。
   - `layoutAudit`（`expect(await page.evaluate(layoutAudit), "はみ出し・重なり").toEqual([])`）：基準画像は「前と変わった」しか見ないので、最初に撮ったときから崩れていた画面はこちらで見つける。見るのは、表のセルから省略記号なしではみ出した文字（固定幅の表で `Td nowrap` に長い値を入れると、隣の列の下にもぐる）、省略記号も行数の制限も無く `overflow` で途中で切れた文字、文字どうし・文字とアイコンの重なり、ページの横のはみ出し、キーボードで入れない横スクロールの枠、断りなく縦にスクロールする枠（横に動かす枠〔`overflow-x-auto`〕が、高さの足りない列で縮んで中身が枠の下で切れたもの。縦に動かす枠は `overflow-y-auto` で断る）。`truncate`・行数の制限で切った文字、読み上げだけの文字、作図（`[data-diagram]`）の中のアイコン、開いたメニューや浮き枠とその下の文字の重なりは見ない。モーダルが開いていれば中だけ。スクロールしないと見えない文字は、同じスクロール枠の中の文字とは比べ、枠の外の文字（固定のヘッダー・フッター）とは見えている部分だけで比べる。
-  - `contrastAudit`（`describeContrastFail`・`describeSmallText` で文にする）：描かれた色で、文字 4.5:1（大きい文字 3:1）、アイコンだけの操作と操作部品の境界 3:1、14px 未満の文字が無いこと（作図の中は除く）。無効の部品とモーダルの裏は見ない。落ちたときはトークンの名前を添える。
+  - `contrastAudit`（`describeContrastFail`・`describeSmallText` で文にする）：描かれた色で、文字 4.5:1（大きい文字 3:1）、アイコンだけの操作と操作部品の境界 3:1、14px 未満の文字が無いこと（作図の中は除く）。無効の部品（`disabled`・無効の `fieldset` の中と、`aria-disabled` を付けた操作部品。`aria-disabled` を付けた枠の中の文字は見る）とモーダルの裏は見ない。落ちたときはトークンの名前を添える。
   - 限界：見るのは既定の状態だけ（hover・フォーカス・暗い配色は見ない）。文字の意味の重なり（同じ位置に別の値が重なる）は見るが、絵（作図の線・箱）どうしの重なりは見ない。
 - **node_modules の部品は直接直さない**：直すのはこのリポジトリで、版を上げて入れ直す。`node_modules/@sx/ui` が tarball の中身と違うと `scripts/ui-lock.sh` が止まる。
 

@@ -41,9 +41,18 @@ export function cataloguedParts(gallery: string): string[][] {
   ].map((m) => [...m[1]!.matchAll(/"([^"]+)"/g)].map((n) => n[1]!));
 }
 
-// 見本が `<名前` として描いている部品の名前。
+// 文字列リテラルの中身を消す（`use="<Wizard は…"` の `<Wizard` を「描いている」と読まないため）。
+const withoutStrings = (source: string) =>
+  source.replace(
+    /"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|`(?:[^`\\]|\\.)*`/g,
+    '""',
+  );
+
+// 見本が `<名前` として描いている部品の名前。名前の直前が英数字・`.` の `<`（`useState<Wizard>` の型引数）は除く。
 function isDrawn(gallery: string, name: string): boolean {
-  return new RegExp(`<${name}(?![A-Za-z0-9_])`).test(withoutComments(gallery));
+  return new RegExp(`(?<![\\w$.])<${name}(?![A-Za-z0-9_])`).test(
+    withoutStrings(withoutComments(gallery)),
+  );
 }
 
 // 落ちる理由を、部品の名前で分かる文にして返す。

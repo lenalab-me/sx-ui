@@ -161,9 +161,10 @@ async function collect(page: Page): Promise<Raw[]> {
         cs.display !== "none"
       );
     };
+    // aria-disabled exempts only a control that carries it, not a wrapper around other text.
     const isDisabled = (el: Element) =>
       !!el.closest(
-        'button:disabled, [aria-disabled="true"], input:disabled, select:disabled, textarea:disabled, fieldset:disabled',
+        'button:disabled, input:disabled, select:disabled, textarea:disabled, fieldset:disabled, [aria-disabled="true"]:is(button, a, input, select, textarea, [role=button], [role=link], [role=menuitem], [role=tab], [role=option], [role=checkbox], [role=radio], [role=switch])',
       );
     const tagOf = (el: Element) =>
       el.tagName.toLowerCase() +

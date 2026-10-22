@@ -67,5 +67,15 @@ test("検査は、台帳の載せ忘れ・公開していない名前・描き�
     ),
     ["台帳に無い部品: Dummy", "見本で描いていない部品: Dummy"],
   );
+  // 文字列の中と型引数の中の `<名前` は、描いたことにならない。
+  assert.deepEqual(
+    problems(
+      gallery.replace(
+        "<Chip>b</Chip>",
+        'const s = useState<Chip>(); <Bu use="<Chip は付属の情報" />',
+      ),
+    ),
+    ["見本で描いていない部品: Chip"],
+  );
   assert.throws(() => exportedParts('export * from "./Button";'));
 });

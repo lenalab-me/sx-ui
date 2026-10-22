@@ -23,7 +23,7 @@ export function Meter({
   label: string;
   value: number | null;
   max?: number;
-  /** The value in words (for example "23 / 1054問"). Without it, the percentage. Required when value is null. */
+  /** The value in words (for example "18 / 240問"). Without it, the percentage. Required when value is null. */
   valueText?: string;
   tone?: MeterTone;
 }) {

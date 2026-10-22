@@ -153,7 +153,7 @@ test("pill のタブは、あふれても折り返さず、1行のまま横に�
 // Below md the tab lists are scroll frames (overflow-x-auto), whose minimum height is 0. In a column
 // that is taller than its box (the main of a screen with a long table under the tabs) they were the
 // items that shrank, down to their padding, so the labels hung out under the box that follows (found
-// on the exam list of exam-platform, which the gallery's own layout does not show). Here the column
+// on the list screen of an app, which the gallery's own layout does not show). Here the column
 // holding each list is made shorter than its content, as a screen's main is.
 for (const variant of ["underline", "segmented", "pill"]) {
   test(`${variant} のタブは、中身より低い列に入れても、ラベルが収まる高さを保つ`, async ({
