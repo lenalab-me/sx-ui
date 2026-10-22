@@ -117,3 +117,27 @@ test("監査は、ページの横のはみ出しと、キーボードで入れ�
     await audit(page, frame('tabindex="0" role="region" aria-label="表"')),
   ).toEqual([]);
 });
+
+test("監査は、中身より低い列で縮んで中身が下で切れた横スクロールの枠を落とし、縮まない枠・断った縦スクロールの枠なら通す", async ({
+  page,
+}) => {
+  // The column is shorter than its content and the list inside it may shrink (a scroll frame, as the
+  // tab list of a screen), so the button in it hangs out under the list's edge, where it is cut off.
+  const column = (list: string) => `
+    <div style="display: flex; flex-direction: column; height: 60px">
+      <div aria-label="タブ" ${list} style="overflow-x: auto; padding: 8px"><button style="font-size: 16px; padding: 8px 16px">すべて</button></div>
+      <div style="height: 200px; background: #ddd">下に続く表の枠</div>
+    </div>`;
+  const squeezed = await audit(page, column(""));
+  expect(
+    squeezed.some((p) => p.startsWith("枠が断りなく縦にスクロールする")),
+  ).toBe(true);
+  expect(squeezed.join()).toContain("タブ");
+  const kept = column("").replace(
+    "overflow-x: auto",
+    "flex-shrink: 0; overflow-x: auto",
+  );
+  expect(await audit(page, kept)).toEqual([]);
+  // A frame that scrolls up and down on purpose says so in its class.
+  expect(await audit(page, column('class="overflow-y-auto"'))).toEqual([]);
+});

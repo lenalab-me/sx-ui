@@ -14,15 +14,18 @@ const look: Record<
   TabsVariant,
   { list: string; tab: (on: boolean) => string }
 > = {
-  // Page-level sections, such as "拠点 / テンプレート" on the project overview
+  // Page-level sections, such as "拠点 / テンプレート" on the project overview. Every list is
+  // shrink-0: below md they are scroll frames (overflow-x-auto), whose minimum height is 0, so in a
+  // column that is taller than its box (the main of a screen) they would be the ones that shrink,
+  // down to the padding, and their labels would hang out under the box that follows.
   underline: {
-    list: "flex gap-6 max-md:gap-4 max-md:overflow-x-auto max-md:pb-px",
+    list: "flex shrink-0 gap-6 max-md:gap-4 max-md:overflow-x-auto max-md:pb-px",
     tab: (on) =>
       `-mb-px flex items-center gap-2 border-b-3 pb-3 pt-1 text-sx-lead max-md:shrink-0 max-md:whitespace-nowrap ${on ? "border-sx-accent font-medium text-sx-strong" : "border-transparent text-sx-muted hover:text-sx-strong"}`,
   },
   // A view switch, such as "作図 / フォーム"
   segmented: {
-    list: "flex gap-1 rounded-sx-control bg-sx-fill p-1 max-md:overflow-x-auto",
+    list: "flex shrink-0 gap-1 rounded-sx-control bg-sx-fill p-1 max-md:overflow-x-auto",
     tab: (on) =>
       `flex items-center gap-2 rounded-sx-tile px-4 py-1.5 max-md:shrink-0 max-md:whitespace-nowrap ${on ? "bg-sx-surface font-medium text-sx-strong shadow-sx-raised" : "text-sx-body hover:text-sx-strong"}`,
   },
@@ -30,7 +33,7 @@ const look: Record<
   // (wrapping would stack them in several rows); the padding with the negative margin leaves room
   // for the focus ring, which the scroll frame would clip.
   pill: {
-    list: "flex flex-wrap gap-1 max-md:-m-2 max-md:flex-nowrap max-md:overflow-x-auto max-md:p-2",
+    list: "flex shrink-0 flex-wrap gap-1 max-md:-m-2 max-md:flex-nowrap max-md:overflow-x-auto max-md:p-2",
     tab: (on) =>
       `flex items-center gap-2 rounded-sx-control px-4 py-2 max-md:shrink-0 max-md:whitespace-nowrap ${on ? "bg-sx-fill font-medium text-sx-strong" : "text-sx-body hover:bg-sx-subtle"}`,
   },

@@ -149,3 +149,33 @@ test("pill のタブは、あふれても折り返さず、1行のまま横に�
   });
   expect(row).toEqual({ rows: 1, scrolls: true, overflowX: "auto" });
 });
+
+// Below md the tab lists are scroll frames (overflow-x-auto), whose minimum height is 0. In a column
+// that is taller than its box (the main of a screen with a long table under the tabs) they were the
+// items that shrank, down to their padding, so the labels hung out under the box that follows (found
+// on the exam list of exam-platform, which the gallery's own layout does not show). Here the column
+// holding each list is made shorter than its content, as a screen's main is.
+for (const variant of ["underline", "segmented", "pill"]) {
+  test(`${variant} のタブは、中身より低い列に入れても、ラベルが収まる高さを保つ`, async ({
+    page,
+  }) => {
+    await page.goto("/gallery/");
+    const label = `タブ（${variant}）`;
+    const list = page.locator(`[role="tablist"][aria-label="${label}"]`);
+    await list.scrollIntoViewIfNeeded();
+    const heights = await list.evaluate((el) => {
+      const column = el.parentElement!;
+      const before = el.getBoundingClientRect().height;
+      column.style.height = "40px";
+      const tabs = [...el.children].map((c) => c.getBoundingClientRect());
+      const box = el.getBoundingClientRect();
+      return {
+        before,
+        after: box.height,
+        tabsInside: tabs.every((t) => t.bottom <= box.bottom + 1),
+      };
+    });
+    expect(heights.after, "縮んだ後のタブの並びの高さ").toBe(heights.before);
+    expect(heights.tabsInside, "タブがタブの並びの下にはみ出す").toBe(true);
+  });
+}

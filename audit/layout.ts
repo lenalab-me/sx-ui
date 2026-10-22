@@ -8,6 +8,9 @@
 // - text cut off by a box that hides its overflow, with neither an ellipsis nor a line clamp to show
 //   that something is missing;
 // - two texts, or a text and an icon, that overlap (neither contains the other);
+// - a frame that scrolls up and down without saying so (overflow-y-auto, overflow-auto): a frame that
+//   meant to scroll sideways (overflow-x-auto) and was squeezed lower than its content, which then
+//   hangs out of it and is cut off at its edge;
 // - a page wider than the window, and a frame that scrolls sideways but cannot be reached with the
 //   keyboard (neither it nor anything in it takes the focus), so its hidden part cannot be read.
 // The text is cut by every ancestor that clips its overflow (a line clamp, a truncated cell), so what
@@ -186,6 +189,22 @@ export function layoutAudit(): string[] {
         `横にスクロールする枠にキーボードで入れない：${label}（tabindex="0" と名前を付けるか、はみ出さないようにする）`,
       );
     }
+  }
+  // The sideways frames (a tab list, a table) are overflow-x-auto, which makes them scroll up and
+  // down too; one squeezed by a column that is taller than its box cuts its content at the edge. A
+  // frame that scrolls up and down on purpose says so, and a field (textarea, select) scrolls itself.
+  for (const el of root.querySelectorAll("*")) {
+    if (/^(textarea|select|input)$/i.test(el.tagName)) continue;
+    if (!/auto|scroll/.test(getComputedStyle(el).overflowY)) continue;
+    if (el.scrollHeight <= el.clientHeight + 1 || skipped(el)) continue;
+    const declared = /\boverflow-(y-)?(auto|scroll)\b/.test(
+      el.getAttribute("class") ?? "",
+    );
+    if (declared) continue;
+    const label = el.getAttribute("aria-label") ?? el.tagName.toLowerCase();
+    problems.push(
+      `枠が断りなく縦にスクロールする：${label}（高さ ${el.clientHeight}px に中身 ${el.scrollHeight}px が入りきらず、枠の下で切れている。縦に動かす枠は overflow-y-auto で断り、そうでなければ枠が縮まないようにする）`,
+    );
   }
   return [...new Set(problems)];
 }
