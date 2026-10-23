@@ -23,6 +23,10 @@ const tones: Record<TagTone, { box: string; icon?: IconName }> = {
  * A tag for meta information (site number, kind, area, device count, device type). The tones `permit`,
  * `deny` and `implicit-deny` are the action of an access rule: they draw an icon (a check, or a
  * prohibition sign) before the text, and the text ("許可", "拒否") is still required.
+ *
+ * A tag stays on one line, and a tag longer than its container wraps inside it (a user's own tag can be
+ * a long name with no space in it). `break-keep` keeps the tag whole where a line has room for it, as
+ * `whitespace-nowrap` did; the text has its own box so that it can be narrower than its longest word.
  */
 export function Tag({
   children,
@@ -34,10 +38,10 @@ export function Tag({
   const t = tones[tone];
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-sx-tile px-2.5 py-0.5 text-sx-meta whitespace-nowrap ${t.box}`}
+      className={`inline-flex max-w-full items-center gap-1 rounded-sx-tile px-2.5 py-0.5 text-sx-meta break-keep wrap-break-word ${t.box}`}
     >
       {t.icon && <Icon name={t.icon} size={14} />}
-      {children}
+      <span className="min-w-0">{children}</span>
     </span>
   );
 }

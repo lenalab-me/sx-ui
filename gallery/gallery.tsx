@@ -885,6 +885,14 @@ function Gallery() {
               <CheckboxInput size="sm" aria-label="小さいチェック" />
               <CheckboxInput size="md" aria-label="通常のチェック" />
             </div>
+            {/* A box of whole pixels: the sections below move by whole pixels only, and their
+                baseline images stay as they are. */}
+            <div className="h-40">
+              <div className="grid max-w-96 grid-cols-2 gap-3">
+                <Checkbox label="2 列に並べた長いラベル：network-automation-with-python-and-ansible" />
+                <Checkbox label="隣のチェック" />
+              </div>
+            </div>
             <div className="flex flex-col gap-1.5">
               <Label required>Field を使わない単独のラベル</Label>
               <SupportText live>単独の補足文です。</SupportText>
@@ -913,6 +921,15 @@ function Gallery() {
                 {tone}
               </Tag>
             ))}
+          </div>
+          {/* A box of whole pixels, as the long checkbox label's in 入力. */}
+          <div className="h-24">
+            <div className="flex max-w-80 flex-wrap items-center gap-3">
+              <Tag>
+                幅より長いタグ：network-automation-with-python-and-ansible
+              </Tag>
+              <Tag tone="outline">短いタグ</Tag>
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             {saveStates.map((state) => (

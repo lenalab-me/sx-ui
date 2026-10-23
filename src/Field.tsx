@@ -326,7 +326,11 @@ type CheckboxProps = Omit<
   "type" | "size" | "style"
 > & { label: ReactNode; support?: ReactNode };
 
-/** A checkbox with its label (the small one inside a table is Check in form-cells). */
+/**
+ * A checkbox with its label (the small one inside a table is Check in form-cells). A long label wraps
+ * inside the width it is given, even a word with no space in it, so checkboxes side by side in columns
+ * do not run into each other.
+ */
 export function Checkbox({
   label,
   support,
@@ -337,11 +341,11 @@ export function Checkbox({
   const auto = useId();
   const cid = id ?? auto;
   return (
-    <div className={`flex items-start gap-3 ${className}`}>
+    <div className={`flex min-w-0 items-start gap-3 ${className}`}>
       <span className="mt-0.5 flex">
         <CheckboxInput id={cid} {...rest} />
       </span>
-      <label htmlFor={cid} className="flex flex-col">
+      <label htmlFor={cid} className="flex min-w-0 flex-col wrap-break-word">
         <span>{label}</span>
         {support && (
           <span className="text-sx-meta text-sx-muted">{support}</span>
