@@ -40,7 +40,9 @@ export function Disclosure({
     <div
       className={`relative rounded-sx-control bg-sx-surface ${highlighted ? "border-2 border-sx-accent" : "border border-sx-line"}`}
     >
-      <div className="flex items-center gap-3 pr-4">
+      {/* `after` keeps 8px from the border above and below: what is taller than the button (tags on several
+          lines) does not touch it, and what is lower stays in the middle of the button's height. */}
+      <div className="flex items-center gap-3 pr-4 [&>*+*]:my-2">
         <H className="min-w-0 flex-1 text-sx-base font-medium">
           <button
             type="button"

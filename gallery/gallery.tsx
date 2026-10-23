@@ -1040,6 +1040,29 @@ function Gallery() {
           >
             強調した枠の例です。
           </Disclosure>
+          {/* A box of whole pixels: the sections below move by whole pixels only, and their baseline
+              images stay as they are. */}
+          <div className="h-36">
+            <Disclosure
+              title="見出しの横に、何行にもなるもの"
+              after={
+                <div className="flex max-w-48 min-w-0 flex-wrap justify-end gap-1.5">
+                  {[
+                    "拠点 001",
+                    "拠点 002",
+                    "拠点 003",
+                    "拠点 004",
+                    "拠点 005",
+                    "拠点 006",
+                  ].map((name) => (
+                    <Tag key={name}>{name}</Tag>
+                  ))}
+                </div>
+              }
+            >
+              見出しの横に置いたタグが何行にもなっても、枠に触れません。
+            </Disclosure>
+          </div>
         </Section>
 
         <Section
