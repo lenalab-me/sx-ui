@@ -132,6 +132,21 @@ test.describe("部品の振る舞い", () => {
     ).toHaveCount(1);
   });
 
+  test("SupportText は、live を付けたものだけ status として読み上げる", async ({
+    page,
+  }) => {
+    await page.goto("/gallery/");
+    const live = page
+      .getByRole("status")
+      .filter({ hasText: "単独の補足文です。" });
+    await expect(live).toHaveCount(1);
+    await expect(live).toHaveJSProperty("tagName", "P");
+    // The other supporting lines (the section captions) stay silent.
+    await expect(
+      page.getByRole("status").filter({ hasText: "1つ選ぶ（解答前）" }),
+    ).toHaveCount(0);
+  });
+
   test("論理接続図の読み上げ用の表は、上の楕円（WAN）も言う", async ({
     page,
   }) => {

@@ -887,7 +887,7 @@ function Gallery() {
             </div>
             <div className="flex flex-col gap-1.5">
               <Label required>Field を使わない単独のラベル</Label>
-              <SupportText>単独の補足文です。</SupportText>
+              <SupportText live>単独の補足文です。</SupportText>
               <ErrorText>単独のエラー文です。</ErrorText>
             </div>
           </div>

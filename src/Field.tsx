@@ -46,15 +46,26 @@ export function Label({
   );
 }
 
+/**
+ * A small supporting line. Not announced by default. Pass `live` when the sentence changes while the
+ * learner works (a remaining count, "ready to submit") and the change should be read aloud politely:
+ * it becomes a status region. Screens never write the role themselves.
+ */
 export function SupportText({
   id,
   children,
+  live = false,
 }: {
   id?: string;
   children: ReactNode;
+  live?: boolean;
 }) {
   return (
-    <p id={id} className="text-sx-meta text-sx-muted">
+    <p
+      id={id}
+      role={live ? "status" : undefined}
+      className="text-sx-meta text-sx-muted"
+    >
       {children}
     </p>
   );
