@@ -99,7 +99,17 @@ if git rev-parse --verify --quiet HEAD >/dev/null; then
 	else
 		commits=$(git rev-list --min-parents=1 HEAD)
 	fi
+	# 浅い clone（CI の actions/checkout の既定）の境目のコミットは親が切られていて、全ファイルに触ったように
+	# 見える。見ても当てにならないので外し、外したことを知らせる。
+	shallow=
+	if [ "$(git rev-parse --is-shallow-repository)" = true ]; then
+		shallow=$(cat "$(git rev-parse --git-path shallow)" 2>/dev/null || true)
+	fi
 	for commit in $commits; do
+		if [ -n "$shallow" ] && printf '%s\n' "$shallow" | grep -qx "$commit"; then
+			echo "浅い clone なので境目のコミット $(git rev-parse --short "$commit") は見ない。全部見るには fetch-depth: 0" >&2
+			continue
+		fi
 		judge "$(git show --format= --name-only --no-renames "$commit")" "コミット $(git rev-parse --short "$commit")"
 	done
 	judge "$(

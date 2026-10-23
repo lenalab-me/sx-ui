@@ -257,3 +257,65 @@ test("ロックは、部品の依存が入れ子に入った node_modules を違
   rmSync(join(app.dir, "node_modules"), { recursive: true, force: true });
   assert.match(app.lock().out, /node_modules\/@sx\/ui がありません/);
 });
+
+// 浅い clone（CI の actions/checkout の既定の depth 1）を作る。HEAD の枝と origin/main を浅く持ち、
+// node_modules（git に入れないもの）は写す。
+function shallowClone(app: App, depth: number): string {
+  const clone = mkdtempSync(join(tmpdir(), "sx-ui-shallow-"));
+  const git = (...args: string[]) =>
+    execFileSync("git", args, { cwd: clone, encoding: "utf8" });
+  execFileSync("rmdir", [clone]);
+  execFileSync("git", [
+    "clone",
+    "-q",
+    `--depth=${depth}`,
+    "--branch=pr",
+    `file://${app.dir}`,
+    clone,
+  ]);
+  git("fetch", "-q", `--depth=${depth}`, "origin", "main");
+  git("update-ref", "refs/remotes/origin/main", "FETCH_HEAD");
+  execFileSync("cp", ["-R", join(app.dir, "node_modules"), clone]);
+  return clone;
+}
+
+const lockIn = (dir: string) => {
+  const r = spawnSync("sh", ["scripts/ui-lock.sh"], {
+    cwd: dir,
+    encoding: "utf8",
+  });
+  return { status: r.status ?? -1, out: r.stdout + r.stderr };
+};
+
+test("ロックは、浅い clone の境目のコミット（親が切られて全ファイルに触ったように見える）を見ずに知らせ、境目より後の混ぜたコミットは落とす", (t) => {
+  const app = makeApp(t);
+  app.run("git", "checkout", "-q", "-b", "pr");
+  // 部品と画面を混ぜたコミット。これが境目になる。
+  app.pack("1.1.0");
+  app.run("sh", "scripts/ui-lock.sh", "approve");
+  app.write("src/Home.tsx", "export const home = 2;\n");
+  app.commit("部品と画面");
+  const boundary = app.run("git", "rev-parse", "--short", "HEAD").trim();
+  const onlyBoundary = shallowClone(app, 1);
+  t.after(() => rmSync(onlyBoundary, { recursive: true, force: true }));
+  const r = lockIn(onlyBoundary);
+  assert.equal(r.status, 0, r.out);
+  assert.match(
+    r.out,
+    new RegExp(
+      `浅い clone なので境目のコミット ${boundary} は見ない。全部見るには fetch-depth: 0`,
+    ),
+  );
+  // 境目より後の、部品と画面の両方に触るコミットは、浅くても落とす。
+  app.pack("1.2.0");
+  app.run("sh", "scripts/ui-lock.sh", "approve");
+  app.write("src/Home.tsx", "export const home = 3;\n");
+  app.commit("部品と画面（その2）");
+  const later = app.run("git", "rev-parse", "--short", "HEAD").trim();
+  const twoDeep = shallowClone(app, 2);
+  t.after(() => rmSync(twoDeep, { recursive: true, force: true }));
+  const bad = lockIn(twoDeep);
+  assert.equal(bad.status, 1);
+  assert.match(bad.out, new RegExp(`コミット ${later}が、部品`));
+  assert.match(bad.out, /\n {2}src\/Home\.tsx/);
+});
