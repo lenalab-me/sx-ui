@@ -1,6 +1,6 @@
 {
   "name": "@sx/ui",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "画面の共通部品（React＋Tailwind v4）と、画面ファイルの書き方・部品の台帳の検査",
   "license": "MIT",
   "private": true,

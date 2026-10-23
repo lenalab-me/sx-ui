@@ -12,7 +12,7 @@
 | 白い面を作る                                         | `Card`（表を縁まで入れるときは `flush`、上端にタブを置くときは `CardHead`）                                                                       |
 | 状態で絞り込む・同じ画面で表示を切り替える           | `Tabs`（絞り込みは `variant="pill"`、`TabPanel` と組む）                                                                                          |
 | 工程を前後に移る                                     | `Stepper`（工程以外には使わない）                                                                                                                 |
-| 入力欄（ラベル・補足・エラーつき）                   | `Field`（横に並べるときは `FieldGrid`）                                                                                                           |
+| 入力欄（ラベル・補足・エラーつき）                   | `Field`（横に並べるときは `FieldGrid`。変わる案内は `SupportText live`）                                                                          |
 | 読むだけの値（直せない項目）                         | `DescriptionList`                                                                                                                                 |
 | 画面の中に残す注意・結果・エラー                     | `Notice`（出た瞬間に読み上げるなら `live`）                                                                                                       |
 | 操作の結果を一行だけ伝える                           | `StatusLine`（`Page` の `status`）                                                                                                                |
@@ -57,7 +57,7 @@
 - **ロックと版の入れ替え**：アプリは検査を写さず、部品が配るスクリプトを呼ぶ。検査の本体は `node_modules` からではなく `vendor/` の tarball から取り出して流す（`node_modules/@sx/ui` は検査される側なので、そこにあるスクリプトを書き換えれば検査ごと消せてしまう）。
   - アプリは `scripts/ui-lock.sh`（部品の `bin/app-ui-lock.sh` の写し。`ui:update` が入れ替え、手では直さない）を置き、check の先頭で `sh scripts/ui-lock.sh` を流す。`package.json` の scripts は `"ui:approve": "sh scripts/ui-lock.sh approve"`・`"ui:update": "sh scripts/ui-lock.sh update"`（`ui:update` が書く）。
   - `scripts/ui-lock.sh` は、`vendor/` のハッシュが `ui.lock` と同じかを見てから、tarball の `bin/ui-lock.sh` を流す。こちらは、`scripts/ui-lock.sh` がその版の `bin/app-ui-lock.sh` と同じか、tarball がちょうど1つで `package.json` がそれを指すか、`node_modules/@sx/ui` が tarball の中身と同じか（部品の依存が入れ子に入った `node_modules/@sx/ui/node_modules` は比べない）、部品のコミットが部品のファイルだけに触っているかを見る。`node_modules/@sx/ui/bin/ui-lock.sh` を直に流すと、乗り換えの案内を出して止まる。
-  - 部品のファイルは `vendor/`・`packages/`・`ui.lock`・`scripts/ui-lock.sh` と、版を指す `package.json`・`package-lock.json`。これらに触るコミットと作業コピーは、ほかのファイル（画面も、`scripts/check.sh`・テスト・`vite.config.mjs` のような検査と設定も）に触らない。見るのは origin の既定のブランチ（`origin/HEAD`。無ければ `origin/main`・`origin/master`）にまだ無いコミットと作業コピーで、どれも無ければ全コミット（最初のコミットは除く）。改名は削除と追加として見る。
+  - 部品のファイルは `vendor/`・`packages/`・`ui.lock`・`scripts/ui-lock.sh` と、版を指す `package.json`・`package-lock.json`。これらに触るコミットと作業コピーは、ほかのファイル（画面も、`scripts/check.sh`・テスト・`vite.config.mjs` のような検査と設定も）に触らない。見るのは origin の既定のブランチ（`origin/HEAD`。無ければ `origin/main`・`origin/master`）にまだ無いコミットと作業コピーで、どれも無ければ全コミット（最初のコミットは除く）。改名は削除と追加として見る。浅い clone（CI の `actions/checkout` の既定の depth 1）では、親が切られた境目のコミット（`git rev-parse --git-path shallow` に載るもの）が全ファイルに触ったように見えるので判定から外し、外したことを 1 行で知らせる（全部見るには `fetch-depth: 0`。境目より後のコミットは見る）。
   - 限界：同じ書き手が版を上げて `ui:approve` を流せるし、`scripts/ui-lock.sh` を呼ばないよう `scripts/check.sh` を書き換えることもできる。どちらもアプリのリポジトリの差分に残るので、部品の変更が利用者の承認を経たかはレビューで確かめる。push した後の履歴は見ない。
   - 0.4 までの版から乗り換えるとき（`scripts/ui-lock.sh` がまだ無いアプリ）は、新しい版の `ui-update.sh` を tarball から取り出して流す：`d=$(mktemp -d) && tar xzf <tgz> -C "$d" package/bin && sh "$d/package/bin/ui-update.sh" <tgz>`。`scripts/ui-lock.sh` と scripts が入るので、承認（`npm run ui:approve`）して部品のコミットにし、別のコミットで `scripts/check.sh` の先頭を `sh scripts/ui-lock.sh` に替える。
 - **画面の監査**（`@sx/ui/audit`）：アプリの e2e は、全ルートで次の2つを流す。どちらもこの見本ページの全状態でも流し（`e2e/layout.spec.ts`・`e2e/contrast.spec.ts`）、監査自身が崩れた形を落とし正しい形を通すことも確かめる。
@@ -91,7 +91,7 @@
 - 見た目は `tone`・`variant`・`size`（`sm`・`md`・`lg`）のような意味の指定で受け、`style` はどの部品も受けない。`className` を受けるのは配置のためだけで、`Field`・`Card`・`Button`／`ButtonLink`・`Input`／`Select`／`Textarea`／`NumberInput`・`Checkbox` に限る。ほかの部品は受けない（表のセルの寄せ・折り返しは `Th`／`Td` の `align`・`numeric`・`nowrap`・`truncate`）。
 - アイコンは名前（`IconName`）で渡す。アイコンのライブラリを import するのはこのパッケージだけで、画面は `lucide-react` を import しない。
 - 色・角丸・影はトークンの名前（`bg-sx-accent`・`rounded-sx-control` など）だけで書き、`#` の色の直書きは `tokens.css` の外に置かない。文字サイズも `text-[16px]` のような任意値でなく名前つきのトークンを使う。
-- 読み上げ（`role="alert"`・`"status"`）は部品が持つ。画面は `Notice` に `live`（出た瞬間に読み上げる。`error`・`warn` は alert、`info`・`ok` は status）、`SaveStatus` に `live` を渡すだけで、role を書かない。
+- 読み上げ（`role="alert"`・`"status"`）は部品が持つ。画面は `Notice` に `live`（出た瞬間に読み上げる。`error`・`warn` は alert、`info`・`ok` は status）、`SaveStatus` に `live`、選ぶたびに文が変わる案内（「あと 2 つ選んでください」）の `SupportText` に `live`（変わった文を静かに読み上げる status）を渡すだけで、role を書かない。
 - 部品は値を検証しない。エラー文はサーバーの検証の結果を、呼び出し側が `error` などで渡す（検証の規則を画面に写さない）。
 
 ### 開いたら重なって出る部品
