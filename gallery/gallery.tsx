@@ -1925,6 +1925,32 @@ function Gallery() {
               </tbody>
             </Table>
           </Card>
+          {/* A box of whole pixels: the sections below move by whole pixels only, and their baseline
+              images stay as they are. */}
+          <div className="flex h-60 flex-col gap-3">
+            <SectionHeader title="途中で切れない長い語" level={3} />
+            <Card label="長い語を折り返す表の例" flush>
+              <Table caption="長い語を折り返す表" minWidth={480} stack>
+                <colgroup>
+                  <col className="w-48" />
+                  <col />
+                </colgroup>
+                <THead>
+                  <Th>用語</Th>
+                  <Th>説明</Th>
+                </THead>
+                <tbody>
+                  <Tr>
+                    <RowHead>NetworkAutomationWithPythonAndAnsible</RowHead>
+                    <Td label="説明">
+                      nowrap も truncate
+                      も付けないセルは、空白のない長い語も列の幅で折り返します。
+                    </Td>
+                  </Tr>
+                </tbody>
+              </Table>
+            </Card>
+          </div>
         </Section>
 
         <Section

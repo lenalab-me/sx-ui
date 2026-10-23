@@ -24,11 +24,14 @@ const alignClass = {
   right: "text-right",
 };
 
+// A cell that neither stays on one line nor cuts its text wraps it, a word with no space in it too (a long
+// term or name would run into the next column otherwise; the columns of a table-fixed table do not grow).
 const cellLook = ({ align, numeric, nowrap, truncate }: CellLook) =>
   [
     numeric ? "text-right tabular-nums" : align ? alignClass[align] : "",
     nowrap ? "whitespace-nowrap" : "",
     truncate ? "truncate" : "",
+    nowrap || truncate ? "" : "wrap-break-word",
   ].join(" ");
 
 type CellProps<E> = Omit<E, "className" | "style" | "scope"> & CellLook;
