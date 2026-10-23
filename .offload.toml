@@ -1,0 +1,12 @@
+# 重い e2e（npm run e2e）は利用者の予備の MacBook Air で `offload run -f test-results -- npm run e2e` と流す。
+# Air に入れるものと持ち帰るもの。Air 自身の設定（host・Node）は ~/.config/offload にある。
+fetch = ["test-results"]
+exclude = ["/dist/", "/playwright-report/"]
+# playwright.config.ts が読むポート。Air の空きポートを offload が配る。
+ports = { E2E_WEB_PORT = 1 }
+
+[deps]
+# package-lock.json が変わったら依存を入れ直し、Playwright の chromium（版は lock で決まる）を Air のキャッシュに入れる。
+inputs = ["package-lock.json"]
+outputs = ["node_modules"]
+run = "npm ci --no-audit --no-fund && npx playwright install chromium"

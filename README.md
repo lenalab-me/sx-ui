@@ -80,6 +80,8 @@
 
 見た目を変えたら `npm run e2e` を流す。見本ページを Playwright（Chromium、locale `ja-JP`）で撮る。プロジェクトは2つで、`desktop`（1440×900。下の基準画像）と `narrow`（Pixel 7 の 412×915。基準画像は `e2e/__screenshots__/narrow/`、監査・はみ出しの検査〔`e2e/narrow.spec.ts`〕と引き出しの確かめも流す）。`desktop` は、`e2e/__screenshots__/` の基準画像と1ピクセルも違わないことを見る（先頭の画面と `?open=` の7状態と `?shell=account` に加え、20の節ごとに1枚。節の画像は、節が入る高さの窓で撮る）。落ちたら `npm run e2e -- --last-failed` で落ちた分だけ流し直す。差分は人が見て、意図した変えならそのとき `npm run e2e -- --update-snapshots` で基準画像を撮り直して承認する（画像はプラットフォームごとで、いまは `darwin`）。部品を変える・足すときは、同じコミットで基準画像を更新する。ポートは `E2E_WEB_PORT`（既定 5191）で変えられる。
 
+重いので、予備の MacBook Air でも流せる：`offload run -f test-results -- npm run e2e`（`.offload.toml` が、Air に入れるもの〔`npm ci` と Playwright の chromium〕と持ち帰る `test-results`、空きポートを `E2E_WEB_PORT` に配ることを決める。基準画像はこの Mac のものと1ピクセルも違わない）。この Mac で別の作業コピーと並べて流すときは、`E2E_WEB_PORT=5293 npm run e2e` のように作業コピーごとに違う番号を渡す。
+
 ## CSS とトークン
 
 `styles.css` の `@source` は部品（`src`）と見本ページ（`gallery`）だけを走査する。画面のファイルは、アプリの CSS の入口が自分で `@source` に足す（上の「アプリでの使い方」）。
