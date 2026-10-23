@@ -1910,7 +1910,11 @@ function Gallery() {
                     <RowHead nowrap>{r.number}</RowHead>
                     <Td truncate label="拠点名">
                       <TextLink href={`#card-${r.number}`}>
-                        {r.number === "001" ? "ノートPC（軽量）" : r.name}
+                        {r.number === "001"
+                          ? "ノートPC（軽量）"
+                          : r.number === "003"
+                            ? "見本拠点 3（名前が長く、1 行に入らないときは末尾を「…」で切る例）"
+                            : r.name}
                       </TextLink>
                     </Td>
                     <Td numeric label="機器数">

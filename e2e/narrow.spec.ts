@@ -5,6 +5,7 @@ import { expect, test } from "@playwright/test";
 // page as a whole and at the text in table cells; this looks at every box. A frame that scrolls
 // sideways on purpose is a table, a tab list or a code block (it says so with overflow-x-auto);
 // a frame that scrolls without saying so (the body of a modal, main) means something stuck out.
+// A frame that cuts its text with an ellipsis (truncate) cuts it on purpose.
 test.skip(({ viewport }) => viewport!.width >= 768, "狭い画面だけ");
 
 const paths = [
@@ -51,6 +52,8 @@ function stickingOut(): string[] {
       if (!declared && !problems.includes(note)) problems.push(note);
       continue;
     }
+    if (clip && getComputedStyle(clip.frame).textOverflow === "ellipsis")
+      continue;
     const right = clip ? clip.frame.getBoundingClientRect().right : width;
     if (r.right > right + 1 || r.left < -1)
       problems.push(
@@ -80,7 +83,8 @@ test("メニューの引き出しの中身が、引き出しの横からはみ�
 });
 
 // The check itself: a box that runs past a clipping frame, and a frame that scrolls sideways
-// without saying so, are found; a table frame that says it scrolls (overflow-x-auto) is not.
+// without saying so, are found; a table frame that says it scrolls (overflow-x-auto), and a
+// frame that cuts its text with an ellipsis, are not.
 test("この検査は、枠からはみ出した箱と、断りなく横に動く枠を見つけ、断った枠は通す", async ({
   page,
 }) => {
@@ -95,6 +99,10 @@ test("この検査は、枠からはみ出した箱と、断りなく横に動�
     "横にスクロールする枠",
   );
   await page.setContent(frame("overflow-x-auto", "overflow-x: auto"));
+  expect(await page.evaluate(stickingOut)).toEqual([]);
+  await page.setContent(
+    frame("", "overflow: hidden; text-overflow: ellipsis; white-space: nowrap"),
+  );
   expect(await page.evaluate(stickingOut)).toEqual([]);
 });
 

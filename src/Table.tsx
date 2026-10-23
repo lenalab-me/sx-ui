@@ -179,7 +179,13 @@ export function Td({
           {label}
         </span>
       )}
-      {children}
+      {stack && truncate ? (
+        // A stacked cell is a flex row below md, and a flex row draws no ellipsis for its text:
+        // the value gets a box of its own that can.
+        <span className="max-md:min-w-0 max-md:truncate">{children}</span>
+      ) : (
+        children
+      )}
     </td>
   );
 }
