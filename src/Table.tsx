@@ -182,9 +182,10 @@ export function Td({
           {label}
         </span>
       )}
-      {stack && truncate ? (
+      {stack && label && truncate ? (
         // A stacked cell is a flex row below md, and a flex row draws no ellipsis for its text:
-        // the value gets a box of its own that can.
+        // the value gets a box of its own that can. Only beside a label: a cell that writes its own
+        // caption among its children keeps them as they are.
         <span className="max-md:min-w-0 max-md:truncate">{children}</span>
       ) : (
         children
