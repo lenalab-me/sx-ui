@@ -560,7 +560,12 @@ function Gallery() {
       mark={signedIn ? "S" : undefined}
       account={
         signedIn
-          ? { name: "見本 太郎", detail: "管理者", onSignOut: () => {} }
+          ? // A long address, as an app signed in through an IdP shows it: wraps before the @.
+            {
+              name: "taro.mihon.long@example.co.jp",
+              detail: "管理者",
+              onSignOut: () => {},
+            }
           : undefined
       }
     >

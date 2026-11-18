@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { IconButton } from "./Button";
 
-const width = { sm: "w-130", md: "w-160", lg: "w-190" } as const;
+const width = { sm: "w-130", md: "w-190", lg: "w-240" } as const;
 
 /**
  * A modal on a native <dialog> opened with showModal(), so the page behind it is inert and
@@ -26,7 +26,7 @@ export function Modal({
   /** Buttons along the bottom edge, right-aligned. */
   footer?: ReactNode;
   busy?: boolean;
-  /** md is 640px wide (forms), sm is 520px (confirmations), lg is 760px (forms in two columns, or with tabs). */
+  /** md is 760px wide (forms), sm is 520px (confirmations), lg is 960px (forms in two columns, or with tabs). */
   size?: "sm" | "md" | "lg";
   description?: ReactNode;
 }) {

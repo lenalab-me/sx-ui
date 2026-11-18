@@ -116,7 +116,7 @@
 - `DescriptionList` は `{ term, value }` の並びを2列で見せる（STEP1の値のように、ここでは直せない項目の表示）。
 - `Field` の `inline` はラベル左・部品右の1行（機種ごとの台数の欄）。
 - `Field` を横に並べるときは `FieldGrid`（`columns` は2が標準）に入れる。`Field` はラベル・補足・入力欄・エラーを grid の行（subgrid）に置くので、補足やエラーの有無が隣と違っても入力欄が行ごとにそろう。`FieldGrid` には `Field` だけを入れ、行間の余白は部品が持つ。
-- `Modal` の `size` は `sm`・`md`・`lg`（760px。5つのタブを持つ申込など）。
+- `Modal` の `size` は `sm`（520px。確認）・`md`（760px。入力）・`lg`（960px。2列の入力や5つのタブを持つ申込など）。
 - `ConfirmDialog` は子（`children`）を `message` の下に出す。確定の前に入力内容（借りる人・期間など）を見せるときは `DescriptionList` を入れる。ボタンの並びと Esc の答えは変わらない。
 - `StatusLine` の `tone="neutral"` はアイコン無しの控えめな表示（「読み込み中…」）。
 - `Meter` は名前（`label`）と値の文字（`valueText`。無ければ百分率）を必ず出し、`tone`（`accent`・`ok`・`warn`・`error`）の色は文字に添えるだけ。まだ測るものが無いときは `value` を `null` にして `valueText` に理由を書く（棒は空、`role="meter"` を持たない）。棒の幅だけは値そのものなので `style` で書く。
@@ -182,7 +182,7 @@
 
 ## 見本ページ
 
-`gallery/`（`index.html`・`gallery.tsx`）は、部品を全部、tone・variant・size・disabled・invalid・必須ごとに並べたページで、`npm run dev` の `/gallery/`（アプリの開発サーバーでは `/node_modules/@sx/ui/gallery/`）で開く。アプリの `vite build` の入口はアプリの `index.html` だけなので配布物には入らない。`?open=modal`・`?open=modal-lg`（幅 760px の `lg`）・`?open=confirm`・`?open=confirm-detail`（内容つきの確認）・`?open=menu`・`?open=popover`・`?open=table-menu`（行が2件だけの表の中の Menu）を付けると、そのモーダル・確認・メニュー・浮き枠を開いた状態で表示する。`?shell=account` はログインのあるアプリの枠（左下に利用者とログアウト、ロゴに頭文字）。表は40行あり、ページ全体ではなく `main` の中だけがスクロールする。見本ページは `body` の余白だけを自分の `index.html` で消す（preflight を読まないため。アプリの `index.html` も同じにする）。画面ファイルと同じく、見本ページで使うクラスは配置のクラスだけにする。
+`gallery/`（`index.html`・`gallery.tsx`）は、部品を全部、tone・variant・size・disabled・invalid・必須ごとに並べたページで、`npm run dev` の `/gallery/`（アプリの開発サーバーでは `/node_modules/@sx/ui/gallery/`）で開く。アプリの `vite build` の入口はアプリの `index.html` だけなので配布物には入らない。`?open=modal`・`?open=modal-lg`（幅 960px の `lg`）・`?open=confirm`・`?open=confirm-detail`（内容つきの確認）・`?open=menu`・`?open=popover`・`?open=table-menu`（行が2件だけの表の中の Menu）を付けると、そのモーダル・確認・メニュー・浮き枠を開いた状態で表示する。`?shell=account` はログインのあるアプリの枠（左下に利用者とログアウト、ロゴに頭文字）。表は40行あり、ページ全体ではなく `main` の中だけがスクロールする。見本ページは `body` の余白だけを自分の `index.html` で消す（preflight を読まないため。アプリの `index.html` も同じにする）。画面ファイルと同じく、見本ページで使うクラスは配置のクラスだけにする。
 
 見本ページは部品の台帳でもある。各節は `parts`（その節で見せる部品の名前）と `use`（いつ使うか・いつ使わないか。似た部品との使い分け）を持ち、`use` は節の見出しの下に表示される。台帳を別の文書に写さず、部品の一覧と使い分けはこの1か所だけにする。部品を足す・名前を変えるときは、同じ部品のコミットで見本の節に載せる（`parts` に名前を足し、`<名前` で描き、`use` を書く）。`test/catalog.test.ts`（`npm test`）が、`src/index.ts` が値として公開する部品（英大文字で始まる名前。`type` の export と `confirmTitle` のような関数は除く）の次を見る。
 

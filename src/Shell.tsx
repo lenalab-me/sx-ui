@@ -167,7 +167,12 @@ function AccountSlot({
       >
         {account ? (
           <>
-            <span className="truncate font-medium">{account.name}</span>
+            {/* An address shows the part before the @; the whole of it is in the tooltip. */}
+            <span className="truncate font-medium" title={account.name}>
+              {account.name.includes("@")
+                ? account.name.slice(0, account.name.indexOf("@"))
+                : account.name}
+            </span>
             {account.detail && (
               <span className="truncate text-sx-meta text-sx-muted">
                 {account.detail}
