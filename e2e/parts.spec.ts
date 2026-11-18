@@ -32,6 +32,34 @@ test.describe("部品の振る舞い", () => {
     await expect(dialog).toBeHidden();
   });
 
+  test("resizable の表は列を左から詰め（幅のない列は 16rem）、見出しの右端をドラッグするとその列だけ幅が変わる", async ({
+    page,
+  }) => {
+    await page.goto("/gallery/");
+    const table = page.getByRole("table", { name: "見本拠点の一覧" });
+    const header = (name: string) =>
+      table.getByRole("columnheader", { name, exact: true });
+    const width = async (name: string) =>
+      (await header(name).boundingBox())!.width;
+    // 拠点名 has no width of its own: 16rem, not the rest of the table.
+    expect(await width("拠点名")).toBe(256);
+    const kind = await width("種別");
+    const handle = header("拠点名").locator("[data-resize-handle]");
+    await handle.scrollIntoViewIfNeeded();
+    const box = (await handle.boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2 + 80, box.y + box.height / 2, {
+      steps: 4,
+    });
+    await page.mouse.up();
+    expect(await width("拠点名")).toBe(336);
+    expect(await width("種別")).toBe(kind);
+    // The handle and the space on the right are not read.
+    await expect(header("拠点名")).toHaveAccessibleName("拠点名");
+    expect(await table.getByRole("columnheader").count()).toBe(4);
+  });
+
   test("入力中の行（group）は、赤枠と指摘を見せないが、読み上げには残す", async ({
     page,
   }) => {
